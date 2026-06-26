@@ -1,0 +1,50 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <FontFamily x:Key="DisplayFont">avares://ScoolManager.Desktop/Assets/Fonts/Poppins/#Poppins</FontFamily>
+  <FontFamily x:Key="BodyFont">avares://ScoolManager.Desktop/Assets/Fonts/Inter/#Inter</FontFamily>
+  <FontFamily x:Key="NumericFont">avares://ScoolManager.Desktop/Assets/Fonts/Inter/#Inter</FontFamily>
+
+  <Style x:Key="DisplayLargeTextStyle" Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+    <Setter Property="FontSize" Value="32" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+  </Style>
+
+  <Style x:Key="DisplayMediumTextStyle" Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+    <Setter Property="FontSize" Value="24" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+  </Style>
+
+  <Style x:Key="HeadlineTextStyle" Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+  </Style>
+
+  <Style x:Key="BodyTextStyle" Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}" />
+  </Style>
+
+  <Style x:Key="LabelMutedTextStyle" Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}" />
+  </Style>
+
+  <Style x:Key="NumericTextStyle" Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource NumericFont}" />
+    <Setter Property="FontSize" Value="20" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+  </Style>
+
+</ResourceDictionary>

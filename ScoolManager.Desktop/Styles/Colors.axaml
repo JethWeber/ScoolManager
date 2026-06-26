@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Palette -->
+  <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326"/>
+  <SolidColorBrush x:Key="SurfaceBrush" Color="#161F33"/>
+  <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#2D3449"/>
+  <SolidColorBrush x:Key="SurfaceContainerBrush" Color="#111827"/>
+  <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#131B2E"/>
+  <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+  <SolidColorBrush x:Key="PrimaryBrush" Color="#4D8EFF"/>
+  <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#ADC6FF"/>
+  <SolidColorBrush x:Key="SecondaryBrush" Color="#BCC7DE"/>
+  <SolidColorBrush x:Key="AccentBrush" Color="#3B82F6"/>
+  <SolidColorBrush x:Key="AccentDarkBrush" Color="#2563EB"/>
+  <SolidColorBrush x:Key="OnSurfaceBrush" Color="#E6EAF5"/>
+  <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#A7B0D0"/>
+  <SolidColorBrush x:Key="OutlineBrush" Color="#8C909F"/>
+  <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4AB"/>
+  <SolidColorBrush x:Key="SuccessBrush" Color="#22C55E"/>
+  <SolidColorBrush x:Key="DividerBrush" Color="#334155"/>
+
+  <!-- Semantic colors -->
+  <SolidColorBrush x:Key="CardBackgroundBrush" Color="#0F172A"/>
+  <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#111827"/>
+  <SolidColorBrush x:Key="ControlBorderBrush" Color="#334155"/>
+  <SolidColorBrush x:Key="DisabledBrush" Color="#4B5B78"/>
+
+  <!-- Gradients -->
+  <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Color="#3B82F6" Offset="0"/>
+    <GradientStop Color="#2563EB" Offset="1"/>
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="PrimarySurfaceGradient" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#4D8EFF" Offset="0"/>
+    <GradientStop Color="#ADC6FF" Offset="1"/>
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="SubtleGradient" StartPoint="0,0" EndPoint="1,0">
+    <GradientStop Color="#161F33" Offset="0"/>
+    <GradientStop Color="#1D2742" Offset="1"/>
+  </LinearGradientBrush>
+
+  <!-- Layout tokens -->
+  <Thickness x:Key="ContentPadding">24</Thickness>
+  <CornerRadius x:Key="CornerRadiusSmall">12</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusMedium">18</CornerRadius>
+  <CornerRadius x:Key="CornerRadiusLarge">28</CornerRadius>
+
+</ResourceDictionary>

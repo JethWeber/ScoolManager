@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ScoolManager.Core/ScoolManager.Core.csproj" />
+  <Project Path="ScoolManager.Desktop/ScoolManager.Desktop.csproj" />
+</Solution>

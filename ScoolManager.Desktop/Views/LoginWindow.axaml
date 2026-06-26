@@ -1,0 +1,77 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
+        xmlns:vm="using:ScoolManager.Desktop.ViewModels"
+        x:Class="ScoolManager.Desktop.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel"
+        Title="School Manager - Login"
+        Width="500"
+        Height="720"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+
+    <Grid>
+        <Ellipse Width="360" Height="360" Fill="{StaticResource AccentDarkBrush}" Opacity="0.30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-120,-140,0,0"/>
+        <Ellipse Width="260" Height="260" Fill="{StaticResource AccentBrush}" Opacity="0.18" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-100,-80,0"/>
+        <Ellipse Width="280" Height="280" Fill="{StaticResource PrimaryContainerBrush}" Opacity="0.10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-140,-140"/>
+
+        <Border Width="420" CornerRadius="32" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" Padding="32" HorizontalAlignment="Center" VerticalAlignment="Center" >
+            <StackPanel Spacing="22">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="School Manager" FontFamily="{StaticResource DisplayFont}" FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <TextBlock Text="Acesso institucional para gestão escolar offline" FontFamily="{StaticResource BodyFont}" FontSize="14" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                </StackPanel>
+
+                <Border CornerRadius="24" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Padding="22" >
+                    <StackPanel Spacing="18">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Faça login na sua conta" FontFamily="{StaticResource DisplayFont}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <TextBlock Text="Use o telefone institucional e a senha para continuar." FontFamily="{StaticResource BodyFont}" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="14">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Telefone institucional" FontFamily="{StaticResource BodyFont}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                <Border CornerRadius="18" Background="{StaticResource ControlBackgroundBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="12" >
+                                    <DockPanel VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Phone" Width="20" Height="20" Foreground="{StaticResource OutlineBrush}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                        <TextBox Text="{Binding Phone, Mode=TwoWay}" PlaceholderText="998 123 456" FontFamily="{StaticResource BodyFont}" FontSize="14" BorderThickness="0" Background="Transparent" Foreground="White" HorizontalAlignment="Stretch" Margin="10,0,0,0" />
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Senha" FontFamily="{StaticResource BodyFont}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                <Border CornerRadius="18" Background="{StaticResource ControlBackgroundBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="12" >
+                                    <DockPanel VerticalAlignment="Center">
+                                        <material:MaterialIcon Kind="Lock" Width="20" Height="20" Foreground="{StaticResource OutlineBrush}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                        <controls:TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●" FontFamily="{StaticResource BodyFont}" FontSize="14" BorderThickness="0" Background="Transparent" Foreground="White" HorizontalAlignment="Stretch" Margin="10,0,0,0" />
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                                <CheckBox IsChecked="{Binding RememberMe, Mode=TwoWay}" Content="Lembrar minha sessão" Padding="0"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding ErrorMessage}" FontFamily="{StaticResource BodyFont}" FontSize="12" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" MaxWidth="320" />
+
+                            <Button Command="{Binding LoginCommand}" Height="50" FontSize="15">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                                    <material:MaterialIcon Kind="Login" Width="20" Height="20" Foreground="White"/>
+                                    <TextBlock Text="Entrar no Sistema" FontFamily="{StaticResource DisplayFont}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <TextBlock Text="Não possui acesso? Contate a equipe de TI da escola." FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="12" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="School Manager v1.0.0 • Modo Offline" FontFamily="{StaticResource BodyFont}" FontSize="12" Foreground="{StaticResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
