@@ -56,7 +56,7 @@ MockUp/
 MockUp.zip
 **/*Integration*
 **/*integration*
-MIGRACAO_AVALONIA.md
+MIGRACAO_AVALONIA.md 
 
 # Local configuration / temp files
 local.settings.json
