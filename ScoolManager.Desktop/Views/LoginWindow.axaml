@@ -6,72 +6,403 @@
         x:Class="ScoolManager.Desktop.Views.LoginWindow"
         x:DataType="vm:LoginViewModel"
         Title="School Manager - Login"
-        Width="500"
-        Height="720"
-        CanResize="False"
+        Width="920" Height="580"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}">
+        SystemDecorations="None"
+        Background="Transparent"
+        CanResize="False"
+        TransparencyLevelHint="AcrylicBlur,Transparent">
 
-    <Grid>
-        <Ellipse Width="360" Height="360" Fill="{StaticResource AccentDarkBrush}" Opacity="0.30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-120,-140,0,0"/>
-        <Ellipse Width="260" Height="260" Fill="{StaticResource AccentBrush}" Opacity="0.18" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-100,-80,0"/>
-        <Ellipse Width="280" Height="280" Fill="{StaticResource PrimaryContainerBrush}" Opacity="0.10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-140,-140"/>
+  <Window.Styles>
 
-        <Border Width="420" CornerRadius="32" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" Padding="32" HorizontalAlignment="Center" VerticalAlignment="Center" >
-            <StackPanel Spacing="22">
-                <StackPanel Spacing="6">
-                    <TextBlock Text="School Manager" FontFamily="{StaticResource DisplayFont}" FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"/>
-                    <TextBlock Text="Acesso institucional para gestão escolar offline" FontFamily="{StaticResource BodyFont}" FontSize="14" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                </StackPanel>
+    <!-- Input Glassmorphism -->
+    <Style Selector="TextBox.sm-input">
+      <Setter Property="Height" Value="46"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Foreground" Value="#E8F0FF"/>
+      <Setter Property="Background" Value="#12FFFFFF"/>
+      <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="14"/>
+      <Setter Property="Padding" Value="14,0"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="CaretBrush" Value="#2196F3"/>
+    </Style>
+    <Style Selector="TextBox.sm-input:focus">
+      <Setter Property="BorderBrush" Value="#602196F3"/>
+      <Setter Property="Background" Value="#1E2196F3"/>
+    </Style>
 
-                <Border CornerRadius="24" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Padding="22" >
-                    <StackPanel Spacing="18">
-                        <StackPanel Spacing="6">
-                            <TextBlock Text="Faça login na sua conta" FontFamily="{StaticResource DisplayFont}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"/>
-                            <TextBlock Text="Use o telefone institucional e a senha para continuar." FontFamily="{StaticResource BodyFont}" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                        </StackPanel>
+    <!-- Botão primário glass -->
+    <Style Selector="Button.sm-btn-primary">
+      <Setter Property="Height" Value="46"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#402196F3"/>
+      <Setter Property="Background">
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Offset="0" Color="#CC1976D2"/>
+          <GradientStop Offset="1" Color="#CC2196F3"/>
+        </LinearGradientBrush>
+      </Setter>
+    </Style>
+    <Style Selector="Button.sm-btn-primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background">
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Offset="0" Color="#EE1565C0"/>
+          <GradientStop Offset="1" Color="#EE1976D2"/>
+        </LinearGradientBrush>
+      </Setter>
+    </Style>
 
-                        <StackPanel Spacing="14">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Telefone institucional" FontFamily="{StaticResource BodyFont}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                <Border CornerRadius="18" Background="{StaticResource ControlBackgroundBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="12" >
-                                    <DockPanel VerticalAlignment="Center">
-                                        <material:MaterialIcon Kind="Phone" Width="20" Height="20" Foreground="{StaticResource OutlineBrush}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
-                                        <TextBox Text="{Binding Phone, Mode=TwoWay}" PlaceholderText="998 123 456" FontFamily="{StaticResource BodyFont}" FontSize="14" BorderThickness="0" Background="Transparent" Foreground="White" HorizontalAlignment="Stretch" Margin="10,0,0,0" />
-                                    </DockPanel>
-                                </Border>
-                            </StackPanel>
+    <!-- Link button -->
+    <Style Selector="Button.sm-link">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Foreground" Value="#7EB8F7"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.sm-link:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#42A5F5"/>
+    </Style>
 
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Senha" FontFamily="{StaticResource BodyFont}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                <Border CornerRadius="18" Background="{StaticResource ControlBackgroundBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" Padding="12" >
-                                    <DockPanel VerticalAlignment="Center">
-                                        <material:MaterialIcon Kind="Lock" Width="20" Height="20" Foreground="{StaticResource OutlineBrush}" VerticalAlignment="Center" DockPanel.Dock="Left"/>
-                                        <controls:TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●" FontFamily="{StaticResource BodyFont}" FontSize="14" BorderThickness="0" Background="Transparent" Foreground="White" HorizontalAlignment="Stretch" Margin="10,0,0,0" />
-                                    </DockPanel>
-                                </Border>
-                            </StackPanel>
+    <!-- Botão toggle senha (sem ícone, apenas texto) -->
+    <Style Selector="Button.sm-eye-btn">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Foreground" Value="#90C4E8"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Padding" Value="8,0"/>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.sm-eye-btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#42A5F5"/>
+    </Style>
 
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
-                                <CheckBox IsChecked="{Binding RememberMe, Mode=TwoWay}" Content="Lembrar minha sessão" Padding="0"/>
-                            </StackPanel>
+    <!-- Botão de fechar -->
+    <Style Selector="Button.sm-close">
+      <Setter Property="Width" Value="30"/>
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.sm-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
 
-                            <TextBlock Text="{Binding ErrorMessage}" FontFamily="{StaticResource BodyFont}" FontSize="12" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" MaxWidth="320" />
+  </Window.Styles>
 
-                            <Button Command="{Binding LoginCommand}" Height="50" FontSize="15">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                                    <material:MaterialIcon Kind="Login" Width="20" Height="20" Foreground="White"/>
-                                    <TextBlock Text="Entrar no Sistema" FontFamily="{StaticResource DisplayFont}"/>
-                                </StackPanel>
-                            </Button>
+  <!-- Camada raiz: fundo escuro + painel completo -->
+  <Panel>
 
-                            <TextBlock Text="Não possui acesso? Contate a equipe de TI da escola." FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="12" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </StackPanel>
+    <!-- === FUNDO GRADIENTE GLOBAL === -->
+    <Border CornerRadius="16" ClipToBounds="True">
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Offset="0"    Color="#080E1E"/>
+          <GradientStop Offset="0.45" Color="#0A1628"/>
+          <GradientStop Offset="1"    Color="#060D1A"/>
+        </LinearGradientBrush>
+      </Border.Background>
+    </Border>
+
+    <!-- Orbe azul topo-direito -->
+    <Ellipse Width="500" Height="500"
+             HorizontalAlignment="Right" VerticalAlignment="Top"
+             Margin="0,-180,-120,0" Opacity="0.20">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="#2196F3"/>
+          <GradientStop Offset="1" Color="Transparent"/>
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+
+    <!-- Orbe azul escuro fundo-esquerdo -->
+    <Ellipse Width="380" Height="380"
+             HorizontalAlignment="Left" VerticalAlignment="Bottom"
+             Margin="-80,0,0,-100" Opacity="0.14">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="#1565C0"/>
+          <GradientStop Offset="1" Color="Transparent"/>
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+
+    <!-- Orbe acento centro -->
+    <Ellipse Width="260" Height="260"
+             HorizontalAlignment="Center" VerticalAlignment="Center"
+             Margin="0,60,0,0" Opacity="0.07">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="#42A5F5"/>
+          <GradientStop Offset="1" Color="Transparent"/>
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+
+    <!-- === CONTEÚDO PRINCIPAL === -->
+    <Border CornerRadius="16" ClipToBounds="True"
+            BorderThickness="1" Margin="1"
+            BoxShadow="0 16 64 0 #60000000">
+      <Border.BorderBrush>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Offset="0"   Color="#35FFFFFF"/>
+          <GradientStop Offset="0.5" Color="#10FFFFFF"/>
+          <GradientStop Offset="1"   Color="#05FFFFFF"/>
+        </LinearGradientBrush>
+      </Border.BorderBrush>
+      <Border.Background>
+        <SolidColorBrush Color="Transparent"/>
+      </Border.Background>
+
+      <Grid ColumnDefinitions="*,370">
+
+        <!-- ===== HERO ESQUERDO ===== -->
+        <Border Grid.Column="0" ClipToBounds="True"
+                Name="DragRegion" Cursor="Arrow">
+
+          <Panel>
+            <!-- Faixa de cor no topo -->
+            <Border VerticalAlignment="Top" Height="3" ZIndex="10">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                  <GradientStop Color="#2196F3" Offset="0"/>
+                  <GradientStop Color="#42A5F5" Offset="0.5"/>
+                  <GradientStop Color="#1565C0" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <Grid Margin="44,52,32,40">
+
+              <!-- Topo: badge + headline -->
+              <StackPanel VerticalAlignment="Top" Spacing="12">
+                <Border Background="#18FFFFFF" CornerRadius="20"
+                        Padding="12,6" HorizontalAlignment="Left"
+                        BorderThickness="1" BorderBrush="#20FFFFFF">
+                  <TextBlock Text="School Manager · Gestão Escolar"
+                             FontSize="11" Foreground="#90C4E8"
+                             LetterSpacing="1"/>
                 </Border>
 
-                <TextBlock Text="School Manager v1.0.0 • Modo Offline" FontFamily="{StaticResource BodyFont}" FontSize="12" Foreground="{StaticResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
-            </StackPanel>
+                <TextBlock FontSize="32" FontWeight="Bold"
+                           Foreground="White"
+                           TextWrapping="Wrap" LineHeight="40"
+                           Text="Gerir Melhor.&#x0a;CRESCER MAIS."/>
+
+                <TextBlock FontSize="13.5" Foreground="#70AEDE"
+                           Text="A gestão escolar que acompanha o crescimento da sua instituição"/>
+              </StackPanel>
+
+              <!-- Gráfico decorativo glass: crescimento de alunos -->
+              <Border VerticalAlignment="Bottom"
+                      HorizontalAlignment="Center"
+                      Padding="20,18" CornerRadius="14"
+                      BorderThickness="1"
+                      BorderBrush="#18FFFFFF"
+                      BoxShadow="0 4 24 0 #28000000"
+                      Margin="0,0,0,8">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Offset="0" Color="#14FFFFFF"/>
+                    <GradientStop Offset="1" Color="#08FFFFFF"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+
+                <StackPanel Spacing="10">
+                  <TextBlock Text="CRESCIMENTO DE ALUNOS · COM O SCHOOL MANAGER"
+                             FontSize="9.5" Foreground="#50FFFFFF"
+                             LetterSpacing="1" HorizontalAlignment="Center"/>
+
+                  <Canvas Width="330" Height="180" Opacity="0.95">
+
+                    <!-- Linhas de grade horizontais -->
+                    <Line StartPoint="0,35"  EndPoint="330,35"  Stroke="#18FFFFFF" StrokeThickness="1"/>
+                    <Line StartPoint="0,80"  EndPoint="330,80"  Stroke="#18FFFFFF" StrokeThickness="1"/>
+                    <Line StartPoint="0,125" EndPoint="330,125" Stroke="#18FFFFFF" StrokeThickness="1"/>
+                    <Line StartPoint="0,170" EndPoint="330,170" Stroke="#28FFFFFF" StrokeThickness="1"/>
+
+                    <!-- Área preenchida sob a curva de crescimento -->
+                    <Path Fill="#221976D2"
+                          Data="M 25,170 L 25,159.2 C 60,150 95,135 130,124.9 C 165,108 195,92 230,75.2 C 255,58 280,40 305,23.3 L 305,170 Z"/>
+
+                    <!-- Curva de crescimento (Ano 1 a Ano 4) -->
+                    <Path Stroke="#2196F3" StrokeThickness="2.5"
+                          Data="M 25,159.2 C 60,150 95,135 130,124.9 C 165,108 195,92 230,75.2 C 255,58 280,40 305,23.3"/>
+
+                    <!-- Pontos de dados -->
+                    <Ellipse Canvas.Left="20"  Canvas.Top="154.2" Width="10" Height="10" Fill="#0A1628" Stroke="#2196F3" StrokeThickness="2"/>
+                    <Ellipse Canvas.Left="125" Canvas.Top="119.9" Width="10" Height="10" Fill="#0A1628" Stroke="#2196F3" StrokeThickness="2"/>
+                    <Ellipse Canvas.Left="225" Canvas.Top="70.2"  Width="10" Height="10" Fill="#0A1628" Stroke="#2196F3" StrokeThickness="2"/>
+                    <Ellipse Canvas.Left="300" Canvas.Top="18.3"  Width="10" Height="10" Fill="#42A5F5" Stroke="White" StrokeThickness="2"/>
+
+                    <!-- Valores acima dos pontos -->
+                    <TextBlock Canvas.Left="12"  Canvas.Top="136" Text="48"  FontSize="10" FontWeight="SemiBold" Foreground="#90C4E8"/>
+                    <TextBlock Canvas.Left="113" Canvas.Top="101" Text="200" FontSize="10" FontWeight="SemiBold" Foreground="#90C4E8"/>
+                    <TextBlock Canvas.Left="210" Canvas.Top="51"  Text="420" FontSize="10" FontWeight="SemiBold" Foreground="#90C4E8"/>
+                    <TextBlock Canvas.Left="285" Canvas.Top="2"   Text="650" FontSize="10" FontWeight="Bold" Foreground="White"/>
+
+                    <!-- Rótulos do eixo X -->
+                    <TextBlock Canvas.Left="11"  Canvas.Top="175" Text="Ano 1" FontSize="9" Foreground="#45FFFFFF"/>
+                    <TextBlock Canvas.Left="115" Canvas.Top="175" Text="Ano 2" FontSize="9" Foreground="#45FFFFFF"/>
+                    <TextBlock Canvas.Left="215" Canvas.Top="175" Text="Ano 3" FontSize="9" Foreground="#45FFFFFF"/>
+                    <TextBlock Canvas.Left="290" Canvas.Top="175" Text="Ano 4" FontSize="9" Foreground="#45FFFFFF"/>
+
+                  </Canvas>
+
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                      <Border Width="10" Height="10" CornerRadius="2" Background="#2196F3"/>
+                      <TextBlock Text="Alunos matriculados" FontSize="9.5" Foreground="#60FFFFFF"/>
+                    </StackPanel>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
+            </Grid>
+          </Panel>
         </Border>
-    </Grid>
+
+        <!-- Divisor vertical glass -->
+        <Border Grid.Column="0"
+                HorizontalAlignment="Right"
+                Width="1" Margin="0,24,0,24">
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+              <GradientStop Offset="0"   Color="Transparent"/>
+              <GradientStop Offset="0.3" Color="#25FFFFFF"/>
+              <GradientStop Offset="0.7" Color="#25FFFFFF"/>
+              <GradientStop Offset="1"   Color="Transparent"/>
+            </LinearGradientBrush>
+          </Border.Background>
+        </Border>
+
+        <!-- ===== PAINEL DE LOGIN ===== -->
+        <Border Grid.Column="1" ClipToBounds="True"
+                Padding="36,0">
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+              <GradientStop Offset="0" Color="#16FFFFFF"/>
+              <GradientStop Offset="1" Color="#0AFFFFFF"/>
+            </LinearGradientBrush>
+          </Border.Background>
+
+          <Panel>
+
+            <!-- Botão fechar -->
+            <Button Classes="sm-close" Name="CloseButton"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,16,0,0" Cursor="Hand">
+              <material:MaterialIcon Kind="Close" Width="14" Height="14"
+                                      Foreground="#90C4E8"/>
+            </Button>
+
+            <StackPanel VerticalAlignment="Center" Spacing="0">
+
+              <!-- Logo -->
+              <Image Source="/Assets/school_manager_logo_white.png"
+                     Width="210" HorizontalAlignment="Center"
+                     Stretch="Uniform" Margin="0,0,0,28"/>
+
+              <!-- Divider -->
+              <Border Height="1" Margin="16,0,16,24">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Offset="0"   Color="Transparent"/>
+                    <GradientStop Offset="0.5" Color="#302196F3"/>
+                    <GradientStop Offset="1"   Color="Transparent"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+
+              <TextBlock Text="Bem-vindo de volta"
+                         FontSize="20" FontWeight="Bold"
+                         Foreground="#F0F6FF"
+                         HorizontalAlignment="Center"
+                         Margin="0,0,0,24"/>
+
+              <StackPanel Spacing="14">
+
+                <!-- Telefone -->
+                <TextBox Classes="sm-input"
+                         Watermark="Telefone institucional"
+                         Text="{Binding Phone, Mode=TwoWay}"/>
+
+                <!-- Senha -->
+                <controls:TextBox Classes="sm-input"
+                                   Watermark="Palavra-passe"
+                                   PasswordChar="●"
+                                   Text="{Binding Password, Mode=TwoWay}"/>
+
+              </StackPanel>
+
+              <!-- Erro -->
+              <TextBlock Text="{Binding ErrorMessage}"
+                         Foreground="#FF8A80" FontSize="12"
+                         TextWrapping="Wrap"
+                         Margin="0,12,0,0"
+                         HorizontalAlignment="Center"/>
+
+              <!-- Botão entrar -->
+              <Button Classes="sm-btn-primary"
+                      Command="{Binding LoginCommand}"
+                      Margin="0,22,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                  <TextBlock Text="Entrar no Sistema"/>
+                  <material:MaterialIcon Kind="Login" Width="16" Height="16" Foreground="White"/>
+                </StackPanel>
+              </Button>
+
+              <!-- Divisor -->
+              <Border Height="1" Margin="0,24,0,14">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Offset="0"   Color="Transparent"/>
+                    <GradientStop Offset="0.5" Color="#20FFFFFF"/>
+                    <GradientStop Offset="1"   Color="Transparent"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                  <material:MaterialIcon Kind="CheckCircle" Width="13" Height="13" Foreground="#22C55E"/>
+                  <TextBlock Text="Status: Sincronizado" FontSize="11" Foreground="#60FFFFFF"/>
+                </StackPanel>
+                <Border Width="1" Height="12" Background="#25FFFFFF"/>
+                <Button Classes="sm-link" Content="Suporte Técnico" FontSize="11" Foreground="#60FFFFFF"/>
+              </StackPanel>
+
+            </StackPanel>
+
+          </Panel>
+        </Border>
+
+      </Grid>
+    </Border>
+
+  </Panel>
 </Window>

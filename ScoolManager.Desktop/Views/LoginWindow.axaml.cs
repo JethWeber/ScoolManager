@@ -9,10 +9,13 @@ public partial class LoginWindow : Window
     public LoginWindow()
     {
         InitializeComponent();
-
+        CloseButton.Click += (_, _) => Close();
+        
         var viewModel = new LoginViewModel();
         viewModel.LoginSucceeded += OnLoginSucceeded;
         DataContext = viewModel;
+
+
     }
 
     private void OnLoginSucceeded(object? sender, EventArgs e)
