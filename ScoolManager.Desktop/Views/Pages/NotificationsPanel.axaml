@@ -1,0 +1,239 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:conv="clr-namespace:ScoolManager.Desktop.Converters"
+             xmlns:models="clr-namespace:ScoolManager.Desktop.Models"
+             xmlns:vm="clr-namespace:ScoolManager.Desktop.ViewModels"
+             mc:Ignorable="d"
+             x:Class="ScoolManager.Desktop.Views.Pages.NotificationsPanel"
+             x:DataType="vm:NotificationsPanelViewModel"
+             d:DesignWidth="380" d:DesignHeight="480">
+
+  <Design.DataContext>
+    <vm:NotificationsPanelViewModel/>
+  </Design.DataContext>
+
+  <UserControl.Resources>
+    <conv:NotificationTypeToBrushConverter x:Key="TypeToBrush" />
+    <conv:IsReadToOpacityConverter x:Key="ReadToOpacity" />
+    <conv:IsUnreadToVisibilityConverter x:Key="UnreadToVisibility" />
+    <conv:CountToVisibilityConverter x:Key="CountVisible" />
+
+    <!--
+      Paleta do "vidro". Ajusta estas 4 cores para combinar com o tema
+      da tua app (ex: liga-as a DynamicResource se já tiveres um tema
+      claro/escuro definido no App.axaml).
+    -->
+    <Color x:Key="GlassTintColor">#1E1B2E</Color>
+    <SolidColorBrush x:Key="GlassBorderBrush" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="GlassSheenBrush" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#8B5CF6" />
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- Transição suave usada para a entrada do painel -->
+    <Style Selector="Border.glass-shell">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.glass-shell.closed">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="RenderTransform" Value="translateY(-8px) scale(0.98)" />
+    </Style>
+    <Style Selector="Border.glass-shell.open">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="RenderTransform" Value="translateY(0) scale(1)" />
+    </Style>
+
+    <!-- Cartão de notificação individual -->
+    <Style Selector="Border.notif-card:pointerover">
+      <Setter Property="Background" Value="#14FFFFFF" />
+    </Style>
+
+    <Style Selector="Button.icon-btn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="6" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.icon-btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1AFFFFFF" />
+    </Style>
+
+    <Style Selector="Button.link-btn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="4 2" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+    <Style Selector="Button.link-btn:pointerover">
+      <Setter Property="Opacity" Value="0.8" />
+    </Style>
+  </UserControl.Styles>
+
+  <!--
+    Casca exterior do "vidro": ExperimentalAcrylicBorder dá blur real
+    do conteúdo do Dashboard por trás em Windows. Em Linux (X11) o
+    blur ainda não é suportado pelo Avalonia — neste caso cai para
+    FallbackColor, que já está afinado para continuar com aspeto de
+    vidro (só sem o desfoque do que está por trás).
+  -->
+  <Border Name="GlassShell"
+          Classes="glass-shell closed"
+          CornerRadius="18"
+          ClipToBounds="True"
+          BoxShadow="0 16 40 -8 #80000000, 0 4 12 -2 #60000000">
+
+    <ExperimentalAcrylicBorder CornerRadius="18">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+            BackgroundSource="Digger"
+            TintColor="{StaticResource GlassTintColor}"
+            TintOpacity="0.55"
+            MaterialOpacity="0.65"
+            FallbackColor="#E81E1B2E" />
+      </ExperimentalAcrylicBorder.Material>
+
+      <!-- Borda clara + sheen para reforçar a leitura de "vidro" -->
+      <Border BorderBrush="{StaticResource GlassBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="18">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#1AFFFFFF" />
+            <GradientStop Offset="0.15" Color="#00FFFFFF" />
+          </LinearGradientBrush>
+        </Border.Background>
+
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Width="360" MaxHeight="480">
+
+          <!-- Cabeçalho -->
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="18,16,12,12">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <TextBlock Text="Notificações"
+                         FontSize="16"
+                         FontWeight="SemiBold"
+                         Foreground="White" />
+              <Border Background="{StaticResource AccentBrush}"
+                      CornerRadius="9"
+                      Padding="7,1"
+                      IsVisible="{Binding UnreadCount, Converter={StaticResource CountVisible}}">
+                <TextBlock Text="{Binding UnreadCount}"
+                           FontSize="11"
+                           FontWeight="Bold"
+                           Foreground="White" />
+              </Border>
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Classes="icon-btn"
+                    Command="{Binding CloseCommand}"
+                    ToolTip.Tip="Fechar">
+              <TextBlock Text="✕" FontSize="13" Foreground="#B8B5C4" />
+            </Button>
+          </Grid>
+
+          <!-- Linha de ações: marcar todas como lidas -->
+          <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="18,0,12,8">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding SubtitleText}"
+                       FontSize="12"
+                       Foreground="#9B97AC" />
+            <Button Grid.Column="1"
+                    Classes="link-btn"
+                    Content="Marcar todas como lidas"
+                    Command="{Binding MarkAllAsReadCommand}" />
+          </Grid>
+
+          <!-- Lista de notificações -->
+          <ScrollViewer Grid.Row="2"
+                        VerticalScrollBarVisibility="Auto"
+                        Margin="0,4,0,4">
+            <StackPanel>
+              <ItemsControl ItemsSource="{Binding Notifications}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:NotificationItem">
+                    <Border Classes="notif-card"
+                            Margin="8,2"
+                            Padding="10"
+                            CornerRadius="12"
+                            Opacity="{Binding IsRead, Converter={StaticResource ReadToOpacity}}">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
+
+                        <!-- Indicador de cor por tipo -->
+                        <Border Grid.Column="0"
+                                Width="8" Height="8"
+                                CornerRadius="4"
+                                Margin="2,5,12,0"
+                                VerticalAlignment="Top"
+                                Background="{Binding Type, Converter={StaticResource TypeToBrush}}" />
+
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="{Binding Title}"
+                                     FontSize="13"
+                                     FontWeight="Medium"
+                                     Foreground="White"
+                                     TextWrapping="Wrap" />
+                          <TextBlock Text="{Binding Message}"
+                                     FontSize="12"
+                                     Foreground="#B0ADC2"
+                                     TextWrapping="Wrap" />
+                          <TextBlock Text="{Binding TimeAgo}"
+                                     FontSize="11"
+                                     Foreground="#7A7790"
+                                     Margin="0,2,0,0" />
+                        </StackPanel>
+
+                        <!-- Pontinho de não-lida -->
+                        <Ellipse Grid.Column="2"
+                                 Width="7" Height="7"
+                                 Fill="{StaticResource AccentBrush}"
+                                 VerticalAlignment="Top"
+                                 Margin="6,5,2,0"
+                                 IsVisible="{Binding IsRead, Converter={StaticResource UnreadToVisibility}}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <!-- Estado vazio -->
+              <StackPanel IsVisible="{Binding HasNoNotifications}"
+                          Spacing="8"
+                          Margin="0,32,0,32"
+                          HorizontalAlignment="Center">
+                <TextBlock Text="🔔" FontSize="28" HorizontalAlignment="Center" Opacity="0.5" />
+                <TextBlock Text="Sem notificações novas"
+                           FontSize="13"
+                           Foreground="#9B97AC"
+                           HorizontalAlignment="Center" />
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+
+          <!-- Rodapé -->
+          <Border Grid.Row="3"
+                  BorderThickness="0,1,0,0"
+                  BorderBrush="#14FFFFFF"
+                  Padding="12,10">
+            <TextBlock Text="As notificações são limpas automaticamente após 30 dias"
+                       FontSize="10"
+                       Foreground="#6D6A82"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap" />
+          </Border>
+
+        </Grid>
+      </Border>
+    </ExperimentalAcrylicBorder>
+  </Border>
+</UserControl>

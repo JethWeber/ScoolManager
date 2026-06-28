@@ -1,8 +1,10 @@
 using System;
 using Avalonia.Controls;
+using ScoolManager.Desktop.ViewModels.Pages;
 using ScoolManager.Desktop.ViewModels;
 
-namespace ScoolManager.Desktop.Views;
+
+namespace ScoolManager.Desktop.Views.Pages;
 
 public partial class LoginWindow : Window
 {

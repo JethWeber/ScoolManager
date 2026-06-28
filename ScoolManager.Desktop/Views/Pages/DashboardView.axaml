@@ -1,0 +1,518 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+             xmlns:models="using:ScoolManager.Desktop.Models"
+             xmlns:conv="using:ScoolManager.Desktop.Converters"
+             xmlns:views="using:ScoolManager.Desktop.Views.Pages"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Class="ScoolManager.Desktop.Views.Pages.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <Design.DataContext>
+        <vm:DashboardViewModel/>
+    </Design.DataContext>
+
+    <!-- ================================================================
+         RECURSOS: cores extraídas do dashBoard.html (tema escuro / Material 3)
+         ================================================================ -->
+    <UserControl.Resources>
+
+        <!-- Superfícies -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326"/>
+        <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#131B2E"/>
+        <SolidColorBrush x:Key="SurfaceContainerBrush" Color="#171F33"/>
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+        <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#2D3449"/>
+
+        <!-- Texto -->
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6"/>
+
+        <!-- Cor de marca / acentos -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF"/>
+        <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#00285D"/>
+        <SolidColorBrush x:Key="OutlineVariantBrush" Color="#424754"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4AB"/>
+        <SolidColorBrush x:Key="EmeraldBrush" Color="#34D399"/>
+
+        <!-- Gradiente de fundo do "neo-card" (linear-gradient(145deg, #171f33, #111b2e)) -->
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0"/>
+            <GradientStop Color="#111B2E" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Gradiente do preenchimento sob a linha do gráfico -->
+        <LinearGradientBrush x:Key="ChartFillBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#4D3B82F6" Offset="0"/>
+            <GradientStop Color="#003B82F6" Offset="1"/>
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="ChartLineBrush" Color="#3B82F6"/>
+
+        <!-- Conversores -->
+        <conv:TrendToBrushConverter x:Key="TrendToBrushConverter"/>
+        <conv:TrendToIconConverter x:Key="TrendToIconConverter"/>
+        <conv:AlertToBrushConverter x:Key="AlertToBrushConverter"/>
+        <conv:CountToVisibilityConverter x:Key="CountToVisibility" />
+
+    </UserControl.Resources>
+
+    <!-- ================================================================
+         ESTILOS: equivalentes às classes .neo-card / .neo-card-inner / .glass-badge
+         ================================================================ -->
+    <UserControl.Styles>
+
+        <!-- .neo-card: cartão "neumórfico" usado em todos os blocos principais -->
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000"/>
+        </Style>
+
+        <!-- .neo-card-inner: superfície "encaixada" usada dentro dos cartões -->
+        <Style Selector="Border.neo-card-inner">
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BoxShadow" Value="inset 2 2 5 0 #80000000, inset -1 -1 2 0 #0DFFFFFF"/>
+        </Style>
+
+        <!-- .glass-badge: badge translúcido com a tendência (+8 este mês, etc.) -->
+        <Style Selector="Border.glass-badge">
+            <Setter Property="Background" Value="#0DFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#1AFFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+
+        <!-- Botão de atalho rápido -->
+        <Style Selector="Button.atalho">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.atalho:pointerover">
+            <Setter Property="Background" Value="#1A4D8EFF"/>
+        </Style>
+
+        <!-- Botão "Fechar Dia" -->
+        <Style Selector="Button.primario">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primario:pointerover">
+            <Setter Property="Opacity" Value="0.9"/>
+        </Style>
+
+        <!-- Link discreto ("Ver todos", "Termos", "Suporte") -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.link:pointerover">
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- ================================================================
+         CONTEÚDO PRINCIPAL
+         ================================================================ -->
+    <ScrollViewer Background="{StaticResource BackgroundBrush}">
+        <StackPanel Margin="32" Spacing="32" MaxWidth="1400">
+
+            <!-- ============================================================
+                 TOP APP BAR: saudação + data + notificações
+                 ============================================================ -->
+            <Grid ColumnDefinitions="*,Auto">
+
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="{Binding SaudacaoLabel}"
+                               FontSize="24" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <TextBlock Text="Bem-vindo(a) de volta ao School Manager"
+                               FontSize="13" Opacity="0.7"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+
+                    <!-- Cartão de data/hora -->
+                    <Border Classes="neo-card-inner" Padding="16,10">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="CalendarToday" Width="20" Height="20"
+                                                         Foreground="{StaticResource PrimaryBrush}"/>
+                            <StackPanel HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding DataAtualLabel}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                <TextBlock Text="{Binding DiaHoraLabel}" FontSize="11" Opacity="0.6"
+                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Botão de notificações -->
+                    <Border Name="NotificationBellButton"
+                            Classes="neo-card"
+                            Width="48" Height="48"
+                            Cursor="Hand"
+                            PointerPressed="NotificationBellButton_PointerPressed">
+                        <Grid>
+                            <materialIcons:MaterialIcon Kind="Bell" Width="22" Height="22"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <Border Background="{StaticResource ErrorBrush}"
+                                    Width="18" Height="18" CornerRadius="999"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Margin="0,4,4,0"
+                                    IsVisible="{Binding NumeroNotificacoes, Converter={StaticResource CountToVisibility}}">
+                                <TextBlock Text="{Binding NumeroNotificacoes}" FontSize="10" FontWeight="Bold"
+                                        Foreground="#0B1326"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Popup Name="NotificationsPopup"
+                        PlacementTarget="{Binding #NotificationBellButton}"
+                        Placement="BottomEdgeAlignedRight"
+                        HorizontalOffset="0"
+                        VerticalOffset="8"
+                        IsLightDismissEnabled="True"
+                        Opened="NotificationsPopup_Opened">
+                        <views:NotificationsPanel x:Name="NotificationsPanelControl" />
+                    </Popup>
+
+                </StackPanel>
+            </Grid>
+
+            <!-- ============================================================
+                 KPI CARDS
+                 ============================================================ -->
+            <ItemsControl ItemsSource="{Binding KpiCards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:KpiCardModel">
+                        <Border Classes="neo-card" Padding="20" Margin="8,0">
+                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
+
+                                <!-- Ícone + badge de tendência -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                                    <Border Grid.Column="0" Classes="neo-card-inner" Padding="10">
+                                        <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="26" Height="26"
+                                                                     Foreground="{Binding IsAlert, Converter={StaticResource AlertToBrushConverter}}"/>
+                                    </Border>
+                                    <Border Grid.Column="1" Classes="glass-badge" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <materialIcons:MaterialIcon Kind="{Binding TrendIsPositive, Converter={StaticResource TrendToIconConverter}}"
+                                                                         Width="12" Height="12"
+                                                                         Foreground="{Binding TrendIsPositive, Converter={StaticResource TrendToBrushConverter}}"/>
+                                            <TextBlock Text="{Binding TrendText}" FontSize="10" FontWeight="Bold"
+                                                       Foreground="{Binding TrendIsPositive, Converter={StaticResource TrendToBrushConverter}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Rótulo -->
+                                <TextBlock Grid.Row="1" Text="{Binding Label}" FontSize="12" Opacity="0.6"
+                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                <!-- Valor -->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Bottom">
+                                    <TextBlock Text="{Binding Value}" FontSize="32" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="{Binding Suffix}" FontSize="18" Opacity="0.4" VerticalAlignment="Bottom" Margin="0,0,0,4"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                </StackPanel>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- ============================================================
+                 GRÁFICO DE RECEITA + TOP 5 DEVEDORES
+                 ============================================================ -->
+            <Grid ColumnDefinitions="2*,1*" ColumnSpacing="24">
+
+                <!-- Receita dos Últimos 6 Meses -->
+                <Border Grid.Column="0" Classes="neo-card" Padding="24">
+                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="24">
+
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Receita dos Últimos 6 Meses" FontSize="16" FontWeight="Medium"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <ComboBox Grid.Column="1" SelectedIndex="0" FontSize="13">
+                                <ComboBoxItem Content="6 Meses"/>
+                                <ComboBoxItem Content="12 Meses"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- Área do gráfico: viewBox lógico 800x250, escalado com Viewbox -->
+                        <Viewbox Grid.Row="1" Stretch="Fill" Height="260">
+                            <Grid Width="800" Height="250">
+                                <Path Data="{Binding ChartFillPathData}" Fill="{StaticResource ChartFillBrush}"/>
+                                <Path Data="{Binding ChartStrokePathData}"
+                                      Stroke="{StaticResource ChartLineBrush}"
+                                      StrokeThickness="3"
+                                      StrokeLineCap="Round"
+                                      StrokeJoin="Round"/>
+                                <ItemsControl ItemsSource="{Binding ChartMarkers}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ChartMarkerPoint">
+                                            <Ellipse Width="8" Height="8" Fill="{StaticResource ChartLineBrush}"
+                                                     Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Grid>
+                        </Viewbox>
+
+                        <!-- Rótulos dos meses -->
+                        <ItemsControl Grid.Row="2" ItemsSource="{Binding ChartMonthLabels}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" FontSize="12" Opacity="0.6"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </Grid>
+                </Border>
+
+                <!-- Top 5 Devedores -->
+                <Border Grid.Column="1" Classes="neo-card" Padding="24">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="16">
+
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Top 5 Devedores" FontSize="16" FontWeight="Medium"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <Button Grid.Column="1" Classes="link" Content="Ver todos"
+                                    Command="{Binding VerTodosDevedoresCommand}"/>
+                        </Grid>
+
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding TopDevedores}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:DevedorModel">
+                                    <Border Classes="neo-card-inner" Padding="10">
+                                        <Grid ColumnDefinitions="20,40,*,Auto" ColumnSpacing="10">
+                                            <TextBlock Grid.Column="0" Text="{Binding Rank}" FontWeight="Bold" Opacity="0.4"
+                                                       VerticalAlignment="Center" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                            <!-- Avatar com iniciais (substitui a fotografia do mock) -->
+                                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="999"
+                                                    Background="{StaticResource SurfaceVariantBrush}"
+                                                    BorderBrush="{StaticResource OutlineVariantBrush}" BorderThickness="1">
+                                                <TextBlock Text="{Binding Iniciais}" FontSize="13" FontWeight="Bold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Nome}" FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Turma}" FontSize="11" Opacity="0.6"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding ValorEmDivida}" FontSize="14" FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="Kz" FontSize="10" Opacity="0.4" HorizontalAlignment="Right"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            <!-- ============================================================
+                 ATALHOS RÁPIDOS + RESUMO FINANCEIRO DO DIA
+                 ============================================================ -->
+            <Grid ColumnDefinitions="7*,5*" ColumnSpacing="24">
+
+                <!-- Atalhos Rápidos -->
+                <Border Grid.Column="0" Classes="neo-card" Padding="24">
+                    <StackPanel Spacing="20">
+                        <TextBlock Text="Atalhos Rápidos" FontSize="16" FontWeight="Medium"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+
+                        <ItemsControl ItemsSource="{Binding AtalhosRapidos}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="5"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AtalhoRapidoModel">
+                                    <Button Classes="atalho" HorizontalAlignment="Stretch"
+                                            Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).ExecutarAtalhoCommand}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <Border Width="48" Height="48" CornerRadius="999"
+                                                    Background="#1A4D8EFF">
+                                                <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="24" Height="24"
+                                                                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Label}" FontSize="11" TextAlignment="Center"
+                                                       TextWrapping="Wrap" Opacity="0.7"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Resumo Financeiro do Dia -->
+                <Border Grid.Column="1" Classes="neo-card" Padding="24" BorderBrush="#334D8EFF" Background="#0D4D8EFF">
+                    <StackPanel Spacing="16">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Resumo Financeiro do Dia" FontSize="16" FontWeight="Medium"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <Button Grid.Column="1" Classes="primario" Content="Fechar Dia"
+                                    Command="{Binding FecharDiaCommand}"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <Border Grid.Column="0" Classes="neo-card-inner" Padding="12">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Border Width="36" Height="36" CornerRadius="8" Background="#1A34D399">
+                                        <materialIcons:MaterialIcon Kind="TrendingUp" Width="18" Height="18"
+                                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                     Foreground="{StaticResource EmeraldBrush}"/>
+                                    </Border>
+                                    <StackPanel>
+                                        <TextBlock Text="ENTRADAS" FontSize="9" Opacity="0.6" FontWeight="Bold"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="{Binding EntradasHoje}" FontSize="15"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            <TextBlock Text="Kz" FontSize="10" Opacity="0.4"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Classes="neo-card-inner" Padding="12">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Border Width="36" Height="36" CornerRadius="8" Background="#1AFFB4AB">
+                                        <materialIcons:MaterialIcon Kind="TrendingDown" Width="18" Height="18"
+                                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                     Foreground="{StaticResource ErrorBrush}"/>
+                                    </Border>
+                                    <StackPanel>
+                                        <TextBlock Text="SAÍDAS" FontSize="9" Opacity="0.6" FontWeight="Bold"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="{Binding SaidasHoje}" FontSize="15"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            <TextBlock Text="Kz" FontSize="10" Opacity="0.4"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Classes="neo-card" Padding="16" Background="#1A4D8EFF" BorderBrush="#4D4D8EFF">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="12"
+                                        Background="{StaticResource PrimaryBrush}">
+                                    <materialIcons:MaterialIcon Kind="Wallet" Width="28" Height="28"
+                                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                 Foreground="{StaticResource OnPrimaryContainerBrush}"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="SALDO DO DIA" FontSize="10" Opacity="0.8" FontWeight="Bold"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{Binding SaldoHoje}" FontSize="24" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                        <TextBlock Text="Kz" FontSize="16" Opacity="0.6" VerticalAlignment="Bottom" Margin="0,0,0,2"
+                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <materialIcons:MaterialIcon Grid.Column="2" Kind="CheckDecagram" Width="40" Height="40"
+                                                             Opacity="0.3" VerticalAlignment="Center"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                            </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+            <!-- ============================================================
+                 RODAPÉ
+                 ============================================================ -->
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding VersaoLabel}" FontSize="12" Opacity="0.5"
+                           Foreground="{StaticResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource EmeraldBrush}"/>
+                        <TextBlock Text="Backup: OK" FontSize="12" Opacity="0.5"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                    </StackPanel>
+                    <Button Classes="link" Content="Termos" FontWeight="Normal" Opacity="0.5"/>
+                    <Button Classes="link" Content="Suporte" FontWeight="Normal" Opacity="0.5"/>
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>
