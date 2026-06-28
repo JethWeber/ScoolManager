@@ -1,20 +1,240 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ScoolManager.Desktop.ViewModels"
+        xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
         x:Class="ScoolManager.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/SM_icon.ico"
-        Title="ScoolManager.Desktop">
+        Title="School Manager"
+        Width="1280" Height="800"
+        MinWidth="1024" MinHeight="640"
+        Background="{StaticResource AppBackgroundBrush}"
+        FontFamily="avares://ScoolManager.Desktop/Assets/Fonts/Inter#Inter">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="AppBackgroundBrush"        Color="#0B1326"/>
+        <SolidColorBrush x:Key="SidebarBackgroundBrush"    Color="#131B2E"/>
+        <SolidColorBrush x:Key="NeoCardBrush"              Color="#171F33"/>
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+        <SolidColorBrush x:Key="OutlineVariantBrush"       Color="#424754" Opacity="0.15"/>
+        <SolidColorBrush x:Key="PrimaryBrush"              Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush"     Color="#4D8EFF"/>
+        <SolidColorBrush x:Key="OnPrimaryContainerBrush"   Color="#00285D"/>
+        <SolidColorBrush x:Key="OnSurfaceBrush"            Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush"     Color="#C2C6D6"/>
+        <SolidColorBrush x:Key="SurfaceVariantHoverBrush"  Color="#2D3449" Opacity="0.5"/>
+        <SolidColorBrush x:Key="SuccessBrush"              Color="#34D399"/>
+
+        <!-- Fontes do projeto (Assets/Fonts). Inter para UI geral, Poppins para
+             títulos/branding. Caminho avares:// aponta para a pasta inteira;
+             o motor escolhe o ficheiro certo conforme FontWeight/FontStyle pedidos. -->
+        <FontFamily x:Key="InterFont">avares://ScoolManager.Desktop/Assets/Fonts/Inter#Inter</FontFamily>
+        <FontFamily x:Key="PoppinsFont">avares://ScoolManager.Desktop/Assets/Fonts/Poppins#Poppins</FontFamily>
+    </Window.Resources>
+
+    <Window.Styles>
+
+        <!-- ===== Sidebar: colapsada por padrão, expande no hover =====
+             Usa a CLASSE "sidebar" em vez do seletor por ID (#SidebarRoot),
+             que em alguns casos não combina bem com seletores descendentes. -->
+        <Style Selector="Border.sidebar">
+            <Setter Property="Width" Value="92"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.sidebar:pointerover">
+            <Setter Property="Width" Value="260"/>
+        </Style>
+
+        <!-- ===== Texto/elementos que só aparecem com a sidebar expandida =====
+             Width=0 + MaxWidth=0 garantem que não ocupam espaço quando ocultos. -->
+        <Style Selector="TextBlock.nav-label, StackPanel.nav-label, Image.nav-label, Ellipse.nav-label">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Width"     Value="0"/>
+            <Setter Property="MaxWidth"  Value="0"/>
+            <Setter Property="Margin"    Value="0"/>
+            <Setter Property="Opacity"   Value="0"/>
+        </Style>
+        <Style Selector="Border.sidebar:pointerover TextBlock.nav-label,
+                         Border.sidebar:pointerover StackPanel.nav-label,
+                         Border.sidebar:pointerover Image.nav-label,
+                         Border.sidebar:pointerover Ellipse.nav-label">
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="Width"     Value="NaN"/>
+            <Setter Property="MaxWidth"  Value="Infinity"/>
+            <Setter Property="Opacity"   Value="1"/>
+        </Style>
+
+        <!-- Linha de cada item do menu: ícone centrado quando colapsado,
+             alinhado à esquerda quando a sidebar expande -->
+        <Style Selector="StackPanel.menu-row">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.sidebar:pointerover StackPanel.menu-row">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <!-- ===== Elementos que só aparecem com a sidebar COLAPSADA ===== -->
+        <Style Selector="Image.collapsed-only">
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="Opacity"   Value="1"/>
+        </Style>
+        <Style Selector="Border.sidebar:pointerover Image.collapsed-only">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Opacity"   Value="0"/>
+        </Style>
+
+        <!-- Itens de navegação -->
+        <Style Selector="ListBox.nav-list ListBoxItem">
+            <Setter Property="Padding"                     Value="12,12"/>
+            <Setter Property="Margin"                      Value="0,2,4,0"/>
+            <Setter Property="CornerRadius"                 Value="8"/>
+            <Setter Property="Cursor"                       Value="Hand"/>
+            <Setter Property="ClipToBounds"                 Value="True"/>
+            <Setter Property="HorizontalContentAlignment"   Value="Stretch"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem /template/ ContentPresenter">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceVariantHoverBrush}"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource OnPrimaryContainerBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem icons|MaterialIcon">
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Width"      Value="22"/>
+            <Setter Property="Height"     Value="22"/>
+            <Setter Property="MinWidth"   Value="22"/>
+        </Style>
+        <Style Selector="ListBox.nav-list ListBoxItem:selected icons|MaterialIcon">
+            <Setter Property="Foreground" Value="{StaticResource OnPrimaryContainerBrush}"/>
+        </Style>
+    </Window.Styles>
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Panel>
 
+        <!-- ============================ BODY ============================ -->
+        <Border Background="{StaticResource AppBackgroundBrush}">
+            <ContentControl Content="{Binding CurrentPage}" Margin="32,32,32,32" Padding="76,0,0,0"/>
+        </Border>
+
+        <!-- ============================ SIDEBAR ============================ -->
+        <Border x:Name="SidebarRoot"
+                Classes="sidebar"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
+                ZIndex="100"
+                Background="{StaticResource SidebarBackgroundBrush}"
+                BorderBrush="{StaticResource OutlineVariantBrush}"
+                BorderThickness="0,0,1,0"
+                BoxShadow="4 0 24 0 #66000000"
+                ClipToBounds="True">
+            <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+                <!-- Logo / cabeçalho da sidebar: troca conforme colapsada/expandida -->
+                <Grid Grid.Row="0" Margin="2,2,2,16" Height="64" ClipToBounds="True">
+                    <!-- Colapsada: só o símbolo, mesmo tamanho (altura) da logo completa -->
+                    <Image Classes="collapsed-only"
+                           Source="/Assets/SM_logo.png"
+                           Width="64" Height="64"
+                           HorizontalAlignment="Center"
+                           Stretch="Uniform"/>
+                    <!-- Expandida: logótipo completo (com nome), maior e centrado -->
+                    <Image Classes="nav-label"
+                           Source="/Assets/school_manager_logo-noBG.png"
+                           Height="64"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"/>
+                </Grid>
+
+                <!-- Itens de navegação -->
+                <ListBox Grid.Row="1"
+                         x:Name="NavList"
+                         Classes="nav-list"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="0"
+                         ClipToBounds="True"
+                         ItemsSource="{Binding NavigationItems}"
+                         SelectedItem="{Binding SelectedNavigationItem}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                            <StackPanel Classes="menu-row" Orientation="Horizontal" Spacing="16">
+                                <icons:MaterialIcon Kind="{Binding Icon}"/>
+                                <TextBlock Classes="nav-label" Text="{Binding Title}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Rodapé: utilizador + sair -->
+                <StackPanel Grid.Row="2" Spacing="8" Margin="0,16,0,0">
+                    <Border BorderThickness="0,1,0,0"
+                            BorderBrush="{StaticResource OutlineVariantBrush}"
+                            Padding="0,16,0,0"
+                            ClipToBounds="True">
+                        <Border Background="{StaticResource SurfaceContainerHighBrush}"
+                                CornerRadius="12" Padding="8">
+                            <Grid ColumnDefinitions="40,*,Auto">
+                                <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
+                                        BorderBrush="{StaticResource PrimaryBrush}" BorderThickness="1"
+                                        Background="{StaticResource SurfaceContainerHighBrush}">
+                                    <icons:MaterialIcon Kind="AccountCircle" Width="24" Height="24"
+                                                         Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel Classes="nav-label" Grid.Column="1" Margin="12,0,0,0"
+                                            VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Text="{Binding UserName}" FontWeight="SemiBold"
+                                               FontFamily="{StaticResource PoppinsFont}"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="{Binding UserRole}" FontSize="12" Opacity="0.6"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                                <Ellipse Classes="nav-label" Grid.Column="2" Width="8" Height="8"
+                                         Fill="{StaticResource SuccessBrush}"
+                                         VerticalAlignment="Top" Margin="0,2,2,0"/>
+                            </Grid>
+                        </Border>
+                    </Border>
+
+                    <Button Command="{Binding LogoutCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Background="Transparent" BorderThickness="0"
+                            Padding="12" CornerRadius="8"
+                            ClipToBounds="True">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <icons:MaterialIcon Kind="Logout" Width="20" Height="20"
+                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            <TextBlock Classes="nav-label" Text="Sair do Sistema"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+    </Panel>
 </Window>

@@ -29,7 +29,7 @@ public partial class LoginViewModel : ViewModelBase
     {
         ErrorMessage = string.Empty;
 
-        if (string.IsNullOrWhiteSpace(Phone) || Phone.Trim().Length < 7)
+        if (string.IsNullOrWhiteSpace(Phone) || Phone.Trim().Length < 9)
         {
             ErrorMessage = "Informe um telefone válido.";
             return;
@@ -48,7 +48,7 @@ public partial class LoginViewModel : ViewModelBase
         {
             await Task.Delay(600);
 
-            if (Phone.Trim().Length < 7 || Password.Trim().Length < 4)
+            if (Phone.Trim().Length < 9 || Password.Trim().Length < 4)
             {
                 ErrorMessage = "Telefone ou senha inválidos.";
                 return;
