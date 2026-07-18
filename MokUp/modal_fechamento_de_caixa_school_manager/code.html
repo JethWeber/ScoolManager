@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-PT"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fechamento de Caixa - Gestão Escolar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Poppins:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .neo-pressed {
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.05);
+            background-color: #111827;
+        }
+
+        .neo-card {
+            background: linear-gradient(145deg, #171f33, #0b1326);
+            box-shadow: 20px 20px 60px #080e1b, -5px -5px 20px rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-accent {
+            backdrop-filter: blur(12px);
+            background: rgba(173, 198, 255, 0.05);
+            border: 1px solid rgba(173, 198, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3449;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#263143",
+                        "on-tertiary-fixed": "#001c39",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f33",
+                        "error-container": "#93000a",
+                        "on-surface-variant": "#c2c6d6",
+                        "surface-bright": "#31394d",
+                        "surface-tint": "#adc6ff",
+                        "on-tertiary-container": "#002a51",
+                        "on-primary-fixed-variant": "#004395",
+                        "tertiary-fixed": "#d4e3ff",
+                        "surface-dim": "#0b1326",
+                        "outline": "#8c909f",
+                        "secondary": "#bcc7de",
+                        "on-tertiary": "#00315d",
+                        "surface-container-low": "#131b2e",
+                        "outline-variant": "#424754",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-primary-container": "#00285d",
+                        "on-background": "#dae2fd",
+                        "surface-container-lowest": "#060e20",
+                        "surface": "#0b1326",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "on-primary": "#002e6a",
+                        "primary-container": "#4d8eff",
+                        "inverse-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "background": "#0b1326",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#d8e3fb",
+                        "primary-fixed": "#d8e2ff",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-container": "#4c93e7",
+                        "primary": "#adc6ff",
+                        "tertiary": "#a4c9ff",
+                        "surface-container-highest": "#2d3449",
+                        "surface-variant": "#2d3449",
+                        "on-surface": "#dae2fd",
+                        "secondary-container": "#3e495d",
+                        "on-secondary-container": "#aeb9d0",
+                        "inverse-primary": "#005ac2",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary-fixed": "#111c2d",
+                        "inverse-on-surface": "#283044"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar_width": "260px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "xs": "8px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-muted": ["Inter"],
+                        "display-lg": ["Poppins"],
+                        "label-bold": ["Inter"],
+                        "data-numeric": ["Inter"],
+                        "headline-sm": ["Poppins"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-md": ["Poppins"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-muted": ["12px", {"lineHeight": "1", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "label-bold": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "data-numeric": ["20px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "display-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary/30 overflow-hidden">
+<!-- Desktop Sidebar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low flex flex-col py-lg shadow-[20px_0_40px_rgba(0,0,0,0.4)] z-40">
+<div class="px-xl mb-xl">
+<h1 class="font-display-md text-display-md font-bold text-primary">Gestão Escolar</h1>
+<p class="font-label-muted text-label-muted text-on-surface-variant/60">Administração Central</p>
+</div>
+<nav class="flex-1 px-md space-y-xs">
+<!-- Financial (Financeiro) is likely where Cashier lives -->
+<div class="flex items-center gap-md px-md py-sm cursor-pointer transition-all hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm cursor-pointer transition-all hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md">Alunos</span>
+</div>
+<!-- Active State Navigation Logic: Maps to "Financeiro" as this is a cashier closing task -->
+<div class="flex items-center gap-md px-md py-sm cursor-pointer transition-all bg-primary text-on-primary rounded-r-full shadow-[0_4px_12px_rgba(59,130,246,0.3)]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-body-md">Financeiro</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm cursor-pointer transition-all hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md">Relatórios</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm cursor-pointer transition-all hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">school</span>
+<span class="font-body-md">Escola</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm cursor-pointer transition-all hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Configurações</span>
+</div>
+</nav>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-surface flex justify-between items-center px-xl border-b border-outline-variant/20 z-30">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Gestão de Caixa</h2>
+<div class="flex items-center gap-md">
+<div class="relative group">
+<div class="flex items-center bg-surface-container-highest px-md py-xs rounded-full border border-outline-variant/30 focus-within:ring-2 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-48" placeholder="Procurar transação..." type="text"/>
+</div>
+</div>
+<button class="p-xs hover:bg-surface-container-highest rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center gap-xs p-xs hover:bg-surface-container-highest rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas (Background of Modal) -->
+<main class="ml-[260px] pt-16 p-xl min-h-screen">
+<!-- Summary Cards (Blurred background effect) -->
+<div class="grid grid-cols-12 gap-lg mb-xl opacity-40 grayscale-[0.5] blur-[1px] pointer-events-none">
+<div class="col-span-3 neo-card p-lg rounded-xl">
+<div class="flex justify-between items-start mb-md">
+<div class="p-xs bg-primary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<span class="text-label-muted text-green-400 font-label-bold">+12%</span>
+</div>
+<div class="font-label-muted text-on-surface-variant uppercase mb-xs">Saldo Atual</div>
+<div class="font-data-numeric text-data-numeric">1.450.000,00 Kz</div>
+</div>
+<div class="col-span-3 neo-card p-lg rounded-xl">
+<div class="flex justify-between items-start mb-md">
+<div class="p-xs bg-tertiary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-tertiary">trending_up</span>
+</div>
+<span class="text-label-muted text-on-surface-variant font-label-bold">Hoje</span>
+</div>
+<div class="font-label-muted text-on-surface-variant uppercase mb-xs">Entradas</div>
+<div class="font-data-numeric text-data-numeric">850.200,00 Kz</div>
+</div>
+<div class="col-span-3 neo-card p-lg rounded-xl">
+<div class="flex justify-between items-start mb-md">
+<div class="p-xs bg-error-container/20 rounded-lg">
+<span class="material-symbols-outlined text-error">trending_down</span>
+</div>
+<span class="text-label-muted text-on-surface-variant font-label-bold">Hoje</span>
+</div>
+<div class="font-label-muted text-on-surface-variant uppercase mb-xs">Saídas</div>
+<div class="font-data-numeric text-data-numeric">120.450,00 Kz</div>
+</div>
+<div class="col-span-3 neo-card p-lg rounded-xl">
+<div class="flex justify-between items-start mb-md">
+<div class="p-xs bg-secondary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-secondary">history</span>
+</div>
+</div>
+<div class="font-label-muted text-on-surface-variant uppercase mb-xs">Última Abertura</div>
+<div class="font-body-md text-on-surface">07:45 - Operador: Admin</div>
+</div>
+</div>
+<!-- Background Data Grid (Blurred) -->
+<div class="neo-card rounded-xl overflow-hidden opacity-30 blur-[2px] pointer-events-none">
+<div class="p-lg border-b border-outline-variant/20 flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm">Fluxo de Caixa Diário</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-highest/50">
+<tr>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase tracking-wider">Hora</th>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase tracking-wider">Descrição</th>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase tracking-wider">Tipo</th>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase tracking-wider">Valor</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr><td class="px-lg py-md">08:20</td><td class="px-lg py-md">Matrícula - João Silva</td><td class="px-lg py-md text-primary">Entrada</td><td class="px-lg py-md font-data-numeric">45.000,00 Kz</td></tr>
+<tr><td class="px-lg py-md">09:15</td><td class="px-lg py-md">Propina Mensal - Maria Sousa</td><td class="px-lg py-md text-primary">Entrada</td><td class="px-lg py-md font-data-numeric">12.500,00 Kz</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- OVERLAY MODAL: Fechamento de Caixa -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-xl" id="modal-container">
+<!-- Backdrop Blur -->
+<div class="absolute inset-0 bg-surface-dim/80 backdrop-blur-md"></div>
+<!-- Modal Content -->
+<div class="relative w-full max-w-5xl neo-card rounded-2xl overflow-hidden flex flex-col max-h-[921px] animate-in fade-in zoom-in duration-300">
+<!-- Header -->
+<div class="p-xl glass-accent flex justify-between items-start border-b border-primary/20">
+<div>
+<div class="flex items-center gap-md mb-xs">
+<div class="bg-primary p-xs rounded-lg shadow-[0_0_15px_rgba(173,198,255,0.4)]">
+<span class="material-symbols-outlined text-on-primary">lock_open</span>
+</div>
+<h2 class="font-display-md text-display-md text-on-surface">Fechamento de Caixa</h2>
+</div>
+<p class="text-on-surface-variant font-body-md">Sessão iniciada em: <span class="text-on-surface font-semibold">14 Junho 2024, 07:45:12</span></p>
+</div>
+<button class="p-xs hover:bg-error/10 hover:text-error transition-all rounded-full" onclick="document.getElementById('modal-container').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Scrollable Table Body -->
+<div class="flex-1 overflow-y-auto p-xl">
+<div class="mb-lg flex justify-between items-end">
+<h3 class="font-headline-sm text-headline-sm text-primary">Histórico Financeiro da Sessão</h3>
+<div class="text-label-muted text-on-surface-variant/60 italic">Total de 14 operações processadas</div>
+</div>
+<div class="neo-pressed rounded-xl border border-outline-variant/30 overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-surface-container-high">
+<tr>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase text-[10px] tracking-widest border-b border-outline-variant/20">Hora</th>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase text-[10px] tracking-widest border-b border-outline-variant/20">Descrição do Lançamento</th>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase text-[10px] tracking-widest border-b border-outline-variant/20">Modo</th>
+<th class="px-lg py-md font-label-bold text-on-surface-variant uppercase text-[10px] tracking-widest border-b border-outline-variant/20 text-right">Valor</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">08:20:45</td>
+<td class="px-lg py-md font-medium">Matrícula - João Carlos Pereira (Ref: 2024/001)</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">Entrada</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-primary">+ 45.000,00 Kz</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">09:12:12</td>
+<td class="px-lg py-md font-medium">Propina Junho - Maria Antonieta Sousa</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">Entrada</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-primary">+ 12.500,00 Kz</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">10:05:30</td>
+<td class="px-lg py-md font-medium">Compra de material de limpeza (Papelaria Central)</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-error/10 text-error text-[10px] font-bold uppercase">Saída</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-error">- 8.450,00 Kz</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">11:30:15</td>
+<td class="px-lg py-md font-medium">Uniforme Escolar (Kit Completo) - Pedro Ndala</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">Entrada</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-primary">+ 22.000,00 Kz</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">13:45:00</td>
+<td class="px-lg py-md font-medium">Transporte Escolar - Mês de Junho</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">Entrada</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-primary">+ 15.000,00 Kz</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">15:20:10</td>
+<td class="px-lg py-md font-medium">Pagamento Manutenção Ar-Condicionado (Sala 04)</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-error/10 text-error text-[10px] font-bold uppercase">Saída</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-error">- 12.000,00 Kz</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-lg py-md text-on-surface-variant">16:55:04</td>
+<td class="px-lg py-md font-medium">Matrícula - Ana Maria Fernandes</td>
+<td class="px-lg py-md"><span class="px-sm py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">Entrada</span></td>
+<td class="px-lg py-md font-data-numeric text-right text-primary">+ 45.000,00 Kz</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Footer Summary & Actions -->
+<div class="p-xl bg-surface-container-high border-t border-outline-variant/20">
+<div class="grid grid-cols-12 gap-lg mb-xl">
+<div class="col-span-4 p-md rounded-xl glass-accent">
+<div class="font-label-bold text-on-surface-variant text-[10px] uppercase mb-1">Total Entradas</div>
+<div class="font-data-numeric text-primary text-display-md">+ 174.500,00 Kz</div>
+</div>
+<div class="col-span-4 p-md rounded-xl glass-accent">
+<div class="font-label-bold text-on-surface-variant text-[10px] uppercase mb-1">Total Saídas</div>
+<div class="font-data-numeric text-error text-display-md">- 20.450,00 Kz</div>
+</div>
+<div class="col-span-4 p-md rounded-xl bg-primary shadow-[inset_0_2px_10px_rgba(255,255,255,0.2)]">
+<div class="font-label-bold text-on-primary/70 text-[10px] uppercase mb-1">Saldo Final p/ Depósito</div>
+<div class="font-data-numeric text-on-primary text-display-md">154.050,00 Kz</div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-md text-on-surface-variant/70">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-body-sm italic">Conferido por: Admin do Sistema (Autenticação biométrica ativa)</span>
+</div>
+<div class="flex gap-md">
+<button class="px-lg py-md rounded-lg font-label-bold bg-surface-container-highest text-on-surface border border-outline-variant/30 hover:bg-surface-bright transition-all" onclick="document.getElementById('modal-container').classList.add('hidden')">
+                            CANCELAR
+                        </button>
+<button class="px-lg py-md rounded-lg font-label-bold bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-center gap-md shadow-[0_4px_12px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+                            CONFIRMAR FECHAMENTO E GERAR PDF
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer System Info -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-260px)] h-8 bg-surface-container-lowest flex justify-between items-center px-xl z-20">
+<div class="font-label-muted text-label-muted text-on-surface-variant/60">v2.4.1 | Status do Backup: Sincronizado</div>
+<div class="flex gap-lg">
+<a class="font-label-muted text-label-muted text-on-surface-variant/60 hover:text-primary transition-colors" href="#">Suporte</a>
+<a class="font-label-muted text-label-muted text-on-surface-variant/60 hover:text-primary transition-colors" href="#">Documentação</a>
+</div>
+</footer>
+<script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => button.classList.add('scale-95'));
+            button.addEventListener('mouseup', () => button.classList.remove('scale-95</script></body></html>

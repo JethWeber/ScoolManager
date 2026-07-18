@@ -1,8 +1,3 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Material.Icons;
-using ScoolManager.Desktop.ViewModels.Pages;
 
 namespace ScoolManager.Desktop.ViewModels;
 
@@ -32,7 +27,7 @@ public partial class MainWindowViewModel : ViewModelBase
         NavigationItems = new ObservableCollection<NavigationItemViewModel>
         {
             new(MaterialIconKind.ViewDashboard, "Dashboard",      () => new DashboardViewModel()),
-            new(MaterialIconKind.AccountGroup,  "Alunos",         () => new DashboardViewModel()), // TODO: AlunosViewModel
+            new(MaterialIconKind.AccountGroup,  "Alunos",         () => new AlunosViewModel()), // TODO: AlunosViewModel
             new(MaterialIconKind.CashMultiple,  "Financeiro",     () => new DashboardViewModel()), // TODO: FinanceiroViewModel
             new(MaterialIconKind.ChartLine,     "Relatórios",     () => new DashboardViewModel()), // TODO: RelatoriosViewModel
             new(MaterialIconKind.Domain,        "Escola",         () => new DashboardViewModel()), // TODO: EscolaViewModel

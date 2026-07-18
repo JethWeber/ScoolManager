@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-AO"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>School Manager - Executive Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#002a51",
+                        "on-primary-container": "#00285d",
+                        "tertiary-container": "#4c93e7",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "primary": "#adc6ff",
+                        "secondary": "#bcc7de",
+                        "inverse-on-surface": "#283044",
+                        "surface-tint": "#adc6ff",
+                        "surface-container-lowest": "#060e20",
+                        "secondary-fixed": "#d8e3fb",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#004395",
+                        "tertiary-fixed": "#d4e3ff",
+                        "on-surface": "#dae2fd",
+                        "surface-dim": "#0b1326",
+                        "on-surface-variant": "#c2c6d6",
+                        "surface-variant": "#2d3449",
+                        "error-container": "#93000a",
+                        "surface-bright": "#31394d",
+                        "on-primary-fixed": "#001a42",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "surface-container-high": "#222a3d",
+                        "surface": "#0b1326",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-fixed": "#001c39",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "surface-container": "#171f33",
+                        "on-tertiary": "#00315d",
+                        "on-primary": "#002e6a",
+                        "background": "#0b1326",
+                        "tertiary": "#a4c9ff",
+                        "on-secondary-container": "#aeb9d0",
+                        "surface-container-low": "#131b2e",
+                        "on-secondary-fixed": "#111c2d",
+                        "on-secondary": "#263143",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-highest": "#2d3449",
+                        "inverse-surface": "#dae2fd",
+                        "primary-container": "#4d8eff",
+                        "error": "#ffb4ab",
+                        "on-background": "#dae2fd",
+                        "outline": "#8c909f",
+                        "on-error": "#690005",
+                        "outline-variant": "#424754",
+                        "secondary-container": "#3e495d",
+                        "inverse-primary": "#005ac2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "gutter": "20px",
+                        "sidebar_width": "260px",
+                        "lg": "24px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Poppins"],
+                        "data-numeric": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Poppins"],
+                        "label-muted": ["Inter"],
+                        "display-md": ["Poppins"],
+                        "label-bold": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-numeric": ["20px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "label-muted": ["12px", {"lineHeight": "1", "fontWeight": "400"}],
+                        "display-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "label-bold": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neo-card {
+            background: linear-gradient(145deg, #171f33, #111b2e);
+            box-shadow: inset 1px 1px 0px rgba(255,255,255,0.05), 8px 8px 16px rgba(0,0,0,0.4);
+            border: 1px solid rgba(140, 144, 159, 0.1);
+        }
+        .neo-card-inner {
+            background: #0b1326;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), inset -1px -1px 2px rgba(255,255,255,0.05);
+        }
+        .active-glow {
+            box-shadow: 0 0 15px rgba(77, 142, 255, 0.4);
+        }
+        .glass-badge {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chart-glow {
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Fixed Side Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low border-r border-outline-variant/10 p-md flex flex-col space-y-lg z-50 shadow-xl">
+<div class="flex items-center gap-sm px-xs pt-xs mb-md">
+<div class="w-12 h-12 neo-card rounded-xl flex items-center justify-center text-primary active-glow">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-display-lg text-on-surface tracking-tight leading-none">School Manager</h1>
+<p class="text-label-muted font-label-muted opacity-60">Gestão Escolar</p>
+</div>
+</div>
+<nav class="flex-1 space-y-xs overflow-y-auto pr-xs">
+<a class="flex items-center gap-md p-md bg-primary-container text-on-primary-container rounded-lg font-label-bold shadow-[0_4px_12px_rgba(77,142,255,0.3)] scale-[0.98] transition-all" href="code.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../gest_o_de_alunos_school_manager/code.html">
+<span class="material-symbols-outlined">group</span>
+<span>Alunos</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../financeiro_pagamentos_school_manager/code.html">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span>Financeiro</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../relat_rios_administrativos_school_manager/code.html">
+<span class="material-symbols-outlined">analytics</span>
+<span>Relatórios</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../escola_classes_school_manager/code.html">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span>Escola</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../configura_es_do_sistema_school_manager/code.html">
+<span class="material-symbols-outlined">settings</span>
+<span>Configurações</span>
+</a>
+</nav>
+<div class="pt-md border-t border-outline-variant/10 space-y-sm">
+<div class="flex items-center gap-md p-md bg-surface-container-high rounded-xl neo-card">
+<img class="w-10 h-10 rounded-full border border-primary/30 object-cover" data-alt="A professional headshot of a middle-aged female administrative officer with a friendly expression. She is wearing formal office attire and is set against a blurred background of a modern office with warm lighting. The image style is polished and high-end, matching a premium corporate dashboard aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbNaIpMon-ez8AYfHgNa-m456ztmtdlP3W9Z7fXzVyJGzWwW6CWb3impjkdGeCeq9h5fvVzgXG5a6E0mPR1rJnbXNLsb8YAxdxcRGLP8HrPtGSwa2FwlGHwgQWgmq1Ubj9hVB37kqSjgJiMycgdsX3iMX2TG6ezgqMs4O8VlpC6xcAfqul8FEKs6DMa6Avc_0NmUsTP723Fur9ObYRZV9tederwLhzU6UMYoT7PnSq1g0urB6Z9aHjikXAZYa8rEHCaxGFrpUg1gau"/>
+<div class="flex-1 overflow-hidden">
+<p class="font-label-bold text-on-surface truncate">Secretaria</p>
+<p class="text-label-muted font-label-muted opacity-60 truncate">Administrador</p>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+</div>
+<button class="w-full flex items-center gap-md p-md text-on-surface-variant hover:text-error transition-all rounded-lg group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">logout</span>
+<span>Sair do Sistema</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[260px] min-h-screen flex flex-col p-xl">
+<!-- Top App Bar -->
+<header class="flex justify-between items-center mb-xl">
+<div>
+<h2 class="font-display-md text-display-md text-on-surface">Olá, Secretaria! 👋</h2>
+<p class="font-body-sm text-on-surface-variant opacity-70">Bem-vinda de volta ao School Manager</p>
+</div>
+<div class="flex items-center gap-md">
+<div class="neo-card-inner rounded-xl px-md py-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+<div class="text-right">
+<p class="text-label-bold text-on-surface leading-none">27 de Maio, 2026</p>
+<p class="text-label-muted opacity-60">Quarta-feira, 10:30</p>
+</div>
+</div>
+<button class="w-12 h-12 neo-card rounded-xl flex items-center justify-center relative hover:bg-surface-variant/30 transition-all">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-5 h-5 bg-error text-[10px] flex items-center justify-center rounded-full text-on-error font-bold border-2 border-background">3</span>
+</button>
+</div>
+</header>
+<!-- KPI Cards Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg mb-xl">
+<!-- Alunos Ativos -->
+<div class="neo-card p-lg rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-md">
+<div class="p-sm neo-card-inner rounded-lg text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">group</span>
+</div>
+<div class="text-emerald-400 flex items-center gap-1 glass-badge px-2 py-0.5 rounded-full text-[10px] font-bold">
+<span class="material-symbols-outlined text-[12px]">trending_up</span>
+                        +8 este mês
+                    </div>
+</div>
+<h3 class="text-label-muted opacity-60 mb-1">Alunos Ativos</h3>
+<p class="text-display-lg font-data-numeric">78</p>
+<div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[80px]">groups</span>
+</div>
+</div>
+<!-- Receita do Mês -->
+<div class="neo-card p-lg rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-md">
+<div class="p-sm neo-card-inner rounded-lg text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div class="text-emerald-400 flex items-center gap-1 glass-badge px-2 py-0.5 rounded-full text-[10px] font-bold">
+<span class="material-symbols-outlined text-[12px]">trending_up</span>
+                        +12.5%
+                    </div>
+</div>
+<h3 class="text-label-muted opacity-60 mb-1">Receita do Mês</h3>
+<p class="text-display-lg font-data-numeric">1.200.000 <span class="text-headline-sm font-label-bold opacity-40">Kz</span></p>
+<div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[80px]">account_balance_wallet</span>
+</div>
+</div>
+<!-- Em Dívida -->
+<div class="neo-card p-lg rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-md">
+<div class="p-sm neo-card-inner rounded-lg text-error">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">credit_card_off</span>
+</div>
+<div class="text-error flex items-center gap-1 glass-badge px-2 py-0.5 rounded-full text-[10px] font-bold">
+<span class="material-symbols-outlined text-[12px]">trending_down</span>
+                        -3.2%
+                    </div>
+</div>
+<h3 class="text-label-muted opacity-60 mb-1">Em Dívida</h3>
+<p class="text-display-lg font-data-numeric">850.000 <span class="text-headline-sm font-label-bold opacity-40">Kz</span></p>
+<div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[80px]">error</span>
+</div>
+</div>
+<!-- Recebido Hoje -->
+<div class="neo-card p-lg rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-md">
+<div class="p-sm neo-card-inner rounded-lg text-primary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div class="text-emerald-400 flex items-center gap-1 glass-badge px-2 py-0.5 rounded-full text-[10px] font-bold">
+<span class="material-symbols-outlined text-[12px]">arrow_upward</span>
+                        +15.8%
+                    </div>
+</div>
+<h3 class="text-label-muted opacity-60 mb-1">Recebido Hoje</h3>
+<p class="text-display-lg font-data-numeric">65.000 <span class="text-headline-sm font-label-bold opacity-40">Kz</span></p>
+<div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[80px]">savings</span>
+</div>
+</div>
+</section>
+<!-- Charts and Tables -->
+<section class="grid grid-cols-12 gap-lg mb-xl">
+<!-- Line Chart: Receita -->
+<div class="col-span-12 lg:col-span-8 neo-card p-lg rounded-xl">
+<div class="flex justify-between items-center mb-xl">
+<h3 class="font-display-md text-headline-sm text-on-surface">Receita dos Últimos 6 Meses</h3>
+<select class="bg-surface-container-high border-none text-on-surface rounded-lg text-body-sm focus:ring-primary">
+<option>6 Meses</option>
+<option>12 Meses</option>
+</select>
+</div>
+<div class="h-[300px] w-full relative">
+<svg class="w-full h-full chart-glow" viewbox="0 0 800 250">
+<defs>
+<lineargradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#3B82F6;stop-opacity:0.3"></stop>
+<stop offset="100%" style="stop-color:#3B82F6;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,180 L160,160 L320,170 L480,120 L640,130 L800,80 L800,250 L0,250 Z" fill="url(#chartGradient)"></path>
+<path d="M0,180 L160,160 L320,170 L480,120 L640,130 L800,80" fill="none" stroke="#3B82F6" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<circle cx="0" cy="180" fill="#3B82F6" r="4"></circle>
+<circle cx="160" cy="160" fill="#3B82F6" r="4"></circle>
+<circle cx="320" cy="170" fill="#3B82F6" r="4"></circle>
+<circle cx="480" cy="120" fill="#3B82F6" r="4"></circle>
+<circle cx="640" cy="130" fill="#3B82F6" r="4"></circle>
+<circle cx="800" cy="80" fill="#3B82F6" r="4"></circle>
+</svg>
+<div class="flex justify-between mt-4 text-label-muted opacity-60">
+<span>Dez</span>
+<span>Jan</span>
+<span>Fev</span>
+<span>Mar</span>
+<span>Abr</span>
+<span>Mai</span>
+</div>
+</div>
+</div>
+<!-- Top 5 Devedores -->
+<div class="col-span-12 lg:col-span-4 neo-card p-lg rounded-xl">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-display-md text-headline-sm text-on-surface">Top 5 Devedores</h3>
+<button class="text-primary text-label-bold hover:underline">Ver todos</button>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center gap-sm p-sm neo-card-inner rounded-lg group hover:border-primary/50 transition-all border border-transparent">
+<span class="text-label-muted opacity-40 font-bold w-4">1</span>
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="Student João Pedro" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP-zjot9aXDPS9NELkTBFGfLmWUa4AolAsS9ynYbDC5qdeMfkQXzPGetcaVYLUjLFpNURjABwAlFRUokCVD539YCkJ6x9SPQVSxY9pEgachr5mwfCeVDcJAM-g5L3PNCeJ5KQp_3cVaQbB7iwILAt7_lVdc_rnVseIPxO9zIEOfUA3KPPorgPLxZSCFzCPe9carBGqGLVe0LMSxur7EvMwr8ZmUvNZ5Lh1FfvxK0oZ0pO64Ltj4KvuhxK5OJXv5GnybnK-2_wMHg7C"/>
+<div class="flex-1">
+<p class="text-body-md font-label-bold truncate">João Pedro da Silva</p>
+<p class="text-label-muted opacity-60">8ª Classe A</p>
+</div>
+<div class="text-right">
+<p class="text-primary font-data-numeric text-[14px]">120.000</p>
+<p class="text-[10px] text-label-muted opacity-40">Kz</p>
+</div>
+</div>
+<div class="flex items-center gap-sm p-sm neo-card-inner rounded-lg group hover:border-primary/50 transition-all border border-transparent">
+<span class="text-label-muted opacity-40 font-bold w-4">2</span>
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="Student Maria Luísa" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLBTsWgr1G7MxKjobbTR03OFh3WMxCAvUGsMxlARUAAx4Q-maOrEelfFcYnG3bUk9vx8qJyOu1NPsaQgkgJTH5OhtWapFALFEYPaiLpn6sU_rZj9i-I3In0_TXVUbyHpBAQvysbLvcxlG5ciKa94DOpYAM4Rlh77EVMba_CaSa310-K5xdQX_4MwduX0S5UDmvIPudcPptHN4HEtGVCpfRo04PPLf6azvfNAG_GQFKKDF4STU_tIpNrFYZO-TUdTPDyPS7Ti1F_12F"/>
+<div class="flex-1">
+<p class="text-body-md font-label-bold truncate">Maria Luísa Alberto</p>
+<p class="text-label-muted opacity-60">9ª Classe B</p>
+</div>
+<div class="text-right">
+<p class="text-primary font-data-numeric text-[14px]">95.000</p>
+<p class="text-[10px] text-label-muted opacity-40">Kz</p>
+</div>
+</div>
+<div class="flex items-center gap-sm p-sm neo-card-inner rounded-lg group hover:border-primary/50 transition-all border border-transparent">
+<span class="text-label-muted opacity-40 font-bold w-4">3</span>
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="Student Manuel Francisco" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqneSzPh5lhiShDHg9Ky3fTi176X1KfsceTAj-M_MHu8DYBgy7qBUST9YBXlG0JwGPgN9ulgDKTsR0fQFWmIu-sxHJQ6wyLykpt8sZSWqmTZjJjuBhmp4w00N3Kd6yAh7DD9Q6Szf-98g0emAsnjNYw_xmZffKINKexlva07Bv_YMF0AKRlox7kVzR0lpdNAotbco7wD9eTK8zbR8-iO66IXxduQG70PZe4yoyZo06uvX6Lrauipre6D-lsylwDbB9baT7jnazojoZ"/>
+<div class="flex-1">
+<p class="text-body-md font-label-bold truncate">Manuel Francisco</p>
+<p class="text-label-muted opacity-60">7ª Classe A</p>
+</div>
+<div class="text-right">
+<p class="text-primary font-data-numeric text-[14px]">80.000</p>
+<p class="text-[10px] text-label-muted opacity-40">Kz</p>
+</div>
+</div>
+<div class="flex items-center gap-sm p-sm neo-card-inner rounded-lg group hover:border-primary/50 transition-all border border-transparent">
+<span class="text-label-muted opacity-40 font-bold w-4">4</span>
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="Student Ana Paula" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTMgWIeVxDvHXv3BDw1ZiuyI5YEZR8-rtso3SalQi0pvMuEld1XirYwQTjHcby0pdxq7d-5lpWGX0ME1EFoOT-P-rwiAnYqR6yNEu88jpaJvHi-HRQph9qC2dwwpLl8Gx7xQysX3s78fWEcEo72oIVSl868z6aYmbiiVa4Z3TK1WUVABJKn9gKwtiAWVoOLSZulFN-fNM7ASWYuclR7UDVgQ8nDcLuI7niIP2NS21BTa6x7OYsRO17Xqqk24qYtlyaceAgyAQchzek"/>
+<div class="flex-1">
+<p class="text-body-md font-label-bold truncate">Ana Paula Domingos</p>
+<p class="text-label-muted opacity-60">10ª Classe A</p>
+</div>
+<div class="text-right">
+<p class="text-primary font-data-numeric text-[14px]">75.000</p>
+<p class="text-[10px] text-label-muted opacity-40">Kz</p>
+</div>
+</div>
+<div class="flex items-center gap-sm p-sm neo-card-inner rounded-lg group hover:border-primary/50 transition-all border border-transparent">
+<span class="text-label-muted opacity-40 font-bold w-4">5</span>
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="Student Carlos Manuel" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlNuPhLfSVrwGZL7jXRzGNx-GPDSSOQ3yligkwRvJlYdtCGwillCxHi7owcpCErFFSMgG43WWNikcmvGwVjBiNkrn2LGUh3lOjbUPA-tnHegKQt_2dnNv9XpSolArSaotDS2KWjVmdK8cp57qIx5yUX38H4w7nJduNSIZcRafnC7thyzMhRXYkBZ4WvMYS7yFoUAEr7MTBziOXinCQ8U1NdxZc3FBE7mfBq1cTvgYBYO8wBqH2FsRh1GNa-pHUhruHhEYzlKbWm5Hw"/>
+<div class="flex-1">
+<p class="text-body-md font-label-bold truncate">Carlos Manuel</p>
+<p class="text-label-muted opacity-60">6ª Classe B</p>
+</div>
+<div class="text-right">
+<p class="text-primary font-data-numeric text-[14px]">65.000</p>
+<p class="text-[10px] text-label-muted opacity-40">Kz</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Grid: Quick Actions & Daily Summary -->
+<section class="grid grid-cols-12 gap-lg mt-auto">
+<!-- Atalhos Rápidos -->
+<div class="col-span-12 lg:col-span-7 neo-card p-lg rounded-xl">
+<h3 class="font-display-md text-headline-sm text-on-surface mb-lg">Atalhos Rápidos</h3>
+<div class="grid grid-cols-5 gap-md">
+<button class="flex flex-col items-center gap-sm p-md neo-card-inner rounded-xl group hover:bg-primary-container/20 transition-all duration-300 hover:scale-105">
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">person_add</span>
+</div>
+<span class="text-label-muted text-center leading-tight">Novo Aluno</span>
+</button>
+<button class="flex flex-col items-center gap-sm p-md neo-card-inner rounded-xl group hover:bg-primary-container/20 transition-all duration-300 hover:scale-105">
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">point_of_sale</span>
+</div>
+<span class="text-label-muted text-center leading-tight">Novo Pagamento</span>
+</button>
+<button class="flex flex-col items-center gap-sm p-md neo-card-inner rounded-xl group hover:bg-primary-container/20 transition-all duration-300 hover:scale-105">
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">description</span>
+</div>
+<span class="text-label-muted text-center leading-tight">Emitir Recibo</span>
+</button>
+<button class="flex flex-col items-center gap-sm p-md neo-card-inner rounded-xl group hover:bg-primary-container/20 transition-all duration-300 hover:scale-105">
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">input</span>
+</div>
+<span class="text-label-muted text-center leading-tight">Nova Entrada</span>
+</button>
+<button class="flex flex-col items-center gap-sm p-md neo-card-inner rounded-xl group hover:bg-primary-container/20 transition-all duration-300 hover:scale-105">
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]">assessment</span>
+</div>
+<span class="text-label-muted text-center leading-tight">Relatório Diário</span>
+</button>
+</div>
+</div>
+<!-- Resumo Financeiro do Dia -->
+<div class="col-span-12 lg:col-span-5 neo-card p-lg rounded-xl border border-primary/20 bg-primary/5">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-display-md text-headline-sm text-on-surface">Resumo Financeiro do Dia</h3>
+<button class="bg-primary-container text-on-primary-container px-md py-sm rounded-lg font-label-bold text-label-bold hover:brightness-110 active:scale-95 transition-all shadow-lg">Fechar Dia</button>
+</div>
+<div class="grid grid-cols-2 gap-md mb-md">
+<div class="neo-card-inner p-md rounded-xl flex items-center gap-sm">
+<div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<p class="text-label-muted text-[10px] uppercase tracking-wider opacity-60">Entradas</p>
+<p class="text-body-lg font-data-numeric">65.000 <span class="text-xs opacity-40">Kz</span></p>
+</div>
+</div>
+<div class="neo-card-inner p-md rounded-xl flex items-center gap-sm">
+<div class="w-10 h-10 bg-error/10 text-error rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">trending_down</span>
+</div>
+<div>
+<p class="text-label-muted text-[10px] uppercase tracking-wider opacity-60">Saídas</p>
+<p class="text-body-lg font-data-numeric">12.500 <span class="text-xs opacity-40">Kz</span></p>
+</div>
+</div>
+</div>
+<div class="neo-card p-md rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-on-primary shadow-xl">
+<span class="material-symbols-outlined text-[32px]">account_balance_wallet</span>
+</div>
+<div>
+<p class="text-label-muted text-[10px] uppercase tracking-wider opacity-80">Saldo do Dia</p>
+<p class="text-display-md font-data-numeric text-primary">52.500 <span class="text-headline-sm opacity-60">Kz</span></p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary/40 text-[48px]">verified</span>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="mt-xl py-md border-t border-outline-variant/10 flex justify-between items-center text-label-muted opacity-50">
+<p>School Manager v1.0.0 | Todos os direitos reservados</p>
+<div class="flex items-center gap-md">
+<span class="flex items-center gap-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Backup: OK</span>
+<div class="flex gap-sm">
+<a class="hover:text-on-surface transition-colors" href="#">Termos</a>
+<a class="hover:text-on-surface transition-colors" href="#">Suporte</a>
+</div>
+</div>
+</footer>
+</main>
+<script>
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.classList.add('scale-95');
+            });
+            el.addEventListener('mouseup', () => {
+                el.classList.remove('scale-95');
+            });
+            el.addEventListener('mouseleave', () => {
+                el.classList.remove('scale-95');
+            });
+        });
+
+        setInterval(() => {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeEl = document.querySelector('header .text-label-muted');
+            if (timeEl) {
+                const day = timeEl.innerText.split(',')[0];
+                timeEl.innerText = `${day}, ${hours}:${minutes}`;
+            }
+        }, 10000);
+    </script>
+</body></html>

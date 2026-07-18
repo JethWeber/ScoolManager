@@ -348,12 +348,12 @@
 
                 <!-- Telefone -->
                 <TextBox Classes="sm-input"
-                         Watermark="Telefone institucional"
+                         PlaceholderText="Telefone institucional"
                          Text="{Binding Phone, Mode=TwoWay}"/>
 
                 <!-- Senha -->
                 <controls:TextBox Classes="sm-input"
-                                   Watermark="Palavra-passe"
+                                   PlaceholderText="Palavra-passe"
                                    PasswordChar="●"
                                    Text="{Binding Password, Mode=TwoWay}"/>
 

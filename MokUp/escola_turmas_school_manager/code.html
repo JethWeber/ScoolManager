@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-PT"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#263143",
+                    "on-tertiary-fixed": "#001c39",
+                    "error": "#ffb4ab",
+                    "surface-container": "#171f33",
+                    "error-container": "#93000a",
+                    "on-surface-variant": "#c2c6d6",
+                    "surface-bright": "#31394d",
+                    "surface-tint": "#adc6ff",
+                    "on-tertiary-container": "#002a51",
+                    "on-primary-fixed-variant": "#004395",
+                    "tertiary-fixed": "#d4e3ff",
+                    "surface-dim": "#0b1326",
+                    "outline": "#8c909f",
+                    "secondary": "#bcc7de",
+                    "on-tertiary": "#00315d",
+                    "surface-container-low": "#131b2e",
+                    "outline-variant": "#424754",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "on-primary-container": "#00285d",
+                    "on-background": "#dae2fd",
+                    "surface-container-lowest": "#060e20",
+                    "surface": "#0b1326",
+                    "tertiary-fixed-dim": "#a4c9ff",
+                    "on-primary": "#002e6a",
+                    "primary-container": "#4d8eff",
+                    "inverse-surface": "#dae2fd",
+                    "surface-container-high": "#222a3d",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "background": "#0b1326",
+                    "on-tertiary-fixed-variant": "#004883",
+                    "on-error": "#690005",
+                    "secondary-fixed": "#d8e3fb",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary-fixed": "#001a42",
+                    "tertiary-container": "#4c93e7",
+                    "primary": "#adc6ff",
+                    "tertiary": "#a4c9ff",
+                    "surface-container-highest": "#2d3449",
+                    "surface-variant": "#2d3449",
+                    "on-surface": "#dae2fd",
+                    "secondary-container": "#3e495d",
+                    "on-secondary-container": "#aeb9d0",
+                    "inverse-primary": "#005ac2",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-secondary-fixed": "#111c2d",
+                    "inverse-on-surface": "#283044"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar_width": "260px",
+                    "lg": "24px",
+                    "base": "4px",
+                    "sm": "12px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "xs": "8px",
+                    "gutter": "20px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-muted": ["Inter"],
+                    "display-lg": ["Poppins"],
+                    "label-bold": ["Inter"],
+                    "data-numeric": ["Inter"],
+                    "headline-sm": ["Poppins"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-md": ["Poppins"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-muted": ["12px", {"lineHeight": "1", "fontWeight": "400"}],
+                    "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "label-bold": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "data-numeric": ["20px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "display-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .neo-depth-inner {
+        box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.05), inset -1px -1px 1px rgba(0, 0, 0, 0.2);
+      }
+      .neo-depth-outer {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+      .neo-pressed {
+        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -1px -1px 2px rgba(255, 255, 255, 0.05);
+      }
+      .glass-accents {
+        backdrop-filter: blur(12px);
+        background: rgba(23, 31, 51, 0.7);
+        border: 1px solid rgba(140, 144, 159, 0.1);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0b1326;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2d3449;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3e495d;
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- Desktop Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low flex flex-col py-lg shadow-[20px_0_40px_rgba(0,0,0,0.4)] z-50">
+<div class="px-lg mb-xl">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[32px]">school</span>
+<div>
+<h1 class="font-display-md text-display-md font-bold text-primary leading-tight">Gestão Escolar</h1>
+<p class="font-label-muted text-label-muted text-on-surface-variant opacity-70">Administração Central</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-base px-base">
+<a class="flex items-center gap-md px-lg py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-r-full active:scale-95 duration-200" href="../dashboard_school_manager_refatorado/code.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-lg py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-r-full active:scale-95 duration-200" href="../gest_o_de_alunos_school_manager/code.html">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md">Alunos</span>
+</a>
+<a class="flex items-center gap-md px-lg py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-r-full active:scale-95 duration-200" href="../financeiro_pagamentos_school_manager/code.html">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-body-md">Financeiro</span>
+</a>
+<a class="flex items-center gap-md px-lg py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-r-full active:scale-95 duration-200" href="../relat_rios_administrativos_school_manager/code.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md">Relatórios</span>
+</a>
+<!-- Active Tab: Escola -->
+<a class="flex items-center gap-md px-lg py-sm bg-primary text-on-primary rounded-r-full shadow-[0_4px_12px_rgba(59,130,246,0.3)] active:scale-95 duration-200" href="../escola_classes_school_manager/code.html">
+<span class="material-symbols-outlined">school</span>
+<span class="font-body-md font-semibold">Escola</span>
+</a>
+<a class="flex items-center gap-md px-lg py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-r-full active:scale-95 duration-200" href="../configura_es_do_sistema_school_manager/code.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Configurações</span>
+</a>
+</nav>
+</aside>
+<!-- Top App Bar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-surface flex justify-between items-center px-xl border-b border-outline-variant/20 shadow-sm z-40">
+<div class="flex items-center gap-md">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Escola / <span class="text-primary">Turmas</span></h2>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="bg-surface-container-low border border-outline-variant/30 rounded-full pl-10 pr-4 py-2 text-body-sm focus:ring-2 focus:ring-primary outline-none w-64 transition-all focus:w-80 neo-depth-inner" placeholder="Procurar turma..." type="text"/>
+</div>
+<div class="flex gap-sm">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[260px] pt-16 pb-8 min-h-screen px-xl">
+<div class="max-w-[1400px] mx-auto py-lg space-y-lg">
+<!-- Context Action Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md">
+<div class="flex gap-md">
+<!-- Filters -->
+<div class="flex flex-col">
+<label class="font-label-muted text-label-muted text-on-surface-variant mb-1 ml-1">Classe</label>
+<select class="bg-surface-container-high text-on-surface border border-outline-variant/30 rounded-lg px-md py-2 font-body-sm focus:ring-2 focus:ring-primary outline-none neo-depth-inner min-w-[160px]">
+<option>Todas as Classes</option>
+<option>10ª Classe</option>
+<option>11ª Classe</option>
+<option>12ª Classe</option>
+<option>13ª Classe</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-muted text-label-muted text-on-surface-variant mb-1 ml-1">Período</label>
+<select class="bg-surface-container-high text-on-surface border border-outline-variant/30 rounded-lg px-md py-2 font-body-sm focus:ring-2 focus:ring-primary outline-none neo-depth-inner min-w-[160px]">
+<option>Todos Períodos</option>
+<option>Manhã</option>
+<option>Tarde</option>
+<option>Noite</option>
+</select>
+</div>
+</div>
+<button class="mt-auto bg-gradient-to-b from-primary-container to-inverse-primary text-on-primary-container font-label-bold px-lg py-3 rounded-xl shadow-[0_4px_12px_rgba(59,130,246,0.3)] flex items-center gap-xs hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                    Nova Turma
+                </button>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Main Table Card -->
+<div class="col-span-12 lg:col-span-9 bg-surface-container-low rounded-xl p-lg border border-outline-variant/10 neo-depth-outer">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="font-headline-sm text-headline-sm font-semibold">Listagem de Turmas</h3>
+<span class="bg-surface-container-high text-primary px-sm py-1 rounded-full font-label-muted neo-depth-inner">Total: 24 Turmas</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-on-surface-variant border-b border-outline-variant/20 font-label-bold uppercase tracking-wider text-[11px]">
+<th class="pb-md px-md">Turma</th>
+<th class="pb-md px-md">Classe</th>
+<th class="pb-md px-md">Sala</th>
+<th class="pb-md px-md">Período</th>
+<th class="pb-md px-md">Alunos</th>
+<th class="pb-md px-md text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="text-body-sm">
+<tr class="hover:bg-surface-container-high transition-colors group cursor-pointer border-b border-outline-variant/5">
+<td class="py-md px-md font-semibold text-primary">T10-A</td>
+<td class="py-md px-md">10ª Classe - Bio</td>
+<td class="py-md px-md">Sala 04</td>
+<td class="py-md px-md">
+<span class="px-xs py-0.5 bg-secondary-container/30 text-on-secondary-container rounded text-[11px]">Manhã</span>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-xs">
+<span class="font-data-numeric">32</span>
+<div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[80%]"></div>
+</div>
+</div>
+</td>
+<td class="py-md px-md text-right">
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group cursor-pointer border-b border-outline-variant/5">
+<td class="py-md px-md font-semibold text-primary">T11-B</td>
+<td class="py-md px-md">11ª Classe - Mat</td>
+<td class="py-md px-md">Sala 12</td>
+<td class="py-md px-md">
+<span class="px-xs py-0.5 bg-tertiary-container/30 text-on-tertiary-container rounded text-[11px]">Tarde</span>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-xs">
+<span class="font-data-numeric">28</span>
+<div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[70%]"></div>
+</div>
+</div>
+</td>
+<td class="py-md px-md text-right">
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group cursor-pointer border-b border-outline-variant/5">
+<td class="py-md px-md font-semibold text-primary">T12-C</td>
+<td class="py-md px-md">12ª Classe - Inf</td>
+<td class="py-md px-md">Lab Info 2</td>
+<td class="py-md px-md">
+<span class="px-xs py-0.5 bg-error-container/30 text-error rounded text-[11px]">Noite</span>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-xs">
+<span class="font-data-numeric">18</span>
+<div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error w-[45%]"></div>
+</div>
+</div>
+</td>
+<td class="py-md px-md text-right">
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group cursor-pointer border-b border-outline-variant/5">
+<td class="py-md px-md font-semibold text-primary">T10-D</td>
+<td class="py-md px-md">10ª Classe - Letras</td>
+<td class="py-md px-md">Sala 08</td>
+<td class="py-md px-md">
+<span class="px-xs py-0.5 bg-secondary-container/30 text-on-secondary-container rounded text-[11px]">Manhã</span>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-xs">
+<span class="font-data-numeric">40</span>
+<div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[100%]"></div>
+</div>
+</div>
+</td>
+<td class="py-md px-md text-right">
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group cursor-pointer">
+<td class="py-md px-md font-semibold text-primary">T13-E</td>
+<td class="py-md px-md">13ª Classe - Prof</td>
+<td class="py-md px-md">Oficina B</td>
+<td class="py-md px-md">
+<span class="px-xs py-0.5 bg-tertiary-container/30 text-on-tertiary-container rounded text-[11px]">Tarde</span>
+</td>
+<td class="py-md px-md">
+<div class="flex items-center gap-xs">
+<span class="font-data-numeric">22</span>
+<div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[55%]"></div>
+</div>
+</div>
+</td>
+<td class="py-md px-md text-right">
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Secondary Info Cards -->
+<div class="col-span-12 lg:col-span-3 space-y-lg">
+<!-- Distribution Card -->
+<div class="bg-surface-container-low rounded-xl p-lg border border-outline-variant/10 neo-depth-outer">
+<h4 class="font-headline-sm text-label-bold text-on-surface-variant uppercase mb-md">Distribuição</h4>
+<div class="space-y-md">
+<div class="flex items-center justify-between">
+<span class="text-body-sm">Manhã</span>
+<span class="font-data-numeric text-primary">12</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full">
+<div class="h-full bg-primary w-1/2"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-sm">Tarde</span>
+<span class="font-data-numeric text-tertiary">8</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full">
+<div class="h-full bg-tertiary w-1/3"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-sm">Noite</span>
+<span class="font-data-numeric text-error">4</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full">
+<div class="h-full bg-error w-1/6"></div>
+</div>
+</div>
+</div>
+<!-- Quick Stats Cards -->
+<div class="bg-primary-container/10 border border-primary/20 rounded-xl p-lg neo-depth-outer relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 opacity-10 group-hover:rotate-12 transition-transform duration-500">
+<span class="material-symbols-outlined text-[100px]">groups</span>
+</div>
+<p class="text-on-primary-container font-label-bold uppercase text-[11px] mb-base">Alunos Ativos</p>
+<h4 class="text-display-md font-data-numeric text-primary">742</h4>
+<div class="mt-md flex items-center gap-xs text-primary text-[12px] font-semibold">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+4% vs semestre anterior</span>
+</div>
+</div>
+<!-- Capacity Alert -->
+<div class="bg-surface-container-low border border-outline-variant/10 rounded-xl p-md flex gap-md items-center neo-depth-outer">
+<div class="bg-error/20 p-2 rounded-lg text-error">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div>
+<p class="text-[12px] font-bold text-error uppercase">Alerta de Lotação</p>
+<p class="text-[13px] text-on-surface-variant">Turma T10-D atingiu limite máximo.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- School Status Indicator -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg">
+<div class="bg-surface-container-lowest border border-outline-variant/5 p-lg rounded-xl flex items-center gap-lg neo-depth-outer">
+<div class="p-3 bg-surface-container-highest rounded-xl neo-depth-inner">
+<span class="material-symbols-outlined text-primary">event_available</span>
+</div>
+<div>
+<p class="text-[11px] text-on-surface-variant uppercase font-bold">Ano Lectivo</p>
+<p class="text-headline-sm font-semibold">2023/2024</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/5 p-lg rounded-xl flex items-center gap-lg neo-depth-outer">
+<div class="p-3 bg-surface-container-highest rounded-xl neo-depth-inner">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+</div>
+<div>
+<p class="text-[11px] text-on-surface-variant uppercase font-bold">Turmas Abertas</p>
+<p class="text-headline-sm font-semibold">18 / 24</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/5 p-lg rounded-xl flex items-center gap-lg neo-depth-outer">
+<div class="p-3 bg-surface-container-highest rounded-xl neo-depth-inner">
+<span class="material-symbols-outlined text-on-secondary-container">meeting_room</span>
+</div>
+<div>
+<p class="text-[11px] text-on-surface-variant uppercase font-bold">Salas Ocupadas</p>
+<p class="text-headline-sm font-semibold">12 / 15</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/5 p-lg rounded-xl flex items-center gap-lg neo-depth-outer">
+<div class="p-3 bg-surface-container-highest rounded-xl neo-depth-inner">
+<span class="material-symbols-outlined text-error">assignment_late</span>
+</div>
+<div>
+<p class="text-[11px] text-on-surface-variant uppercase font-bold">Pautas Pendentes</p>
+<p class="text-headline-sm font-semibold">05</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- App Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-260px)] h-8 bg-surface-container-lowest flex justify-between items-center px-xl z-40">
+<div class="text-label-muted text-on-surface-variant/60 font-label-muted">
+            v2.4.1 | Status do Backup: <span class="text-primary">Sincronizado</span>
+</div>
+<div class="flex gap-lg">
+<a class="text-label-muted text-on-surface-variant/60 hover:text-primary transition-all font-label-muted" href="#">Suporte</a>
+<a class="text-label-muted text-on-surface-variant/60 hover:text-primary transition-all font-label-muted" href="#">Documentação</a>
+</div>
+</footer>
+<script>
+        // Micro-interaction for hover effects on neo-skeuomorphic elements
+        document.querySelectorAll('.neo-depth-outer').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+                card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body></html>

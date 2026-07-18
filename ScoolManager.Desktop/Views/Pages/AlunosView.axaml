@@ -1,0 +1,462 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+             xmlns:models="using:ScoolManager.Desktop.Models"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Class="ScoolManager.Desktop.Views.Pages.AlunosView"
+             x:DataType="vm:AlunosViewModel">
+
+    <Design.DataContext>
+        <vm:AlunosViewModel/>
+    </Design.DataContext>
+
+    <!-- ================================================================
+         RECURSOS: mesma paleta usada em MainWindow.axaml / DashboardView.axaml
+         (tema escuro / Material 3) — para manter a identidade visual da app.
+         ================================================================ -->
+    <UserControl.Resources>
+
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326"/>
+        <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#131B2E"/>
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+        <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#2D3449"/>
+
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6"/>
+
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF"/>
+        <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#00285D"/>
+        <SolidColorBrush x:Key="OutlineVariantBrush" Color="#424754"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4AB"/>
+        <SolidColorBrush x:Key="EmeraldBrush" Color="#34D399"/>
+
+        <!-- Gradiente do "neo-card" (linear-gradient(145deg, #171f33, #111b2e)) -->
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0"/>
+            <GradientStop Color="#111B2E" Offset="1"/>
+        </LinearGradientBrush>
+
+    </UserControl.Resources>
+
+    <!-- ================================================================
+         ESTILOS
+         ================================================================ -->
+    <UserControl.Styles>
+
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000"/>
+        </Style>
+
+        <Style Selector="Border.neo-card-inner">
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BoxShadow" Value="inset 2 2 5 0 #80000000, inset -1 -1 2 0 #0DFFFFFF"/>
+        </Style>
+
+        <!-- Botão primário (ação principal, ex.: "Novo Aluno") -->
+        <Style Selector="Button.primario">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primario:pointerover">
+            <Setter Property="Opacity" Value="0.9"/>
+        </Style>
+
+        <!-- Botão secundário (Importar, Mais Filtros, Exportar) -->
+        <Style Selector="Button.secundario">
+            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.secundario:pointerover">
+            <Setter Property="Background" Value="{StaticResource SurfaceVariantBrush}"/>
+        </Style>
+
+        <!-- Link discreto dentro dos modais (Cancelar) -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+        <Style Selector="Button.link:pointerover">
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+
+        <!-- IMPORTANTE: linha da tabela inteira é clicável (não existe botão "Ver Detalhes") -->
+        <Style Selector="Button.linha">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="Button.linha:pointerover">
+            <Setter Property="Background" Value="#0DFFFFFF"/>
+        </Style>
+        <Style Selector="Button.linha:pressed">
+            <Setter Property="Background" Value="#1A4D8EFF"/>
+        </Style>
+
+        <Style Selector="TextBlock.coluna-titulo">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+        </Style>
+
+        <Style Selector="ComboBox.filtro">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- ================================================================
+         CONTEÚDO: Panel raiz para permitir o overlay dos modais por cima
+         ================================================================ -->
+    <Panel>
+
+        <Grid Margin="32" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="20">
+
+            <!-- ========================================================
+                 CABEÇALHO
+                 ======================================================== -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Gestão de Alunos" FontSize="24" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Dashboard" FontSize="12" Opacity="0.6"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="›" FontSize="12" Opacity="0.4"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="Lista de Alunos" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Button Classes="secundario" Command="{Binding AbrirImportarAlunosCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="Upload" Width="18" Height="18"/>
+                            <TextBlock Text="Importar"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="primario" Command="{Binding AbrirNovaMatriculaCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="AccountPlus" Width="18" Height="18"/>
+                            <TextBlock Text="Novo Aluno"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ========================================================
+                 PESQUISA + FILTROS + EXPORTAÇÃO
+                 ======================================================== -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+
+                <!-- Pesquisa -->
+                <Border Grid.Column="0" Classes="neo-card-inner" Padding="16,4">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="20" Height="20"
+                                                     Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                     VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText}"
+                                 PlaceholderText="Pesquisar por nome, nº de estudante ou encarregado..."
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="{StaticResource OnSurfaceBrush}"
+                                 VerticalAlignment="Center" Padding="0,10"/>
+                    </Grid>
+                </Border>
+
+                <!-- Filtros + Mais Filtros + Exportar -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+
+                    <Border Classes="neo-card-inner" Padding="4">
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Classes="filtro" ItemsSource="{Binding Classes}"
+                                      SelectedItem="{Binding ClasseSelecionada}"/>
+                            <Border Width="1" Margin="4,8" Background="{StaticResource OutlineVariantBrush}" Opacity="0.2"/>
+                            <ComboBox Classes="filtro" ItemsSource="{Binding StatusOptions}"
+                                      SelectedItem="{Binding StatusSelecionado}"/>
+                            <Border Width="1" Margin="4,8" Background="{StaticResource OutlineVariantBrush}" Opacity="0.2"/>
+                            <ComboBox Classes="filtro" ItemsSource="{Binding AnosLetivos}"
+                                      SelectedItem="{Binding AnoLetivoSelecionado}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Button Classes="secundario" Command="{Binding AbrirFiltrosAvancadosCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="FilterVariant" Width="18" Height="18"/>
+                            <TextBlock Text="Mais Filtros"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Classes="secundario">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="Download" Width="18" Height="18"/>
+                            <TextBlock Text="Exportar"/>
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Spacing="2" MinWidth="160">
+                                    <Button Classes="link" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Content="Exportar PDF"
+                                            Command="{Binding AbrirExportarPdfCommand}"/>
+                                    <Button Classes="link" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Content="Exportar Excel"
+                                            Command="{Binding AbrirExportarExcelCommand}"/>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
+                </StackPanel>
+            </Grid>
+
+            <!-- ========================================================
+                 TABELA DE ALUNOS
+                 ======================================================== -->
+            <Border Grid.Row="2" Classes="neo-card" Padding="0" ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*">
+
+                    <!-- Cabeçalho da tabela -->
+                    <Border Grid.Row="0" Background="{StaticResource SurfaceContainerHighBrush}"
+                            Padding="20,14" BorderThickness="0,0,0,1"
+                            BorderBrush="{StaticResource OutlineVariantBrush}">
+                        <Grid ColumnDefinitions="130,2*,140,180,160,110,40">
+                            <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="Nº ESTUDANTE"/>
+                            <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="NOME"/>
+                            <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="CLASSE"/>
+                            <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="ENCARREGADO"/>
+                            <TextBlock Grid.Column="4" Classes="coluna-titulo" Text="TELEFONE"/>
+                            <TextBlock Grid.Column="5" Classes="coluna-titulo" Text="ESTADO"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Linhas: cada linha é um Button inteiro (clicável), sem botão "Ver Detalhes" -->
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding Alunos}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AlunoListItemModel">
+                                    <Button Classes="linha"
+                                            Command="{Binding $parent[ItemsControl].((vm:AlunosViewModel)DataContext).AbrirDetalhesCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="130,2*,140,180,160,110,40">
+
+                                            <TextBlock Grid.Column="0" Text="{Binding NumeroEstudante}"
+                                                       VerticalAlignment="Center" FontSize="13" Opacity="0.8"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                                                        VerticalAlignment="Center">
+                                                <Border Width="32" Height="32" CornerRadius="999"
+                                                        Background="{StaticResource SurfaceVariantBrush}"
+                                                        BorderBrush="{StaticResource OutlineVariantBrush}" BorderThickness="1">
+                                                    <TextBlock Text="{Binding Iniciais}" FontSize="12" FontWeight="Bold"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Nome}" FontSize="14" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" Text="{Binding Classe}"
+                                                       VerticalAlignment="Center" FontSize="13"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                            <TextBlock Grid.Column="3" Text="{Binding Encarregado}"
+                                                       VerticalAlignment="Center" FontSize="13"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                            <TextBlock Grid.Column="4" Text="{Binding Telefone}"
+                                                       VerticalAlignment="Center" FontSize="13"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                            <Border Grid.Column="5" Background="{Binding EstadoFundoBrush}"
+                                                    CornerRadius="999" Padding="10,4"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding EstadoTexto}" FontSize="10" FontWeight="Bold"
+                                                           Foreground="{Binding EstadoTextoBrush}"/>
+                                            </Border>
+
+                                            <materialIcons:MaterialIcon Grid.Column="6" Kind="ChevronRight"
+                                                                         Width="18" Height="18" Opacity="0.4"
+                                                                         VerticalAlignment="Center"
+                                                                         Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- ========================================================
+                 RODAPÉ / PAGINAÇÃO
+                 ======================================================== -->
+            <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding ResumoExibicaoLabel}"
+                           FontSize="12" Opacity="0.6" VerticalAlignment="Center"
+                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                <!-- TODO: paginação real quando a fonte de dados deixar de ser mock -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button Classes="secundario" Padding="8" IsEnabled="False">
+                        <materialIcons:MaterialIcon Kind="ChevronLeft" Width="16" Height="16"/>
+                    </Button>
+                    <Button Classes="primario" Padding="8" Content="1" MinWidth="32"
+                            HorizontalContentAlignment="Center"/>
+                    <Button Classes="secundario" Padding="8" IsEnabled="False">
+                        <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+
+        <!-- ================================================================
+             OVERLAY DOS 5 MODAIS (Nova Matrícula, Importar, Exportar PDF/Excel,
+             Filtros Avançados) — implementados aqui como um overlay leve para
+             não depender de novos ficheiros de View, conforme pedido.
+             ================================================================ -->
+        <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
+            <Border Classes="neo-card" MaxWidth="480" Padding="24"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <!-- Nova Matrícula -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsNovaMatriculaAberta}">
+                        <TextBlock Text="Nova matrícula" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBox PlaceholderText="Nome completo do aluno"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <DatePicker Grid.Column="0"/>
+                            <TextBox Grid.Column="1" PlaceholderText="Classe / turma"/>
+                        </Grid>
+                        <TextBox PlaceholderText="Nome do encarregado"/>
+                        <TextBox PlaceholderText="Telefone do encarregado"/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar"
+                                    Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Matricular"
+                                    Command="{Binding ConfirmarNovaMatriculaCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Importar Alunos -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsImportarAlunosAberta}">
+                        <TextBlock Text="Importar alunos" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <Border BorderBrush="{StaticResource OutlineVariantBrush}" BorderThickness="1.5"
+                                CornerRadius="10" Padding="24">
+                            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="CloudUpload" Width="32" Height="32"
+                                                             HorizontalAlignment="Center"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Text="Arraste um ficheiro CSV/Excel ou clique para selecionar"
+                                           TextAlignment="Center" TextWrapping="Wrap" FontSize="13" Opacity="0.7"
+                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar"
+                                    Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Importar"
+                                    Command="{Binding ConfirmarImportarAlunosCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Exportar PDF -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsExportarPdfAberta}">
+                        <TextBlock Text="Exportar lista em PDF" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Serão exportados os alunos visíveis com os filtros atuais."
+                                   FontSize="13" Opacity="0.7" TextWrapping="Wrap"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar"
+                                    Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Exportar"
+                                    Command="{Binding ConfirmarExportarPdfCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Exportar Excel -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsExportarExcelAberta}">
+                        <TextBlock Text="Exportar lista em Excel" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Serão exportados os alunos visíveis com os filtros atuais."
+                                   FontSize="13" Opacity="0.7" TextWrapping="Wrap"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar"
+                                    Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Exportar"
+                                    Command="{Binding ConfirmarExportarExcelCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Filtros Avançados -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsFiltrosAvancadosAberta}">
+                        <TextBlock Text="Filtros avançados" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <DatePicker Grid.Column="0"/>
+                            <DatePicker Grid.Column="1"/>
+                        </Grid>
+                        <TextBox PlaceholderText="Situação financeira (ex.: em atraso)"/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar"
+                                    Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Aplicar"
+                                    Command="{Binding ConfirmarFiltrosAvancadosCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+    </Panel>
+
+</UserControl>

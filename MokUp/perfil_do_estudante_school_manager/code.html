@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>School Manager - Perfil do Aluno</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#002a51",
+                    "on-primary-container": "#00285d",
+                    "tertiary-container": "#4c93e7",
+                    "on-tertiary-fixed-variant": "#004883",
+                    "primary": "#adc6ff",
+                    "secondary": "#bcc7de",
+                    "inverse-on-surface": "#283044",
+                    "surface-tint": "#adc6ff",
+                    "surface-container-lowest": "#060e20",
+                    "secondary-fixed": "#d8e3fb",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#004395",
+                    "tertiary-fixed": "#d4e3ff",
+                    "on-surface": "#dae2fd",
+                    "surface-dim": "#0b1326",
+                    "on-surface-variant": "#c2c6d6",
+                    "surface-variant": "#2d3449",
+                    "error-container": "#93000a",
+                    "surface-bright": "#31394d",
+                    "on-primary-fixed": "#001a42",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "surface-container-high": "#222a3d",
+                    "surface": "#0b1326",
+                    "primary-fixed": "#d8e2ff",
+                    "on-tertiary-fixed": "#001c39",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "tertiary-fixed-dim": "#a4c9ff",
+                    "surface-container": "#171f33",
+                    "on-tertiary": "#00315d",
+                    "on-primary": "#002e6a",
+                    "background": "#0b1326",
+                    "tertiary": "#a4c9ff",
+                    "on-secondary-container": "#aeb9d0",
+                    "surface-container-low": "#131b2e",
+                    "on-secondary-fixed": "#111c2d",
+                    "on-secondary": "#263143",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-container-highest": "#2d3449",
+                    "inverse-surface": "#dae2fd",
+                    "primary-container": "#4d8eff",
+                    "error": "#ffb4ab",
+                    "on-background": "#dae2fd",
+                    "outline": "#8c909f",
+                    "on-error": "#690005",
+                    "outline-variant": "#424754",
+                    "secondary-container": "#3e495d",
+                    "inverse-primary": "#005ac2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "sm": "12px",
+                    "gutter": "20px",
+                    "sidebar_width": "260px",
+                    "lg": "24px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Poppins"],
+                    "data-numeric": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-sm": ["Poppins"],
+                    "label-muted": ["Inter"],
+                    "display-md": ["Poppins"],
+                    "label-bold": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "data-numeric": ["20px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "label-muted": ["12px", {"lineHeight": "1", "fontWeight": "400"}],
+                    "display-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-bold": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-font-smoothing: antialiased;
+        }
+        .neo-card {
+            background: #131b2e;
+            box-shadow: 
+                inset 1px 1px 0px rgba(255, 255, 255, 0.05),
+                0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(66, 71, 84, 0.2);
+        }
+        .neo-inset {
+            background: #0b1326;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
+            border: 1px solid rgba(66, 71, 84, 0.4);
+        }
+        .active-nav-glow {
+            box-shadow: 0 0 15px rgba(77, 142, 255, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3449;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e495d;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- Side Navigation Bar -->
+<aside class="w-[260px] h-screen flex flex-col border-r border-outline-variant/10 fixed left-0 top-0 p-md space-y-lg bg-surface-container-low shadow-xl z-50">
+<div class="flex items-center gap-sm px-xs py-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-display-lg text-on-surface tracking-tight leading-none">School Manager</h1>
+<p class="font-label-muted text-label-muted mt-1 uppercase tracking-widest text-[10px]">Gestão Escolar</p>
+</div>
+</div>
+<nav class="flex-1 space-y-xs overflow-y-auto">
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../dashboard_school_manager_refatorado/code.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-bold text-label-bold">Dashboard</span>
+</a>
+<a class="flex items-center gap-md p-sm bg-primary-container text-on-primary-container rounded-lg font-label-bold shadow-[0_4px_12px_rgba(77,142,255,0.3)] active:scale-[0.98] transition-transform" href="../gest_o_de_alunos_school_manager/code.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-bold text-label-bold">Alunos</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../financeiro_pagamentos_school_manager/code.html">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-bold text-label-bold">Financeiro</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../relat_rios_administrativos_school_manager/code.html">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-bold text-label-bold">Relatórios</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../escola_classes_school_manager/code.html">
+<span class="material-symbols-outlined">apartment</span>
+<span class="font-label-bold text-label-bold">Escola</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all duration-200 rounded-lg" href="../configura_es_do_sistema_school_manager/code.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold text-label-bold">Configurações</span>
+</a>
+</nav>
+<div class="pt-md border-t border-outline-variant/10 space-y-xs">
+<div class="flex items-center gap-md p-sm rounded-lg bg-surface-container-high transition-all">
+<img class="w-8 h-8 rounded-full border-2 border-primary-container shadow-sm object-cover" data-alt="Close up professional portrait of a school administrative secretary, female, with a warm friendly smile, wearing business attire, soft cinematic lighting, corporate professional environment background, dark blue and gray color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkVV4Rz0l5ncaE_KIZyMyL4O2ObcZAoEbf8tSvLKsgeIq1pQZR4X0E8ajpypoixKOB-yZPAAK0oT7TVx0Ga1mkmh0bCkb-pJKGp-J8fsbYf17MRmmm97Xbr_J0e8oTWTIllOI8fNrLprlWMEHkhFIm8GTJdOG1rRLJVCsepW4JW7ZiTDHWO7RaU1yKz7btiEN_rL7LZQTfdufHOHjVIr64apWkxk4sYk4NSl5IVUFl4lndV4XALkjrlNBc3wXu87VPxBx233CIYCQG"/>
+<div class="flex-1">
+<p class="font-label-bold text-label-bold text-on-surface leading-none">Secretaria</p>
+<p class="font-label-muted text-label-muted text-[10px]">Administrador</p>
+</div>
+<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
+</div>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-error transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-bold text-label-bold">Sair do Sistema</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-[260px] flex flex-col min-h-screen">
+<!-- Top App Bar -->
+<header class="w-full max-w-[calc(100vw-260px)] flex justify-between items-center py-lg px-xl bg-transparent">
+<div class="flex items-center gap-md">
+<a class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-high border border-outline-variant/20 text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+</a>
+<div>
+<div class="flex items-center gap-sm text-primary mb-1">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span class="font-label-bold text-label-bold tracking-widest uppercase">Perfil do Aluno</span>
+</div>
+<h2 class="font-display-md text-display-md text-on-surface">Gestão de Alunos</h2>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative group">
+<input class="neo-inset bg-surface-container-lowest text-on-surface rounded-full py-2 pl-10 pr-4 w-64 focus:ring-2 focus:ring-primary/50 border-none font-body-sm transition-all outline-none" placeholder="Pesquisar aluno..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<button class="flex items-center gap-sm bg-primary-container text-on-primary-container font-label-bold text-label-bold px-4 py-2 rounded-lg shadow-lg hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Nova Matrícula
+                </button>
+</div>
+</header>
+<!-- Content Area -->
+<div class="px-xl pb-xl space-y-lg">
+<!-- Student Header Section -->
+<div class="neo-card rounded-xl p-lg flex flex-col md:flex-row gap-lg items-center relative overflow-hidden">
+<!-- Abstract BG Glow -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 rounded-full blur-[100px]"></div>
+<div class="relative group">
+<img class="w-40 h-40 rounded-xl object-cover shadow-2xl border-4 border-surface-container-high" data-alt="A focused headshot of a young student, male, around 15 years old, looking directly at the camera with a confident expression, wearing a navy blue school uniform, studio lighting against a soft dark blue background, high clarity enterprise CRM profile style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5gXPgBE9zQrYI2dW77BIyfquiENw-wNcFwtGC9FrXntFc6bcwdf137RYoz9Xe_PJzsR5m957xSNM4QuSNeK4mndlSU4fFa1IfTAnO8m4v0GL5e5faVhjG_u3UCLhad5yNIiUjc4mJmpweJWN8vjQJvXkrdAq4TFJrFAdI6MLdJxbAKWvkJNIysl-doR67RoYlauWYujBdjTuNMP5M-zDhcqAnDZcNfYyRBklUAKxknF1aGewqQDlDdQ5VyqOINJSivRl-YtSHrNIp"/>
+<button class="absolute -bottom-2 -right-2 bg-primary text-on-primary-fixed w-10 h-10 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">photo_camera</span>
+</button>
+</div>
+<div class="flex-1 space-y-sm text-center md:text-left">
+<div class="space-y-1">
+<div class="flex items-center justify-center md:justify-start gap-md">
+<h3 class="font-display-lg text-display-lg text-on-surface">João Pedro da Silva</h3>
+<span class="bg-primary/20 text-primary px-3 py-1 rounded-full font-label-bold text-[10px] uppercase tracking-widest border border-primary/30">Ativo</span>
+</div>
+<p class="text-on-surface-variant font-body-md">ID: SM-2024-00125 • Inscrito em: 15 de Jan, 2024</p>
+</div>
+<div class="flex flex-wrap justify-center md:justify-start gap-md">
+<div class="neo-inset rounded-lg px-4 py-2 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">school</span>
+<div>
+<p class="font-label-muted text-label-muted text-[10px] uppercase">Turma</p>
+<p class="font-label-bold text-on-surface">8ª Classe - Sala A</p>
+</div>
+</div>
+<div class="neo-inset rounded-lg px-4 py-2 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<div>
+<p class="font-label-muted text-label-muted text-[10px] uppercase">Período</p>
+<p class="font-label-bold text-on-surface">Manhã (07:30 - 12:30)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-sm w-full md:w-auto">
+<button class="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-on-primary-container font-label-bold text-label-bold rounded-lg shadow-lg hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                        Editar Perfil
+                    </button>
+<button class="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-high text-on-surface font-label-bold text-label-bold rounded-lg border border-outline-variant/20 hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+                        Imprimir Cartão
+                    </button>
+<button class="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-high text-on-surface font-label-bold text-label-bold rounded-lg border border-outline-variant/20 hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+                        Mensagem Encarregado
+                    </button>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Left Column: Details -->
+<div class="col-span-12 lg:col-span-8 space-y-lg">
+<!-- Information Tabs -->
+<div class="neo-card rounded-xl overflow-hidden">
+<div class="flex border-b border-outline-variant/10 bg-surface-container-high/30">
+<button class="px-6 py-4 text-primary font-label-bold text-label-bold border-b-2 border-primary">Dados Pessoais</button>
+<button class="px-6 py-4 text-on-surface-variant font-label-bold text-label-bold hover:text-on-surface transition-colors">Encarregado</button>
+<button class="px-6 py-4 text-on-surface-variant font-label-bold text-label-bold hover:text-on-surface transition-colors">Documentação</button>
+</div>
+<div class="p-lg grid grid-cols-2 gap-xl">
+<div class="space-y-sm">
+<h4 class="font-label-bold text-primary uppercase text-[11px] tracking-widest mb-4">Informação Básica</h4>
+<div class="space-y-4">
+<div>
+<label class="font-label-muted text-label-muted block mb-1">Nome Completo</label>
+<p class="font-body-md text-on-surface">João Pedro de Oliveira da Silva</p>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="font-label-muted text-label-muted block mb-1">Data de Nascimento</label>
+<p class="font-body-md text-on-surface">12 de Maio, 2009</p>
+</div>
+<div>
+<label class="font-label-muted text-label-muted block mb-1">Gênero</label>
+<p class="font-body-md text-on-surface">Masculino</p>
+</div>
+</div>
+<div>
+<label class="font-label-muted text-label-muted block mb-1">Nacionalidade</label>
+<p class="font-body-md text-on-surface">Angolana</p>
+</div>
+</div>
+</div>
+<div class="space-y-sm">
+<h4 class="font-label-bold text-primary uppercase text-[11px] tracking-widest mb-4">Endereço &amp; Contacto</h4>
+<div class="space-y-4">
+<div>
+<label class="font-label-muted text-label-muted block mb-1">Endereço Residencial</label>
+<p class="font-body-md text-on-surface">Bairro Talatona, Rua 12, Vivenda 45A, Luanda</p>
+</div>
+<div>
+<label class="font-label-muted text-label-muted block mb-1">Telefone Principal</label>
+<p class="font-body-md text-on-surface">+244 923 456 789</p>
+</div>
+<div>
+<label class="font-label-muted text-label-muted block mb-1">E-mail</label>
+<p class="font-body-md text-on-surface">joao.silva@estudante.com</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment History Table -->
+<div class="neo-card rounded-xl">
+<div class="p-lg flex justify-between items-center border-b border-outline-variant/10">
+<h4 class="font-display-md text-headline-sm text-on-surface">Histórico de Pagamentos</h4>
+<button class="text-primary font-label-bold text-label-bold hover:underline">Ver tudo</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-high/50">
+<tr>
+<th class="px-lg py-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Mês Ref.</th>
+<th class="px-lg py-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Recibo</th>
+<th class="px-lg py-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Valor</th>
+<th class="px-lg py-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Data</th>
+<th class="px-lg py-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="px-lg py-4 font-body-md text-on-surface">Abril 2024</td>
+<td class="px-lg py-4 font-body-md text-on-surface-variant">#REC-4560</td>
+<td class="px-lg py-4 font-data-numeric text-data-numeric text-on-surface">25.000 Kz</td>
+<td class="px-lg py-4 font-body-sm text-on-surface-variant">02/04/2024</td>
+<td class="px-lg py-4">
+<span class="flex items-center gap-1.5 text-emerald-500 font-label-bold text-[11px] uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Pago
+                                            </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="px-lg py-4 font-body-md text-on-surface">Março 2024</td>
+<td class="px-lg py-4 font-body-md text-on-surface-variant">#REC-4412</td>
+<td class="px-lg py-4 font-data-numeric text-data-numeric text-on-surface">25.000 Kz</td>
+<td class="px-lg py-4 font-body-sm text-on-surface-variant">05/03/2024</td>
+<td class="px-lg py-4">
+<span class="flex items-center gap-1.5 text-emerald-500 font-label-bold text-[11px] uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Pago
+                                            </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="px-lg py-4 font-body-md text-on-surface">Fevereiro 2024</td>
+<td class="px-lg py-4 font-body-md text-on-surface-variant">#REC-4288</td>
+<td class="px-lg py-4 font-data-numeric text-data-numeric text-on-surface">25.000 Kz</td>
+<td class="px-lg py-4 font-body-sm text-on-surface-variant">01/02/2024</td>
+<td class="px-lg py-4">
+<span class="flex items-center gap-1.5 text-emerald-500 font-label-bold text-[11px] uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Pago
+                                            </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Financial & Quick Widgets -->
+<div class="col-span-12 lg:col-span-4 space-y-lg">
+<!-- Financial Status Card -->
+<div class="neo-card rounded-xl p-lg bg-gradient-to-br from-primary-container/20 to-transparent border border-primary/20">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+</div>
+<h4 class="font-display-md text-headline-sm text-on-surface">Situação Financeira</h4>
+</div>
+<div class="space-y-6">
+<div>
+<p class="font-label-muted text-label-muted text-[10px] uppercase tracking-widest mb-1">Saldo Devedor</p>
+<p class="font-data-numeric text-display-lg text-error">0,00 Kz</p>
+<p class="font-body-sm text-emerald-500 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Conta em dia
+                                </p>
+</div>
+<div class="p-md neo-inset rounded-lg space-y-4">
+<div class="flex justify-between items-center">
+<span class="font-label-bold text-label-bold text-on-surface-variant">Propinas Pagas</span>
+<span class="font-label-bold text-label-bold text-primary">4 / 10 Meses</span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="w-[40%] h-full bg-primary shadow-[0_0_8px_rgba(173,198,255,0.5)]"></div>
+</div>
+<div class="flex justify-between items-center text-[10px] font-label-muted text-label-muted uppercase">
+<span>Início: Jan</span>
+<span>Término: Out</span>
+</div>
+</div>
+<button class="w-full py-3 bg-primary-container text-on-primary-container font-label-bold text-label-bold rounded-lg shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">payments</span>
+                                Efetuar Pagamento
+                            </button>
+</div>
+</div>
+<!-- Enrollment Details Widget -->
+<div class="neo-card rounded-xl p-lg space-y-md">
+<h4 class="font-label-bold text-primary uppercase text-[11px] tracking-widest border-b border-outline-variant/10 pb-2">Detalhes da Matrícula</h4>
+<div class="space-y-4">
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-sm">Curso:</span>
+<span class="text-on-surface font-label-bold">Ensino Geral</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-sm">Ano Lectivo:</span>
+<span class="text-on-surface font-label-bold">2024 / 2025</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-sm">Status:</span>
+<span class="text-emerald-500 font-label-bold">Regular</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant font-body-sm">Data de Início:</span>
+<span class="text-on-surface font-label-bold">15/01/2024</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="grid grid-cols-2 gap-md">
+<button class="neo-card p-md rounded-xl flex flex-col items-center gap-2 hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-primary">description</span>
+<span class="text-[10px] font-label-bold text-on-surface uppercase">Boletim</span>
+</button>
+<button class="neo-card p-md rounded-xl flex flex-col items-center gap-2 hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-tertiary">history_edu</span>
+<span class="text-[10px] font-label-bold text-on-surface uppercase">Faltas</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Navigation Shell -->
+<footer class="mt-auto border-t border-outline-variant/10 py-md px-xl flex justify-between items-center text-on-surface-variant">
+<p class="font-label-muted text-label-muted">School Manager v1.0.0 | Todos os direitos reservados</p>
+<div class="flex items-center gap-md">
+<span class="flex items-center gap-1 font-label-muted text-label-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Backup: OK
+                </span>
+<div class="w-[1px] h-4 bg-outline-variant/30"></div>
+<p class="font-label-muted text-label-muted">Suporte: +244 900 000 000</p>
+</div>
+</footer>
+</main>
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.96)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = '';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = '';
+            });
+        });
+
+        // Search Bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) {
+            searchInput.addEventListener('focus', () => {
+                searchInput.parentElement.classList.add('ring-2', 'ring-primary/30');
+            });
+            searchInput.addEventListener('blur', () => {
+                searchInput.parentElement.classList.remove('ring-2', 'ring-primary/30');
+            });
+        }
+    </script>
+</body></html>

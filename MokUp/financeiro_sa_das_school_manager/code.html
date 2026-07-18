@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-ao"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Módulo Financeiro - Aba Saídas | Gestão Escolar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#263143",
+                    "on-tertiary-fixed": "#001c39",
+                    "error": "#ffb4ab",
+                    "surface-container": "#171f33",
+                    "error-container": "#93000a",
+                    "on-surface-variant": "#c2c6d6",
+                    "surface-bright": "#31394d",
+                    "surface-tint": "#adc6ff",
+                    "on-tertiary-container": "#002a51",
+                    "on-primary-fixed-variant": "#004395",
+                    "tertiary-fixed": "#d4e3ff",
+                    "surface-dim": "#0b1326",
+                    "outline": "#8c909f",
+                    "secondary": "#bcc7de",
+                    "on-tertiary": "#00315d",
+                    "surface-container-low": "#131b2e",
+                    "outline-variant": "#424754",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "on-primary-container": "#00285d",
+                    "on-background": "#dae2fd",
+                    "surface-container-lowest": "#060e20",
+                    "surface": "#0b1326",
+                    "tertiary-fixed-dim": "#a4c9ff",
+                    "on-primary": "#002e6a",
+                    "primary-container": "#4d8eff",
+                    "inverse-surface": "#dae2fd",
+                    "surface-container-high": "#222a3d",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "background": "#0b1326",
+                    "on-tertiary-fixed-variant": "#004883",
+                    "on-error": "#690005",
+                    "secondary-fixed": "#d8e3fb",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary-fixed": "#001a42",
+                    "tertiary-container": "#4c93e7",
+                    "primary": "#adc6ff",
+                    "tertiary": "#a4c9ff",
+                    "surface-container-highest": "#2d3449",
+                    "surface-variant": "#2d3449",
+                    "on-surface": "#dae2fd",
+                    "secondary-container": "#3e495d",
+                    "on-secondary-container": "#aeb9d0",
+                    "inverse-primary": "#005ac2",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-secondary-fixed": "#111c2d",
+                    "inverse-on-surface": "#283044"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar_width": "260px",
+                    "lg": "24px",
+                    "base": "4px",
+                    "sm": "12px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "xs": "8px",
+                    "gutter": "20px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-muted": ["Inter"],
+                    "display-lg": ["Poppins"],
+                    "label-bold": ["Inter"],
+                    "data-numeric": ["Inter"],
+                    "headline-sm": ["Poppins"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-md": ["Poppins"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-muted": ["12px", {"lineHeight": "1", "fontWeight": "400"}],
+                    "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "label-bold": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "data-numeric": ["20px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "display-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .neo-depth {
+            box-shadow: 20px 0 40px rgba(0,0,0,0.4);
+        }
+        .neo-card {
+            background: #171f33;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .neo-input {
+            background: #0b1326;
+            border: 1px solid #334155;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .neo-button-primary {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .neo-button-primary:active {
+            transform: scale(0.96);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .glass-trend {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden selection:bg-primary selection:text-on-primary">
+<!-- Desktop Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low flex flex-col py-lg neo-depth z-50">
+<div class="px-xl mb-xl">
+<h1 class="font-display-md text-display-md font-bold text-primary">Gestão Escolar</h1>
+<p class="font-body-md text-on-surface-variant opacity-70">Administração Central</p>
+</div>
+<nav class="flex-1 flex flex-col space-y-1">
+<a class="flex items-center px-xl py-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="../dashboard_school_manager_refatorado/code.html">
+<span class="material-symbols-outlined mr-md">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center px-xl py-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="../gest_o_de_alunos_school_manager/code.html">
+<span class="material-symbols-outlined mr-md">group</span>
+<span class="font-body-md">Alunos</span>
+</a>
+<a class="flex items-center px-xl py-md bg-primary text-on-primary rounded-r-full shadow-[0_4px_12px_rgba(59,130,246,0.3)]" href="../financeiro_pagamentos_school_manager/code.html">
+<span class="material-symbols-outlined mr-md" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-body-md">Financeiro</span>
+</a>
+<a class="flex items-center px-xl py-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="../relat_rios_administrativos_school_manager/code.html">
+<span class="material-symbols-outlined mr-md">analytics</span>
+<span class="font-body-md">Relatórios</span>
+</a>
+<a class="flex items-center px-xl py-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="../escola_classes_school_manager/code.html">
+<span class="material-symbols-outlined mr-md">school</span>
+<span class="font-body-md">Escola</span>
+</a>
+<a class="flex items-center px-xl py-md text-on-surface-variant hover:bg-surface-container-high transition-all" href="../configura_es_do_sistema_school_manager/code.html">
+<span class="material-symbols-outlined mr-md">settings</span>
+<span class="font-body-md">Configurações</span>
+</a>
+</nav>
+<div class="px-xl mt-auto pt-md">
+<div class="flex items-center space-x-sm p-sm rounded-lg bg-surface-container-highest">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
+                    AD
+                </div>
+<div class="flex-1">
+<p class="font-body-sm font-bold truncate">Admin Escola</p>
+<p class="font-label-muted text-on-surface-variant">Diretor Financeiro</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-surface flex justify-between items-center px-xl border-b border-outline-variant/20 z-40 shadow-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">menu_open</span>
+<div class="flex items-center text-primary font-bold text-headline-sm">
+                Financeiro <span class="mx-xs text-on-surface-variant opacity-30">/</span> <span class="text-on-surface font-medium">Saídas</span>
+</div>
+</div>
+<div class="flex items-center gap-xl">
+<div class="relative group">
+<div class="flex items-center neo-input px-md py-xs rounded-full w-64 transition-all focus-within:ring-2 focus-within:ring-primary focus-within:w-80">
+<span class="material-symbols-outlined text-on-surface-variant text-md mr-xs">search</span>
+<input class="bg-transparent border-none outline-none text-body-sm text-on-surface w-full placeholder:text-on-surface-variant/40" placeholder="Pesquisar despesa..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined p-sm text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all relative">
+                    notifications
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="material-symbols-outlined p-sm text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all">account_circle</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="fixed inset-0 left-[260px] top-16 bg-background p-xl overflow-y-auto custom-scrollbar">
+<!-- Action Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-xl gap-lg">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Gestão de Saídas</h2>
+<p class="text-on-surface-variant font-body-md">Controlo de despesas operacionais e folha de pagamentos.</p>
+</div>
+<button class="neo-button-primary px-lg py-md rounded-xl flex items-center gap-sm text-white font-bold transition-all group">
+<span class="material-symbols-outlined group-hover:rotate-90 transition-transform">add_circle</span>
+                Nova Saída
+            </button>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg mb-xl">
+<div class="md:col-span-4 neo-card rounded-2xl p-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-lg opacity-10">
+<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<p class="font-label-bold text-on-surface-variant uppercase mb-xs">Total Saídas Hoje</p>
+<div class="flex items-baseline gap-xs mb-md">
+<span class="text-on-surface-variant font-body-lg">Kz</span>
+<span class="font-display-lg text-display-lg text-error">425.000,00</span>
+</div>
+<div class="glass-trend px-sm py-xs rounded-lg inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-error text-md">trending_up</span>
+<span class="text-error font-body-sm font-bold">+12% vs Ontem</span>
+</div>
+</div>
+<div class="md:col-span-4 neo-card rounded-2xl p-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 p-lg opacity-10">
+<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+</div>
+<p class="font-label-bold text-on-surface-variant uppercase mb-xs">Saídas do Mês</p>
+<div class="flex items-baseline gap-xs mb-md">
+<span class="text-on-surface-variant font-body-lg">Kz</span>
+<span class="font-display-lg text-display-lg text-primary">2.840.150,00</span>
+</div>
+<div class="glass-trend px-sm py-xs rounded-lg inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-md">trending_down</span>
+<span class="text-primary font-body-sm font-bold">-5% vs Mês Anterior</span>
+</div>
+</div>
+<div class="md:col-span-4 neo-card rounded-2xl p-lg bg-surface-container-high border-primary/20">
+<p class="font-label-bold text-on-surface-variant uppercase mb-sm">Próximos Vencimentos</p>
+<div class="space-y-sm">
+<div class="flex justify-between items-center bg-surface-container-lowest/50 p-sm rounded-lg">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">flash_on</span>
+<span class="font-body-sm">Conta de Luz (ENDE)</span>
+</div>
+<span class="font-label-bold text-error">Em 2 dias</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-lowest/50 p-sm rounded-lg">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">water_drop</span>
+<span class="font-body-sm">Conta de Água (EPAL)</span>
+</div>
+<span class="font-label-bold text-on-surface-variant">Em 5 dias</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters Section -->
+<div class="neo-card rounded-2xl p-lg mb-lg flex flex-col md:flex-row items-center gap-lg">
+<div class="w-full md:w-auto flex-1">
+<label class="font-label-muted text-on-surface-variant block mb-xs ml-base">Categoria</label>
+<div class="relative">
+<select class="w-full neo-input rounded-xl px-md py-md text-on-surface appearance-none focus:outline-none cursor-pointer">
+<option>Todas as Categorias</option>
+<option>Salários</option>
+<option>Água e Luz</option>
+<option>Manutenção</option>
+<option>Materiais Pedagógicos</option>
+<option>Impostos</option>
+</select>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div class="w-full md:w-auto flex-1">
+<label class="font-label-muted text-on-surface-variant block mb-xs ml-base">Fornecedor</label>
+<div class="relative">
+<select class="w-full neo-input rounded-xl px-md py-md text-on-surface appearance-none focus:outline-none cursor-pointer">
+<option>Todos os Fornecedores</option>
+<option>ENDE - Empresa Nacional</option>
+<option>EPAL - Águas de Luanda</option>
+<option>Limpezas Lda</option>
+<option>Papelaria Central</option>
+</select>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div class="w-full md:w-48">
+<label class="font-label-muted text-on-surface-variant block mb-xs ml-base">Período</label>
+<div class="relative">
+<button class="w-full neo-input rounded-xl px-md py-md text-on-surface flex items-center justify-between">
+<span class="text-body-sm">Últimos 30 dias</span>
+<span class="material-symbols-outlined text-on-surface-variant text-md">calendar_today</span>
+</button>
+</div>
+</div>
+<button class="w-full md:w-auto self-end h-[50px] px-lg rounded-xl border border-outline-variant hover:bg-surface-container-high transition-all flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined">filter_list</span>
+                Aplicar
+            </button>
+</div>
+<!-- Data Grid -->
+<div class="neo-card rounded-2xl overflow-hidden mb-xl">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 border-b border-outline-variant/30">
+<th class="px-lg py-md text-left font-label-bold text-on-surface-variant uppercase tracking-wider">Data</th>
+<th class="px-lg py-md text-left font-label-bold text-on-surface-variant uppercase tracking-wider">Descrição / Fornecedor</th>
+<th class="px-lg py-md text-left font-label-bold text-on-surface-variant uppercase tracking-wider">Categoria</th>
+<th class="px-lg py-md text-left font-label-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-lg py-md text-right font-label-bold text-on-surface-variant uppercase tracking-wider">Valor (Kz)</th>
+<th class="px-lg py-md text-center font-label-bold text-on-surface-variant uppercase tracking-wider">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Item 1 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-lg py-md">
+<p class="text-on-surface font-medium">12 Out 2023</p>
+<p class="text-label-muted text-on-surface-variant">14:30</p>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+</div>
+<div>
+<p class="text-on-surface font-bold">Folha de Salários - Outubro</p>
+<p class="text-label-muted text-on-surface-variant">Pagamento Mensal Staff</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-secondary-container text-on-secondary-container rounded-full text-body-sm font-medium">Salários</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-xs text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    Liquidado
+                                </div>
+</td>
+<td class="px-lg py-md text-right">
+<span class="font-data-numeric text-data-numeric text-on-surface">1.250.000,00</span>
+</td>
+<td class="px-lg py-md text-center">
+<div class="flex justify-center gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">print</span></button>
+<button class="p-xs hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-lg py-md">
+<p class="text-on-surface font-medium">10 Out 2023</p>
+<p class="text-label-muted text-on-surface-variant">10:15</p>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">flash_on</span>
+</div>
+<div>
+<p class="text-on-surface font-bold">Conta de Energia Elétrica</p>
+<p class="text-label-muted text-on-surface-variant">ENDE - Ref: 9022341</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-tertiary-container/20 text-tertiary rounded-full text-body-sm font-medium">Água/Luz</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-xs text-on-surface-variant font-medium">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                                    Pendente
+                                </div>
+</td>
+<td class="px-lg py-md text-right">
+<span class="font-data-numeric text-data-numeric text-on-surface">85.400,00</span>
+</td>
+<td class="px-lg py-md text-center">
+<div class="flex justify-center gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-xs hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Item 3 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-lg py-md">
+<p class="text-on-surface font-medium">08 Out 2023</p>
+<p class="text-label-muted text-on-surface-variant">16:45</p>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">build</span>
+</div>
+<div>
+<p class="text-on-surface font-bold">Manutenção do Gerador</p>
+<p class="text-label-muted text-on-surface-variant">PowerService Lda</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-surface-container-highest text-secondary rounded-full text-body-sm font-medium">Manutenção</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-xs text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Liquidado
+                                </div>
+</td>
+<td class="px-lg py-md text-right">
+<span class="font-data-numeric text-data-numeric text-on-surface">150.000,00</span>
+</td>
+<td class="px-lg py-md text-center">
+<div class="flex justify-center gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">print</span></button>
+<button class="p-xs hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Item 4 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors group">
+<td class="px-lg py-md">
+<p class="text-on-surface font-medium">05 Out 2023</p>
+<p class="text-label-muted text-on-surface-variant">09:00</p>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<div>
+<p class="text-on-surface font-bold">Fornecimento de Água Potável</p>
+<p class="text-label-muted text-on-surface-variant">EPAL Luanda</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-md">
+<span class="px-sm py-xs bg-tertiary-container/20 text-tertiary rounded-full text-body-sm font-medium">Água/Luz</span>
+</td>
+<td class="px-lg py-md">
+<div class="flex items-center gap-xs text-primary font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Liquidado
+                                </div>
+</td>
+<td class="px-lg py-md text-right">
+<span class="font-data-numeric text-data-numeric text-on-surface">22.650,00</span>
+</td>
+<td class="px-lg py-md text-center">
+<div class="flex justify-center gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-xs hover:text-primary transition-colors"><span class="material-symbols-outlined">print</span></button>
+<button class="p-xs hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-xl py-md bg-surface-container-high/30 border-t border-outline-variant/30 flex items-center justify-between">
+<p class="text-body-sm text-on-surface-variant">Mostrando 1-4 de 128 despesas</p>
+<div class="flex items-center gap-sm">
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center hover:bg-surface-container-highest transition-all disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold">1</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center hover:bg-surface-container-highest transition-all">2</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center hover:bg-surface-container-highest transition-all">3</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="h-16"></div> <!-- Spacer for footer -->
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-260px)] h-8 bg-surface-container-lowest flex justify-between items-center px-xl z-50 text-label-muted text-on-surface-variant/60">
+<div class="flex items-center gap-md">
+<span>v2.4.1 | Status do Backup: Sincronizado</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="flex gap-lg">
+<a class="hover:text-primary transition-all" href="#">Suporte</a>
+<a class="hover:text-primary transition-all" href="#">Documentação</a>
+</div>
+</footer>
+<!-- New Expense Modal (Simplified/Hidden) -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-xl" id="modal-overlay">
+<div class="w-full max-w-lg neo-card rounded-2xl p-xl scale-95 opacity-0 transition-all duration-300" id="modal-content">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="text-display-md font-bold text-on-surface">Nova Saída de Caixa</h3>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-error transition-colors" onclick="toggleModal()">close</button>
+</div>
+<div class="space-y-md">
+<div>
+<label class="font-label-muted text-on-surface-variant block mb-xs">Descrição</label>
+<input class="w-full neo-input rounded-xl px-md py-md text-on-surface outline-none" placeholder="Ex: Pagamento Internet Unitel" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="font-label-muted text-on-surface-variant block mb-xs">Valor (Kz)</label>
+<input class="w-full neo-input rounded-xl px-md py-md text-on-surface outline-none" placeholder="0,00" type="number"/>
+</div>
+<div>
+<label class="font-label-muted text-on-surface-variant block mb-xs">Data</label>
+<input class="w-full neo-input rounded-xl px-md py-md text-on-surface outline-none" type="date"/>
+</div>
+</div>
+<div>
+<label class="font-label-muted text-on-surface-variant block mb-xs">Categoria</label>
+<select class="w-full neo-input rounded-xl px-md py-md text-on-surface outline-none">
+<option>Manutenção</option>
+<option>Salários</option>
+<option>Água/Luz</option>
+<option>Outros</option>
+</select>
+</div>
+<div class="pt-lg">
+<button class="w-full neo-button-primary py-md rounded-xl text-white font-bold text-body-lg">Registrar Pagamento</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Simple Interaction Script
+        const btnNovaSaida = document.querySelector('.neo-button-primary');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalContent = document.getElementById('modal-content');
+
+        function toggleModal() {
+            if(modalOverlay.classList.contains('hidden')) {
+                modalOverlay.classList.remove('hidden');
+                modalOverlay.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } else {
+                modalContent.classList.add('scale-95', 'opacity-0');
+                modalContent.classList.</script></body></html>
