@@ -71,27 +71,21 @@ Botão discreto: <- Voltar para Alunos
 Abas:
 
 1.  Dados Pessoais
-2.  Encarregado
-3.  Documentação
-4.  Histórico Financeiro
+2.  Documentação
+3.  Histórico Financeiro
 
 Ações:
 
 -   Editar Perfil
 -   Efetuar Pagamento
--   Imprimir Cartão
--   Mensagem ao Encarregado
 -   Renovar Matrícula
 
 Modais:
 
 1.  Editar Aluno
-2.  Alterar Fotografia
-3.  Efetuar Pagamento
-4.  Renovar Matrícula
-5.  Transferir Turma
-6.  Enviar Mensagem
-7.  Confirmar Exclusão
+2.  Efetuar Pagamento
+3.  Renovar Matrícula
+4.  Confirmar Exclusão
 
 IMPORTANTE:
 

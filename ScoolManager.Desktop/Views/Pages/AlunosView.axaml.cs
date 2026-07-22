@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using ScoolManager.Desktop.Models;
 using ScoolManager.Desktop.ViewModels.Pages;
@@ -9,7 +12,7 @@ namespace ScoolManager.Desktop.Views.Pages;
 
 public partial class AlunosView : UserControl
 {
-    // Filtros comuns para os documentos do formulário de matrícula.
+    // Filtros de ficheiro para os documentos do formulário de matrícula.
     private static readonly FilePickerFileType DocumentosEFotos = new("Documentos e imagens")
     {
         Patterns = new List<string> { "*.pdf", "*.jpg", "*.jpeg", "*.png" }
@@ -35,6 +38,25 @@ public partial class AlunosView : UserControl
                 vm.DetalhesAlunoSolicitado += OnDetalhesAlunoSolicitado;
             }
         };
+
+        // Liga o suporte a arrastar-e-soltar em cada uma das 4 zonas de
+        // upload do Passo 4 do wizard "Novo Aluno". As zonas também aceitam
+        // clique (ver OnZonaUploadClick) como alternativa ao arrastar.
+        foreach (var zona in ZonasDeUpload())
+        {
+            zona.AddHandler(DragDrop.DropEvent, OnZonaDrop);
+            zona.AddHandler(DragDrop.DragOverEvent, OnZonaDragOver);
+            zona.AddHandler(DragDrop.DragEnterEvent, OnZonaDragEnter);
+            zona.AddHandler(DragDrop.DragLeaveEvent, OnZonaDragLeave);
+        }
+    }
+
+    private IEnumerable<Button> ZonasDeUpload()
+    {
+        yield return ZonaCertificado;
+        yield return ZonaFoto;
+        yield return ZonaBiCedula;
+        yield return ZonaAtestado;
     }
 
     private void OnDetalhesAlunoSolicitado(object? sender, AlunoListItemModel aluno)
@@ -44,41 +66,66 @@ public partial class AlunosView : UserControl
     }
 
     // ================================================================
-    // Seleção de documentos (Passo 4 do wizard "Novo Aluno").
-    // A leitura/upload real do ficheiro fica para quando existir um
-    // serviço de documentos; por agora guardamos apenas o nome exibido.
+    // Upload de documentos (Passo 4 do wizard "Novo Aluno").
+    // Cada zona é ao mesmo tempo um alvo de arrastar-e-soltar e um botão
+    // clicável (fallback para quem preferir escolher pelo seletor de
+    // ficheiros). O DataContext de cada zona já é o DocumentoRequeridoItem
+    // correspondente (ver AlunosView.axaml), por isso não é preciso mapear
+    // o botão para a propriedade certa.
     // ================================================================
 
-    private async void OnSelecionarCertificadoClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => await SelecionarFicheiroAsync("Certificado / Declaração", DocumentosEFotos,
-            nome => { if (DataContext is AlunosViewModel vm) vm.CertificadoDeclaracaoNomeArquivo = nome; });
-
-    private async void OnSelecionarFotoClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => await SelecionarFicheiroAsync("Foto Tipo Passe", ApenasFotos,
-            nome => { if (DataContext is AlunosViewModel vm) vm.FotoTipoPasseNomeArquivo = nome; });
-
-    private async void OnSelecionarBiCedulaClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => await SelecionarFicheiroAsync("BI / Cédula", DocumentosEFotos,
-            nome => { if (DataContext is AlunosViewModel vm) vm.BiCedulaNomeArquivo = nome; });
-
-    private async void OnSelecionarAtestadoClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => await SelecionarFicheiroAsync("Atestado Médico", DocumentosEFotos,
-            nome => { if (DataContext is AlunosViewModel vm) vm.AtestadoMedicoNomeArquivo = nome; });
-
-    private async Task SelecionarFicheiroAsync(string titulo, FilePickerFileType tipo, System.Action<string> aoSelecionar)
+    private void OnZonaDragEnter(object? sender, DragEventArgs e)
     {
+        if (sender is Button zona)
+            zona.Classes.Add("arrastando");
+    }
+
+    private void OnZonaDragLeave(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button zona)
+            zona.Classes.Remove("arrastando");
+    }
+
+    private void OnZonaDragOver(object? sender, DragEventArgs e)
+    {
+        var ficheiros = e.DataTransfer?.TryGetFiles();
+        e.DragEffects = ficheiros is not null && ficheiros.Any()
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+    }
+
+    private void OnZonaDrop(object? sender, DragEventArgs e)
+    {
+        if (sender is not Button zona) return;
+        zona.Classes.Remove("arrastando");
+
+        if (zona.DataContext is not DocumentoRequeridoItem documento) return;
+
+        var ficheiro = e.DataTransfer?.TryGetFiles()?.FirstOrDefault();
+        if (ficheiro is not null)
+            documento.NomeArquivo = ficheiro.Name;
+    }
+
+    private async void OnZonaUploadClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button zona) return;
+        if (zona.DataContext is not DocumentoRequeridoItem documento) return;
+
+        // A Foto Tipo Passe só aceita imagens; os demais aceitam PDF ou imagem.
+        var tipoFicheiro = documento.Tipo.Contains("Foto") ? ApenasFotos : DocumentosEFotos;
+
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel?.StorageProvider is null) return;
 
         var resultado = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = titulo,
+            Title = $"Selecionar: {documento.Tipo}",
             AllowMultiple = false,
-            FileTypeFilter = new List<FilePickerFileType> { tipo, FilePickerFileTypes.All }
+            FileTypeFilter = new List<FilePickerFileType> { tipoFicheiro, FilePickerFileTypes.All }
         });
 
         var ficheiro = resultado.Count > 0 ? resultado[0] : null;
         if (ficheiro is not null)
-            aoSelecionar(ficheiro.Name);
+            documento.NomeArquivo = ficheiro.Name;
     }
 }

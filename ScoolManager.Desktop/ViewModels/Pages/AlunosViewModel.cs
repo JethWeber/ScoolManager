@@ -103,16 +103,14 @@ public partial class AlunosViewModel : ViewModelBase
     [ObservableProperty] private string? _periodo;
     [ObservableProperty] private string _salaMatricula = string.Empty;
 
-    // --- Passo 4: Documentos (guardamos apenas o nome do ficheiro escolhido;
-    //     a leitura/armazenamento real do ficheiro fica para quando existir
-    //     um serviço de documentos). BI/Cédula é obrigatório.
-    private const string SemFicheiro = "Nenhum ficheiro selecionado";
-    [ObservableProperty] private string _certificadoDeclaracaoNomeArquivo = SemFicheiro;
-    [ObservableProperty] private string _fotoTipoPasseNomeArquivo = SemFicheiro;
-    [ObservableProperty] private string _biCedulaNomeArquivo = SemFicheiro;
-    [ObservableProperty] private string _atestadoMedicoNomeArquivo = SemFicheiro;
-
-    public bool TemBiCedulaSelecionado => BiCedulaNomeArquivo != SemFicheiro;
+    // --- Passo 4: Documentos. Cada um é uma zona de arrastar-e-soltar própria
+    //     (ver AlunosView.axaml, Passo 4). Guardamos apenas o nome do ficheiro
+    //     escolhido; a leitura/armazenamento real do ficheiro fica para quando
+    //     existir um serviço de documentos. BI/Cédula é o único obrigatório.
+    public DocumentoRequeridoItem CertificadoDocumento { get; } = new("Certificado / Declaração", obrigatorio: false);
+    public DocumentoRequeridoItem FotoDocumento { get; } = new("Foto Tipo Passe", obrigatorio: false);
+    public DocumentoRequeridoItem BiCedulaDocumento { get; } = new("BI / Cédula", obrigatorio: true);
+    public DocumentoRequeridoItem AtestadoDocumento { get; } = new("Atestado Médico", obrigatorio: false);
 
     // --- Propriedades computadas do wizard ---
     public bool EhPasso1 => PassoAtual == 1;
@@ -137,7 +135,7 @@ public partial class AlunosViewModel : ViewModelBase
     {
         1 => !string.IsNullOrWhiteSpace(NomeCompleto),
         3 => !string.IsNullOrWhiteSpace(ClasseMatricula),
-        4 => TemBiCedulaSelecionado,
+        4 => BiCedulaDocumento.TemArquivo,
         _ => true
     };
 
@@ -153,6 +151,9 @@ public partial class AlunosViewModel : ViewModelBase
         AnosLetivos = new ObservableCollection<string> { "Ano: 2025/2026", "Ano: 2024/2025" };
 
         ClassesDisponiveis = new ObservableCollection<string>(Classes.Skip(1));
+
+        foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
+            documento.PropertyChanged += (_, _) => OnPropertyChanged(nameof(PodeAvancar));
 
         _classeSelecionada = Classes[0];
         _statusSelecionado = StatusOptions[0];
@@ -187,12 +188,6 @@ public partial class AlunosViewModel : ViewModelBase
 
     partial void OnNomeCompletoChanged(string value) => OnPropertyChanged(nameof(PodeAvancar));
     partial void OnClasseMatriculaChanged(string? value) => OnPropertyChanged(nameof(PodeAvancar));
-
-    partial void OnBiCedulaNomeArquivoChanged(string value)
-    {
-        OnPropertyChanged(nameof(TemBiCedulaSelecionado));
-        OnPropertyChanged(nameof(PodeAvancar));
-    }
 
     private void AplicarFiltros()
     {
@@ -316,10 +311,8 @@ public partial class AlunosViewModel : ViewModelBase
         Periodo = null;
         SalaMatricula = string.Empty;
 
-        CertificadoDeclaracaoNomeArquivo = SemFicheiro;
-        FotoTipoPasseNomeArquivo = SemFicheiro;
-        BiCedulaNomeArquivo = SemFicheiro;
-        AtestadoMedicoNomeArquivo = SemFicheiro;
+        foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
+            documento.NomeArquivo = DocumentoRequeridoItem.SemFicheiroPlaceholder;
     }
 
     // ===== Os demais modais da view Alunos =====
@@ -353,6 +346,34 @@ public partial class AlunosViewModel : ViewModelBase
         new("2026/0998", "Ana Paula Domingos",     "10ª Classe A", "Letras",    "Sala 12", "José Domingos",    "+244 923 111 222", true),
         new("2026/1423", "Carlos Manuel",          "6ª Classe B",  "Geral",     "Sala 02", "Isabel Manuel",    "+244 928 555 333", true),
     };
+}
+
+/// <summary>
+/// Representa um dos documentos que podem ser exigidos no Passo 4 do
+/// wizard "Novo Aluno" (Certificado/Declaração, Foto Tipo Passe, BI/Cédula,
+/// Atestado Médico). É selecionado através do dropdown e o nome do
+/// ficheiro escolhido é atribuído a <see cref="NomeArquivo"/> pelo
+/// code-behind (após o utilizador escolher um ficheiro no seletor).
+/// </summary>
+public partial class DocumentoRequeridoItem : ObservableObject
+{
+    public const string SemFicheiroPlaceholder = "Nenhum ficheiro selecionado";
+
+    public string Tipo { get; }
+    public bool Obrigatorio { get; }
+
+    [ObservableProperty]
+    private string _nomeArquivo = SemFicheiroPlaceholder;
+
+    public bool TemArquivo => NomeArquivo != SemFicheiroPlaceholder;
+
+    public DocumentoRequeridoItem(string tipo, bool obrigatorio)
+    {
+        Tipo = tipo;
+        Obrigatorio = obrigatorio;
+    }
+
+    partial void OnNomeArquivoChanged(string value) => OnPropertyChanged(nameof(TemArquivo));
 }
 
 } // fim namespace ScoolManager.Desktop.ViewModels.Pages

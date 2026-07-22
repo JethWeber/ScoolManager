@@ -40,6 +40,20 @@
             <GradientStop Color="#111B2E" Offset="1"/>
         </LinearGradientBrush>
 
+        <!-- Borda "vidro" (mesmo efeito usado no LoginWindow) para o modal Novo Aluno -->
+        <LinearGradientBrush x:Key="GlassBorderBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Offset="0"   Color="#35FFFFFF"/>
+            <GradientStop Offset="0.5" Color="#10FFFFFF"/>
+            <GradientStop Offset="1"   Color="#05FFFFFF"/>
+        </LinearGradientBrush>
+
+        <!-- Faixa de acento no topo do modal Novo Aluno (mesma ideia do LoginWindow) -->
+        <LinearGradientBrush x:Key="AcentoTopoBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+            <GradientStop Color="#2196F3" Offset="0"/>
+            <GradientStop Color="#4D8EFF" Offset="0.5"/>
+            <GradientStop Color="#1565C0" Offset="1"/>
+        </LinearGradientBrush>
+
     </UserControl.Resources>
 
     <!-- ================================================================
@@ -148,15 +162,82 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
-        <!-- Linha de documento no Passo 4 do wizard -->
-        <Style Selector="Border.documento-card">
-            <Setter Property="BorderBrush" Value="{StaticResource OutlineVariantBrush}"/>
+        <!-- ================================================================
+             ESTILOS "GLASS" DO MODAL NOVO ALUNO (mesma linguagem visual
+             do LoginWindow: fundo translúcido, borda em alpha branco,
+             realce azul no foco) aplicados sobre a paleta escura original.
+             ================================================================ -->
+        <Style Selector="TextBox.campo">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="14"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="TextBox.campo:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Background" Value="#1E4D8EFF"/>
+        </Style>
+        <Style Selector="TextBox.campo:disabled">
+            <Setter Property="Opacity" Value="0.45"/>
+        </Style>
+
+        <Style Selector="ComboBox.campo">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="ComboBox.campo:pointerover /template/ Border#Background">
+            <Setter Property="Background" Value="#1AFFFFFF"/>
+        </Style>
+
+        <Style Selector="DatePicker.campo">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+
+        <!-- Zona de upload por arrastar-e-soltar (Passo 4 do wizard) -->
+        <Style Selector="Button.zona-upload">
+            <Setter Property="Background" Value="#0EFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10,12"/>
+            <Setter Property="MinHeight" Value="86"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.zona-upload:pointerover">
+            <Setter Property="Background" Value="#144D8EFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+        <!-- Aplicada via code-behind enquanto um ficheiro está a ser arrastado sobre a zona -->
+        <Style Selector="Button.zona-upload.arrastando">
+            <Setter Property="Background" Value="#264D8EFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
         </Style>
 
     </UserControl.Styles>
+
 
     <!-- ================================================================
          CONTEÚDO: Panel raiz para permitir o overlay dos modais por cima
@@ -385,185 +466,251 @@
         <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
           <Panel>
 
-            <!-- O modal "Novo Aluno" é mais largo (tem mais campos) do que
-                 os demais, por isso fica num Border próprio. -->
-            <Border Classes="neo-card" MaxWidth="620" Padding="24"
+            <!-- =========================================================
+                 MODAL "NOVO ALUNO" — tamanho FIXO (Width/Height fixos, não
+                 MaxWidth/MaxHeight) para que o diálogo não "salte" de
+                 tamanho ao trocar de passo: a área de conteúdo é a única
+                 linha "*" do Grid interno e ganha scroll quando precisa,
+                 mas o cartão em si nunca muda de dimensão.
+
+                 Visual "glass" inspirado no LoginWindow (faixa de acento
+                 no topo, borda em gradiente alpha-branco, campos com fundo
+                 translúcido) mantendo a identidade original da view
+                 (Classes="neo-card": fundo em gradiente azul-marinho +
+                 sombra interna).
+                 ========================================================= -->
+            <Border Classes="neo-card" Width="660" Height="600"
+                    ClipToBounds="True" Padding="0"
+                    BorderBrush="{StaticResource GlassBorderBrush}"
+                    BoxShadow="0 16 48 0 #60000000"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     IsVisible="{Binding IsNovoAlunoAberto}">
-                <StackPanel Spacing="16">
+                <Panel>
 
-                    <!-- Cabeçalho do wizard + indicador de progresso -->
-                    <StackPanel Spacing="8">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="Nova matrícula" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource OnSurfaceBrush}"/>
-                                <TextBlock Text="{Binding TituloPassoAtual}" FontSize="13" Opacity="0.7"
-                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                            </StackPanel>
-                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
-                                       FontSize="12" Opacity="0.6"
-                                       Foreground="{StaticResource OnSurfaceVariantBrush}">
-                                <Run Text="Passo "/><Run Text="{Binding PassoAtual}"/><Run Text=" de 4"/>
-                            </TextBlock>
-                        </Grid>
-                        <ProgressBar Minimum="1" Maximum="4" Value="{Binding PassoAtual}" Height="4"
-                                     Foreground="{StaticResource PrimaryContainerBrush}"
-                                     Background="{StaticResource SurfaceVariantBrush}"/>
-                    </StackPanel>
+                    <!-- Faixa de acento no topo (mesma linguagem do LoginWindow) -->
+                    <Border VerticalAlignment="Top" Height="4" Background="{StaticResource AcentoTopoBrush}"/>
 
-                    <ScrollViewer MaxHeight="440">
-                        <StackPanel Spacing="14">
+                    <Grid Margin="24,22,24,18" RowDefinitions="Auto,*,Auto" RowSpacing="12">
 
-                            <!-- ============== Passo 1: Dados do Aluno ============== -->
-                            <StackPanel Spacing="12" IsVisible="{Binding EhPasso1}">
-                                <TextBox Text="{Binding NomeCompleto}" PlaceholderText="Nome completo do aluno *"/>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <DatePicker Grid.Column="0" SelectedDate="{Binding DataNascimento}"/>
-                                    <ComboBox Grid.Column="1" PlaceholderText="Sexo"
-                                              ItemsSource="{Binding OpcoesSexo}" SelectedItem="{Binding Sexo}"/>
-                                </Grid>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <TextBox Grid.Column="0" Text="{Binding Naturalidade}" PlaceholderText="Naturalidade"/>
-                                    <TextBox Grid.Column="1" Text="{Binding Provincia}" PlaceholderText="Província"/>
-                                </Grid>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <TextBox Grid.Column="0" Text="{Binding Pais}" PlaceholderText="País"/>
-                                    <TextBox Grid.Column="1" Text="{Binding NumeroBiCedulaAluno}" PlaceholderText="Nº do BI ou Cédula"/>
-                                </Grid>
-                                <TextBox Text="{Binding Morada}" PlaceholderText="Morada"/>
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Sofre de alguma doença?" FontSize="13"
-                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                    <StackPanel Orientation="Horizontal" Spacing="20">
-                                        <RadioButton Content="Não" GroupName="Doenca" IsChecked="{Binding SofreDoencaNao}"/>
-                                        <RadioButton Content="Sim" GroupName="Doenca" IsChecked="{Binding SofreDoencaSim}"/>
-                                    </StackPanel>
-                                    <TextBox Text="{Binding QualDoenca}" PlaceholderText="Qual?"
+                        <!-- Cabeçalho do wizard + indicador de progresso -->
+                        <StackPanel Grid.Row="0" Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Nova matrícula" FontSize="18" FontWeight="Bold"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="{Binding TituloPassoAtual}" FontSize="12.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                           FontSize="11.5" Opacity="0.6"
+                                           Foreground="{StaticResource OnSurfaceVariantBrush}">
+                                    <Run Text="Passo "/><Run Text="{Binding PassoAtual}"/><Run Text=" de 4"/>
+                                </TextBlock>
+                            </Grid>
+                            <ProgressBar Minimum="1" Maximum="4" Value="{Binding PassoAtual}" Height="4"
+                                         CornerRadius="2"
+                                         Foreground="{StaticResource PrimaryContainerBrush}"
+                                         Background="#14FFFFFF"/>
+                        </StackPanel>
+
+                        <!-- Área de conteúdo: ocupa sempre o mesmo espaço (linha "*"),
+                             por isso o tamanho do modal nunca muda entre os passos. -->
+                        <ScrollViewer Grid.Row="1">
+                            <StackPanel Spacing="12">
+
+                                <!-- ============== Passo 1: Dados do Aluno ============== -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EhPasso1}">
+
+                                    <TextBlock Text="IDENTIFICAÇÃO" Classes="coluna-titulo"/>
+                                    <TextBox Classes="campo" Text="{Binding NomeCompleto}" PlaceholderText="Nome completo do aluno *"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <DatePicker Grid.Column="0" Classes="campo" SelectedDate="{Binding DataNascimento}"/>
+                                        <ComboBox Grid.Column="1" Classes="campo" PlaceholderText="Sexo"
+                                                  ItemsSource="{Binding OpcoesSexo}" SelectedItem="{Binding Sexo}"/>
+                                    </Grid>
+                                    <TextBox Classes="campo" Text="{Binding NumeroBiCedulaAluno}" PlaceholderText="Nº do BI ou Cédula"/>
+
+                                    <TextBlock Text="NATURALIDADE E MORADA" Classes="coluna-titulo" Margin="0,4,0,0"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding Naturalidade}" PlaceholderText="Naturalidade"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding Provincia}" PlaceholderText="Província"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding Pais}" PlaceholderText="País"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding Morada}" PlaceholderText="Morada"/>
+                                    </Grid>
+
+                                    <TextBlock Text="SAÚDE" Classes="coluna-titulo" Margin="0,4,0,0"/>
+                                    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="20">
+                                        <TextBlock Grid.Column="0" Text="Sofre de alguma doença?" FontSize="13"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                                            <RadioButton Content="Não" GroupName="Doenca" IsChecked="{Binding SofreDoencaNao}"/>
+                                            <RadioButton Content="Sim" GroupName="Doenca" IsChecked="{Binding SofreDoencaSim}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBox Classes="campo" Text="{Binding QualDoenca}" PlaceholderText="Qual?"
                                              IsEnabled="{Binding SofreDoencaSim}"/>
                                 </StackPanel>
-                            </StackPanel>
 
-                            <!-- ============== Passo 2: Dados dos Encarregados ============== -->
-                            <StackPanel Spacing="12" IsVisible="{Binding EhPasso2}">
-                                <TextBlock Text="Pai" Classes="coluna-titulo"/>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <TextBox Grid.Column="0" Text="{Binding NomePai}" PlaceholderText="Nome do pai"/>
-                                    <TextBox Grid.Column="1" Text="{Binding ProfissaoPai}" PlaceholderText="Profissão do pai"/>
-                                </Grid>
-                                <TextBox Text="{Binding ContactoPai}" PlaceholderText="Contacto do pai"/>
-
-                                <TextBlock Text="Mãe" Classes="coluna-titulo" Margin="0,8,0,0"/>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <TextBox Grid.Column="0" Text="{Binding NomeMae}" PlaceholderText="Nome da mãe"/>
-                                    <TextBox Grid.Column="1" Text="{Binding ProfissaoMae}" PlaceholderText="Profissão da mãe"/>
-                                </Grid>
-                                <TextBox Text="{Binding ContactoMae}" PlaceholderText="Contacto da mãe"/>
-                            </StackPanel>
-
-                            <!-- ============== Passo 3: Enquadramento na Instituição ============== -->
-                            <StackPanel Spacing="12" IsVisible="{Binding EhPasso3}">
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <ComboBox Grid.Column="0" PlaceholderText="Classe a frequentar *"
-                                              ItemsSource="{Binding ClassesDisponiveis}"
-                                              SelectedItem="{Binding ClasseMatricula}"/>
-                                    <TextBox Grid.Column="1" Text="{Binding CursoMatricula}" PlaceholderText="Curso"/>
-                                </Grid>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                    <ComboBox Grid.Column="0" PlaceholderText="Turno"
-                                              ItemsSource="{Binding OpcoesTurno}" SelectedItem="{Binding Turno}"/>
-                                    <ComboBox Grid.Column="1" PlaceholderText="Período"
-                                              ItemsSource="{Binding OpcoesPeriodo}" SelectedItem="{Binding Periodo}"/>
-                                </Grid>
-                                <TextBox Text="{Binding SalaMatricula}" PlaceholderText="Sala / Turma"/>
-                            </StackPanel>
-
-                            <!-- ============== Passo 4: Documentos ============== -->
-                            <StackPanel Spacing="10" IsVisible="{Binding EhPasso4}">
-
-                                <Border Classes="documento-card">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <materialIcons:MaterialIcon Grid.Column="0" Kind="FileDocumentOutline"
-                                                                     Width="22" Height="22" VerticalAlignment="Center"
-                                                                     Foreground="{StaticResource PrimaryBrush}"/>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Certificado / Declaração" FontSize="13" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                                            <TextBlock Text="{Binding CertificadoDeclaracaoNomeArquivo}" FontSize="12" Opacity="0.6"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                        <Button Grid.Column="2" Classes="secundario" Content="Selecionar" Padding="12,8"
-                                                Click="OnSelecionarCertificadoClick"/>
+                                <!-- ============== Passo 2: Dados dos Encarregados ============== -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EhPasso2}">
+                                    <TextBlock Text="PAI" Classes="coluna-titulo"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding NomePai}" PlaceholderText="Nome do pai"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding ProfissaoPai}" PlaceholderText="Profissão do pai"/>
                                     </Grid>
-                                </Border>
+                                    <TextBox Classes="campo" Text="{Binding ContactoPai}" PlaceholderText="Contacto do pai"/>
 
-                                <Border Classes="documento-card">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <materialIcons:MaterialIcon Grid.Column="0" Kind="AccountBoxOutline"
-                                                                     Width="22" Height="22" VerticalAlignment="Center"
-                                                                     Foreground="{StaticResource PrimaryBrush}"/>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Foto Tipo Passe" FontSize="13" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                                            <TextBlock Text="{Binding FotoTipoPasseNomeArquivo}" FontSize="12" Opacity="0.6"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                        <Button Grid.Column="2" Classes="secundario" Content="Selecionar" Padding="12,8"
-                                                Click="OnSelecionarFotoClick"/>
+                                    <TextBlock Text="MÃE" Classes="coluna-titulo" Margin="0,6,0,0"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding NomeMae}" PlaceholderText="Nome da mãe"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding ProfissaoMae}" PlaceholderText="Profissão da mãe"/>
                                     </Grid>
-                                </Border>
+                                    <TextBox Classes="campo" Text="{Binding ContactoMae}" PlaceholderText="Contacto da mãe"/>
+                                </StackPanel>
 
-                                <Border Classes="documento-card">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <materialIcons:MaterialIcon Grid.Column="0" Kind="CardAccountDetailsOutline"
-                                                                     Width="22" Height="22" VerticalAlignment="Center"
-                                                                     Foreground="{StaticResource PrimaryBrush}"/>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="BI / Cédula *" FontSize="13" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                                            <TextBlock Text="{Binding BiCedulaNomeArquivo}" FontSize="12" Opacity="0.6"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                        <Button Grid.Column="2" Classes="secundario" Content="Selecionar" Padding="12,8"
-                                                Click="OnSelecionarBiCedulaClick"/>
+                                <!-- ============== Passo 3: Enquadramento na Instituição ============== -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EhPasso3}">
+                                    <TextBlock Text="MATRÍCULA" Classes="coluna-titulo"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <ComboBox Grid.Column="0" Classes="campo" PlaceholderText="Classe a frequentar *"
+                                                  ItemsSource="{Binding ClassesDisponiveis}"
+                                                  SelectedItem="{Binding ClasseMatricula}"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding CursoMatricula}" PlaceholderText="Curso"/>
                                     </Grid>
-                                </Border>
 
-                                <Border Classes="documento-card">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                        <materialIcons:MaterialIcon Grid.Column="0" Kind="HeartPulse"
-                                                                     Width="22" Height="22" VerticalAlignment="Center"
-                                                                     Foreground="{StaticResource PrimaryBrush}"/>
-                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                            <TextBlock Text="Atestado Médico" FontSize="13" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                                            <TextBlock Text="{Binding AtestadoMedicoNomeArquivo}" FontSize="12" Opacity="0.6"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                        <Button Grid.Column="2" Classes="secundario" Content="Selecionar" Padding="12,8"
-                                                Click="OnSelecionarAtestadoClick"/>
+                                    <TextBlock Text="HORÁRIO E TURMA" Classes="coluna-titulo" Margin="0,6,0,0"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <ComboBox Grid.Column="0" Classes="campo" PlaceholderText="Turno"
+                                                  ItemsSource="{Binding OpcoesTurno}" SelectedItem="{Binding Turno}"/>
+                                        <ComboBox Grid.Column="1" Classes="campo" PlaceholderText="Período"
+                                                  ItemsSource="{Binding OpcoesPeriodo}" SelectedItem="{Binding Periodo}"/>
                                     </Grid>
-                                </Border>
+                                    <TextBox Classes="campo" Text="{Binding SalaMatricula}" PlaceholderText="Sala / Turma"/>
+                                </StackPanel>
+
+                                <!-- ============== Passo 4: Documentos ==============
+                                     Cada cartão é uma zona de arrastar-e-soltar (drag-and-drop
+                                     real, tratado no code-behind) e também aceita clique para
+                                     abrir o seletor de ficheiros. -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EhPasso4}">
+                                    <TextBlock Text="Arraste o ficheiro para a área correspondente ou clique para selecionar."
+                                               FontSize="11.5" Opacity="0.7" TextWrapping="Wrap"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+
+                                        <Button Grid.Row="0" Grid.Column="0" x:Name="ZonaCertificado" Classes="zona-upload"
+                                                DragDrop.AllowDrop="True" Click="OnZonaUploadClick"
+                                                DataContext="{Binding CertificadoDocumento}">
+                                            <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                                <Panel Width="22" Height="22" HorizontalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
+                                                                                 Foreground="{StaticResource EmeraldBrush}"
+                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                    <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
+                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                </Panel>
+                                                <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                        </Button>
+
+                                        <Button Grid.Row="0" Grid.Column="1" x:Name="ZonaFoto" Classes="zona-upload"
+                                                DragDrop.AllowDrop="True" Click="OnZonaUploadClick"
+                                                DataContext="{Binding FotoDocumento}">
+                                            <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                                <Panel Width="22" Height="22" HorizontalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
+                                                                                 Foreground="{StaticResource EmeraldBrush}"
+                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                    <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
+                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                </Panel>
+                                                <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                        </Button>
+
+                                        <Button Grid.Row="1" Grid.Column="0" x:Name="ZonaBiCedula" Classes="zona-upload"
+                                                DragDrop.AllowDrop="True" Click="OnZonaUploadClick"
+                                                DataContext="{Binding BiCedulaDocumento}">
+                                            <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                                <Panel Width="22" Height="22" HorizontalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
+                                                                                 Foreground="{StaticResource EmeraldBrush}"
+                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                    <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
+                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                </Panel>
+                                                <StackPanel Orientation="Horizontal" Spacing="3" HorizontalAlignment="Center">
+                                                    <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
+                                                               TextAlignment="Center" TextWrapping="Wrap"
+                                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                    <TextBlock Text="*" FontSize="12" FontWeight="Bold"
+                                                               Foreground="{StaticResource ErrorBrush}"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                        </Button>
+
+                                        <Button Grid.Row="1" Grid.Column="1" x:Name="ZonaAtestado" Classes="zona-upload"
+                                                DragDrop.AllowDrop="True" Click="OnZonaUploadClick"
+                                                DataContext="{Binding AtestadoDocumento}">
+                                            <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                                <Panel Width="22" Height="22" HorizontalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
+                                                                                 Foreground="{StaticResource EmeraldBrush}"
+                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                    <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
+                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                </Panel>
+                                                <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                        </Button>
+
+                                    </Grid>
+                                </StackPanel>
 
                             </StackPanel>
+                        </ScrollViewer>
 
-                        </StackPanel>
-                    </ScrollViewer>
+                        <!-- Navegação do wizard -->
+                        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                            <Button Grid.Column="0" Classes="link" Content="Cancelar"
+                                    Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="secundario" Content="Voltar"
+                                    Command="{Binding PassoAnteriorCommand}"
+                                    IsVisible="{Binding PodeVoltar}"/>
+                            <Button Grid.Column="3" Classes="primario"
+                                    Content="{Binding TextoBotaoAvancar}"
+                                    Command="{Binding AvancarOuConcluirCommand}"
+                                    IsEnabled="{Binding PodeAvancar}"/>
+                        </Grid>
 
-                    <!-- Navegação do wizard -->
-                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
-                        <Button Grid.Column="0" Classes="link" Content="Cancelar"
-                                Command="{Binding FecharModalCommand}"/>
-                        <Button Grid.Column="2" Classes="secundario" Content="Voltar"
-                                Command="{Binding PassoAnteriorCommand}"
-                                IsVisible="{Binding PodeVoltar}"/>
-                        <Button Grid.Column="3" Classes="primario"
-                                Content="{Binding TextoBotaoAvancar}"
-                                Command="{Binding AvancarOuConcluirCommand}"
-                                IsEnabled="{Binding PodeAvancar}"/>
                     </Grid>
-
-                </StackPanel>
+                </Panel>
             </Border>
 
             <!-- Demais modais (mais simples, mantêm o layout anterior) -->
