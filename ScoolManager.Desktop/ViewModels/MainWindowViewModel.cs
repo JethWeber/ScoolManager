@@ -27,9 +27,9 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         // 6 views principais, conforme School_Manager_Fluxo_Navegacao.txt.
-        // Por enquanto todos os itens apontam para o DashboardViewModel (placeholder).
-        // Quando cada view real for criada, basta trocar a lambda do PageFactory
-        // (ex.: () => new AlunosViewModel()) - nada mais muda.
+        // Configurações já usa a ConfiguracoesViewModel real; as restantes
+        // ainda apontam para o DashboardViewModel (placeholder) até serem
+        // criadas - basta trocar a lambda do PageFactory quando existirem.
         NavigationItems = new ObservableCollection<NavigationItemViewModel>
         {
             new(MaterialIconKind.ViewDashboard, "Dashboard",      () => new DashboardViewModel()),
@@ -37,7 +37,7 @@ public partial class MainWindowViewModel : ViewModelBase
             new(MaterialIconKind.CashMultiple,  "Financeiro",     () => new DashboardViewModel()), // TODO: FinanceiroViewModel
             new(MaterialIconKind.ChartLine,     "Relatórios",     () => new DashboardViewModel()), // TODO: RelatoriosViewModel
             new(MaterialIconKind.Domain,        "Escola",         () => new DashboardViewModel()), // TODO: EscolaViewModel
-            new(MaterialIconKind.Cog,           "Configurações",  () => new DashboardViewModel()), // TODO: ConfiguracoesViewModel
+            new(MaterialIconKind.Cog,           "Configurações",  () => new ConfiguracoesViewModel()),
         };
 
         _selectedNavigationItem = NavigationItems[0];

@@ -1,0 +1,668 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+             xmlns:models="using:ScoolManager.Desktop.Models"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Class="ScoolManager.Desktop.Views.Pages.ConfiguracoesView"
+             x:DataType="vm:ConfiguracoesViewModel">
+
+    <Design.DataContext>
+        <vm:ConfiguracoesViewModel/>
+    </Design.DataContext>
+
+    <!-- ================================================================
+         RECURSOS: mesma paleta usada em DashboardView.axaml / AlunosView.axaml
+         (tema escuro / Material 3), extraída de
+         configura_es_do_sistema_school_manager_code.html
+         ================================================================ -->
+    <UserControl.Resources>
+
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326"/>
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+        <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#2D3449"/>
+
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6"/>
+
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF"/>
+        <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#00285D"/>
+        <SolidColorBrush x:Key="OutlineVariantBrush" Color="#424754"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4AB"/>
+        <SolidColorBrush x:Key="EmeraldBrush" Color="#34D399"/>
+
+        <!-- Gradiente do "neo-card" (linear-gradient(145deg, #171f33, #111b2e)) -->
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0"/>
+            <GradientStop Color="#111B2E" Offset="1"/>
+        </LinearGradientBrush>
+
+    </UserControl.Resources>
+
+    <!-- ================================================================
+         ESTILOS
+         ================================================================ -->
+    <UserControl.Styles>
+
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000"/>
+        </Style>
+
+        <Style Selector="Border.neo-card-inner">
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BoxShadow" Value="inset 2 2 5 0 #80000000, inset -1 -1 2 0 #0DFFFFFF"/>
+        </Style>
+
+        <!-- Botão primário (Guardar Alterações, Criar Backup Agora, Novo Utilizador) -->
+        <Style Selector="Button.primario">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.primario:pointerover">
+            <Setter Property="Opacity" Value="0.9"/>
+        </Style>
+
+        <!-- Botão de ícone discreto (editar/eliminar/descarregar na tabela) -->
+        <Style Selector="Button.icone-discreto">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.icone-discreto:pointerover">
+            <Setter Property="Background" Value="{StaticResource SurfaceVariantBrush}"/>
+        </Style>
+
+        <!-- Campo de texto (mesma linguagem "glass" usada no modal Novo Aluno) -->
+        <Style Selector="TextBox.campo">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="TextBox.campo:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Background" Value="#1E4D8EFF"/>
+        </Style>
+
+        <Style Selector="TextBlock.rotulo-campo">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Opacity" Value="0.7"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+        </Style>
+
+        <Style Selector="TextBlock.titulo-cartao">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <Style Selector="TextBlock.coluna-titulo">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+        </Style>
+
+        <!-- Item de aba (Dados da Escola / Utilizadores / Permissões / Backup) -->
+        <Style Selector="Button.tab-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0,0,0,14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.tab-item:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        </Style>
+        <Style Selector="Button.tab-item.active">
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        </Style>
+
+        <!-- Interruptor liga/desliga (Backup Diário Automático, etc.) -->
+        <Style Selector="ToggleSwitch.discreto">
+            <Setter Property="OnContent" Value="{x:Null}"/>
+            <Setter Property="OffContent" Value="{x:Null}"/>
+            <Setter Property="MinWidth" Value="0"/>
+        </Style>
+        <Style Selector="ToggleSwitch.discreto /template/ Border#SwitchKnobBoundsRoot">
+            <Setter Property="Background" Value="{StaticResource SurfaceVariantBrush}"/>
+        </Style>
+        <Style Selector="ToggleSwitch.discreto:checked /template/ Border#SwitchKnobBoundsRoot">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+
+        <!-- Checkbox usado na matriz de Permissões -->
+        <Style Selector="CheckBox.permissao">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <!-- Badge de estado do utilizador (Ativo / Inativo) -->
+        <Style Selector="Border.pill-estado">
+            <Setter Property="Background" Value="#1A34D399"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+        <Style Selector="Border.pill-estado TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource EmeraldBrush}"/>
+        </Style>
+        <Style Selector="Border.pill-estado.inativo">
+            <Setter Property="Background" Value="#1AFFB4AB"/>
+        </Style>
+        <Style Selector="Border.pill-estado.inativo TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- ================================================================
+         CONTEÚDO PRINCIPAL
+         ================================================================ -->
+    <ScrollViewer Background="{StaticResource BackgroundBrush}">
+        <StackPanel Margin="32" Spacing="24" MaxWidth="1400">
+
+            <!-- ============================================================
+                 CABEÇALHO + ABAS + AÇÃO "GUARDAR ALTERAÇÕES"
+                 ============================================================ -->
+            <StackPanel Spacing="16">
+
+                <TextBlock Text="Configurações do Sistema" FontSize="24" FontWeight="SemiBold"
+                           Foreground="{StaticResource OnSurfaceBrush}"/>
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="32">
+
+                        <StackPanel Spacing="0">
+                            <Button Classes="tab-item" Classes.active="{Binding EhTabInstitucional}"
+                                    Command="{Binding SelecionarTabCommand}" CommandParameter="institucional">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="School" Width="18" Height="18"/>
+                                    <TextBlock Text="Dados da Escola"/>
+                                </StackPanel>
+                            </Button>
+                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
+                                    Background="{StaticResource PrimaryBrush}"
+                                    IsVisible="{Binding EhTabInstitucional}"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="0">
+                            <Button Classes="tab-item" Classes.active="{Binding EhTabUtilizadores}"
+                                    Command="{Binding SelecionarTabCommand}" CommandParameter="utilizadores">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="AccountCog" Width="18" Height="18"/>
+                                    <TextBlock Text="Utilizadores"/>
+                                </StackPanel>
+                            </Button>
+                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
+                                    Background="{StaticResource PrimaryBrush}"
+                                    IsVisible="{Binding EhTabUtilizadores}"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="0">
+                            <Button Classes="tab-item" Classes.active="{Binding EhTabPermissoes}"
+                                    Command="{Binding SelecionarTabCommand}" CommandParameter="permissoes">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="ShieldAccount" Width="18" Height="18"/>
+                                    <TextBlock Text="Permissões"/>
+                                </StackPanel>
+                            </Button>
+                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
+                                    Background="{StaticResource PrimaryBrush}"
+                                    IsVisible="{Binding EhTabPermissoes}"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="0">
+                            <Button Classes="tab-item" Classes.active="{Binding EhTabBackup}"
+                                    Command="{Binding SelecionarTabCommand}" CommandParameter="backup">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="CloudSync" Width="18" Height="18"/>
+                                    <TextBlock Text="Backup &amp; Segurança"/>
+                                </StackPanel>
+                            </Button>
+                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
+                                    Background="{StaticResource PrimaryBrush}"
+                                    IsVisible="{Binding EhTabBackup}"/>
+                        </StackPanel>
+
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Classes="primario" Command="{Binding GuardarAlteracoesCommand}"
+                            VerticalAlignment="Top">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="ContentSave" Width="16" Height="16"/>
+                            <TextBlock Text="Guardar Alterações"/>
+                        </StackPanel>
+                    </Button>
+
+                </Grid>
+
+                <Border Height="1" Background="{StaticResource OutlineVariantBrush}" Opacity="0.2"/>
+
+            </StackPanel>
+
+            <!-- ============================================================
+                 ABA 1 - DADOS DA ESCOLA
+                 ============================================================ -->
+            <Grid ColumnDefinitions="2*,1*" ColumnSpacing="24" IsVisible="{Binding EhTabInstitucional}">
+
+                <StackPanel Grid.Column="0" Spacing="24">
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="InformationOutline" Width="20" Height="20"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Classes="titulo-cartao" Text="Informação Institucional"/>
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="24" RowSpacing="16">
+                                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Nome Oficial da Instituição"/>
+                                    <TextBox Classes="campo" Text="{Binding NomeInstituicao}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="NIF (Número de Identificação Fiscal)"/>
+                                    <TextBox Classes="campo" Text="{Binding Nif}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Website"/>
+                                    <TextBox Classes="campo" Text="{Binding Website}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="E-mail Administrativo"/>
+                                    <TextBox Classes="campo" Text="{Binding EmailAdministrativo}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="MapMarker" Width="20" Height="20"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Classes="titulo-cartao" Text="Localização e Contacto"/>
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Classes="rotulo-campo" Text="Endereço Completo"/>
+                                <TextBox Classes="campo" Text="{Binding EnderecoCompleto}"
+                                         AcceptsReturn="True" TextWrapping="Wrap" Height="80"/>
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Telefone Principal"/>
+                                    <TextBox Classes="campo" Text="{Binding TelefonePrincipal}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Telefone Secundário"/>
+                                    <TextBox Classes="campo" Text="{Binding TelefoneSecundario}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="24">
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
+                            <Border Width="120" Height="120" Classes="neo-card-inner" Padding="8">
+                                <Grid>
+                                    <materialIcons:MaterialIcon Kind="Shield" Width="56" Height="56"
+                                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                 Foreground="{StaticResource PrimaryBrush}"
+                                                                 IsVisible="{Binding LogotipoPath, Converter={x:Static conv:StringConverters.IsNullOrEmpty}}"/>
+                                    <!-- TODO: quando AlterarLogotipoCommand for implementado, LogotipoPath
+                                         precisará de um IValueConverter (string -> Bitmap), pois Image.Source
+                                         não converte caminhos de ficheiro automaticamente. -->
+                                    <Image Source="{Binding LogotipoPath}"
+                                           IsVisible="{Binding LogotipoPath, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
+                                           Stretch="Uniform"/>
+                                </Grid>
+                            </Border>
+                            <Button Classes="link" Content="Alterar Logotipo"
+                                    Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding AlterarLogotipoCommand}"/>
+                            <TextBlock Text="PNG ou SVG, máx 2MB" FontSize="11" Opacity="0.6"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Estado do Sistema" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+
+                            <Border Classes="neo-card-inner" Padding="12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                        <Ellipse Width="8" Height="8" Fill="{StaticResource EmeraldBrush}"/>
+                                        <TextBlock Text="Licença Ativa" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" FontSize="12" Opacity="0.7"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}">
+                                        <Run Text="Expira em "/><Run Text="{Binding LicencaDiasRestantes}"/><Run Text=" dias"/>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="neo-card-inner" Padding="12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="Database" Width="16" Height="16"
+                                                                     Foreground="{StaticResource PrimaryBrush}"/>
+                                        <TextBlock Text="Espaço em Nuvem" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" FontSize="12" Opacity="0.7"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}">
+                                        <Run Text="{Binding EspacoUsadoLabel}"/><Run Text=" / "/><Run Text="{Binding EspacoTotalLabel}"/>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+            </Grid>
+
+            <!-- ============================================================
+                 ABA 2 - UTILIZADORES
+                 ============================================================ -->
+            <Border Classes="neo-card" Padding="0" ClipToBounds="True" IsVisible="{Binding EhTabUtilizadores}">
+                <StackPanel>
+
+                    <Grid ColumnDefinitions="*,Auto" Margin="24,20">
+                        <TextBlock Grid.Column="0" Text="Gestão de Utilizadores" Classes="titulo-cartao"/>
+                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovoUtilizadorCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="AccountPlus" Width="16" Height="16"/>
+                                <TextBlock Text="Novo Utilizador"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <Border Background="{StaticResource SurfaceContainerHighBrush}" Padding="24,12">
+                        <Grid ColumnDefinitions="*,180,160,110,90">
+                            <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="NOME"/>
+                            <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="CARGO"/>
+                            <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="ÚLTIMO ACESSO"/>
+                            <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="ESTADO"/>
+                            <TextBlock Grid.Column="4" Classes="coluna-titulo" Text="AÇÕES"/>
+                        </Grid>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding Utilizadores}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:UtilizadorItemModel">
+                                <Border BorderThickness="0,0,0,1" BorderBrush="#14FFFFFF" Padding="24,14">
+                                    <Grid ColumnDefinitions="*,180,160,110,90">
+
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                                            <Border Width="32" Height="32" CornerRadius="999"
+                                                    Background="{StaticResource SurfaceVariantBrush}">
+                                                <TextBlock Text="{Binding Iniciais}" FontSize="12" FontWeight="Bold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Nome}" VerticalAlignment="Center" FontSize="13"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding Cargo}" VerticalAlignment="Center"
+                                                   FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                        <TextBlock Grid.Column="2" Text="{Binding UltimoAcessoLabel}" VerticalAlignment="Center"
+                                                   FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                        <Border Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                Classes="pill-estado" Classes.inativo="{Binding !Ativo}">
+                                            <TextBlock Text="{Binding EstadoLabel}"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
+                                            <Button Classes="icone-discreto"
+                                                    Command="{Binding $parent[ItemsControl].((vm:ConfiguracoesViewModel)DataContext).EditarUtilizadorCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <materialIcons:MaterialIcon Kind="Pencil" Width="16" Height="16"
+                                                                             Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </Button>
+                                            <Button Classes="icone-discreto"
+                                                    Command="{Binding $parent[ItemsControl].((vm:ConfiguracoesViewModel)DataContext).DesativarUtilizadorCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="16" Height="16"
+                                                                             Foreground="{StaticResource ErrorBrush}"/>
+                                            </Button>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </Border>
+
+            <!-- ============================================================
+                 ABA 3 - PERMISSÕES
+                 ============================================================ -->
+            <Border Classes="neo-card" Padding="0" ClipToBounds="True" IsVisible="{Binding EhTabPermissoes}">
+                <StackPanel>
+
+                    <TextBlock Text="Permissões por Perfil" Classes="titulo-cartao" Margin="24,20"/>
+
+                    <Border Background="{StaticResource SurfaceContainerHighBrush}" Padding="24,12">
+                        <Grid ColumnDefinitions="*,110,110,110,110,110">
+                            <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="PERFIL"/>
+                            <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="VER ALUNOS" TextAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="EDITAR ALUNOS" TextAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="FINANCEIRO" TextAlignment="Center"/>
+                            <TextBlock Grid.Column="4" Classes="coluna-titulo" Text="RELATÓRIOS" TextAlignment="Center"/>
+                            <TextBlock Grid.Column="5" Classes="coluna-titulo" Text="CONFIGURAÇÕES" TextAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding PerfisPermissao}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:PermissaoPerfilModel">
+                                <Border BorderThickness="0,0,0,1" BorderBrush="#14FFFFFF" Padding="24,14">
+                                    <Grid ColumnDefinitions="*,110,110,110,110,110">
+                                        <TextBlock Grid.Column="0" Text="{Binding Perfil}" VerticalAlignment="Center"
+                                                   FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <CheckBox Grid.Column="1" Classes="permissao" IsChecked="{Binding VerAlunos}" IsEnabled="{Binding !Bloqueado}"/>
+                                        <CheckBox Grid.Column="2" Classes="permissao" IsChecked="{Binding EditarAlunos}" IsEnabled="{Binding !Bloqueado}"/>
+                                        <CheckBox Grid.Column="3" Classes="permissao" IsChecked="{Binding Financeiro}" IsEnabled="{Binding !Bloqueado}"/>
+                                        <CheckBox Grid.Column="4" Classes="permissao" IsChecked="{Binding Relatorios}" IsEnabled="{Binding !Bloqueado}"/>
+                                        <CheckBox Grid.Column="5" Classes="permissao" IsChecked="{Binding Configuracoes}" IsEnabled="{Binding !Bloqueado}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </Border>
+
+            <!-- ============================================================
+                 ABA 4 - BACKUP & SEGURANÇA
+                 ============================================================ -->
+            <Grid ColumnDefinitions="1.4*,1*" ColumnSpacing="24" IsVisible="{Binding EhTabBackup}">
+
+                <Border Grid.Column="0" Classes="neo-card" Padding="24">
+                    <StackPanel Spacing="16">
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="History" Width="20" Height="20"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Classes="titulo-cartao" Text="Histórico de Backups"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="primario" Command="{Binding CriarBackupCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="CloudUpload" Width="16" Height="16"/>
+                                    <TextBlock Text="Criar Backup Agora"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding Backups}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="12"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:BackupItemModel">
+                                    <Border Classes="neo-card-inner" Padding="16">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Grid.Column="0" Width="48" Height="48" CornerRadius="10"
+                                                    Background="{StaticResource SurfaceVariantBrush}">
+                                                <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="24" Height="24"
+                                                                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding NomeArquivo}" FontWeight="SemiBold" FontSize="13"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                <TextBlock Text="{Binding DetalheLabel}" FontSize="11" Opacity="0.6"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="2" Classes="icone-discreto" VerticalAlignment="Center"
+                                                    Command="{Binding $parent[ItemsControl].((vm:ConfiguracoesViewModel)DataContext).RestaurarBackupCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    IsVisible="{Binding EhNaNuvem}">
+                                                <materialIcons:MaterialIcon Kind="Restore" Width="20" Height="20"
+                                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                            </Button>
+                                            <Button Grid.Column="2" Classes="icone-discreto" VerticalAlignment="Center"
+                                                    Command="{Binding $parent[ItemsControl].((vm:ConfiguracoesViewModel)DataContext).DescarregarBackupCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    IsVisible="{Binding !EhNaNuvem}">
+                                                <materialIcons:MaterialIcon Kind="Download" Width="20" Height="20"
+                                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="1" Spacing="24">
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Configurações Automáticas" FontSize="12" FontWeight="Bold"
+                                       Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Backup Diário Automático" FontSize="13"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="Executar todos os dias às 03:00 AM" FontSize="11" Opacity="0.6"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" Classes="discreto"
+                                              IsChecked="{Binding BackupDiarioAutomatico}"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Sincronização em Nuvem" FontSize="13"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="Enviar cópia para Google Drive/AWS" FontSize="11" Opacity="0.6"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" Classes="discreto"
+                                              IsChecked="{Binding SincronizacaoNuvem}"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Notificar Falhas por E-mail" FontSize="13"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="Alertar administrador em caso de erro" FontSize="11" Opacity="0.6"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" Classes="discreto"
+                                              IsChecked="{Binding NotificarFalhasEmail}"/>
+                            </Grid>
+
+                            <Border Classes="neo-card-inner" Padding="16" Background="#0D4D8EFF">
+                                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                    <materialIcons:MaterialIcon Kind="ShieldCheck" Width="40" Height="40"
+                                                                 HorizontalAlignment="Center"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <TextBlock Text="Base de Dados Saudável" FontWeight="SemiBold" FontSize="13"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="{Binding UltimaVerificacaoLabel}" FontSize="11" Opacity="0.6"
+                                               TextWrapping="Wrap" TextAlignment="Center"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+            </Grid>
+
+            <!-- ============================================================
+                 RODAPÉ
+                 ============================================================ -->
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="v2.4.1 | Status do Backup: Sincronizado" FontSize="12" Opacity="0.5"
+                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16">
+                    <TextBlock Text="Suporte" FontSize="12" Opacity="0.5"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                    <TextBlock Text="Documentação" FontSize="12" Opacity="0.5"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>
