@@ -1,0 +1,720 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Class="ScoolManager.Desktop.Views.Pages.FinanceiroView"
+             x:DataType="vm:FinanceiroViewModel">
+
+    <Design.DataContext>
+        <vm:FinanceiroViewModel/>
+    </Design.DataContext>
+
+    <!-- ================================================================
+         RECURSOS: mesma paleta de AlunosView.axaml / DetalhesAlunoView.axaml
+         ================================================================ -->
+    <UserControl.Resources>
+
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326"/>
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+        <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#2D3449"/>
+
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6"/>
+
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF"/>
+        <SolidColorBrush x:Key="OutlineVariantBrush" Color="#424754"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#FFB4AB"/>
+        <SolidColorBrush x:Key="EmeraldBrush" Color="#34D399"/>
+
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0"/>
+            <GradientStop Color="#111B2E" Offset="1"/>
+        </LinearGradientBrush>
+
+    </UserControl.Resources>
+
+    <!-- ================================================================
+         ESTILOS (mesma linguagem visual das demais views)
+         ================================================================ -->
+    <UserControl.Styles>
+
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000"/>
+        </Style>
+
+        <Style Selector="Border.neo-card-inner">
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BoxShadow" Value="inset 2 2 5 0 #80000000, inset -1 -1 2 0 #0DFFFFFF"/>
+        </Style>
+
+        <Style Selector="Button.primario">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.primario:pointerover"><Setter Property="Opacity" Value="0.9"/></Style>
+
+        <Style Selector="Button.secundario">
+            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.secundario:pointerover">
+            <Setter Property="Background" Value="{StaticResource SurfaceVariantBrush}"/>
+        </Style>
+
+        <Style Selector="Button.perigo">
+            <Setter Property="Background" Value="#26FFB4AB"/>
+            <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#40FFB4AB"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.perigo:pointerover"><Setter Property="Opacity" Value="0.85"/></Style>
+
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.link:pointerover"><Setter Property="Opacity" Value="0.8"/></Style>
+
+        <!-- Linha de tabela clicável (Pagamentos / Entradas / Saídas) -->
+        <Style Selector="Button.linha">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="Button.linha:pointerover">
+            <Setter Property="Background" Value="#0DFFFFFF"/>
+        </Style>
+
+        <!-- Abas: Pagamentos / Entradas / Saídas / Caixa -->
+        <Style Selector="Button.aba">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="20,14"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.aba.ativa">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="Button.aba:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        </Style>
+
+        <Style Selector="TextBlock.coluna-titulo">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+        </Style>
+        <Style Selector="TextBlock.rotulo">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        <Style Selector="TextBlock.valor">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        </Style>
+
+        <!-- Campos "glass" dos modais -->
+        <Style Selector="TextBox.campo">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="TextBox.campo:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Background" Value="#1E4D8EFF"/>
+        </Style>
+
+        <Style Selector="ComboBox.campo">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- ================================================================
+         CONTEÚDO
+         ================================================================ -->
+    <Panel>
+        <ScrollViewer>
+            <StackPanel Margin="32" Spacing="20" MaxWidth="1400">
+
+                <!-- Cabeçalho -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Financeiro" FontSize="24" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Dashboard" FontSize="12" Opacity="0.6"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="›" FontSize="12" Opacity="0.4"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="Financeiro" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Abas + conteúdo -->
+                <Border Classes="neo-card" Padding="0">
+                    <Grid RowDefinitions="Auto,Auto">
+
+                        <Border Grid.Row="0" Background="#0DFFFFFF" BorderThickness="0,0,0,1"
+                                BorderBrush="{StaticResource OutlineVariantBrush}">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Classes="aba" Classes.ativa="{Binding AbaRecebimentosAtiva}"
+                                        Content="Recebimentos" Command="{Binding AbrirAbaRecebimentosCommand}"/>
+                                <Button Classes="aba" Classes.ativa="{Binding AbaEntradasAtiva}"
+                                        Content="Entradas" Command="{Binding AbrirAbaEntradasCommand}"/>
+                                <Button Classes="aba" Classes.ativa="{Binding AbaSaidasAtiva}"
+                                        Content="Saídas" Command="{Binding AbrirAbaSaidasCommand}"/>
+                                <Button Classes="aba" Classes.ativa="{Binding AbaCaixaAtiva}"
+                                        Content="Caixa" Command="{Binding AbrirAbaCaixaCommand}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ===== Aba: Recebimentos (SÓ CONSULTA — ver nota no ViewModel) ===== -->
+                        <StackPanel Grid.Row="1" Spacing="16" Margin="24" IsVisible="{Binding AbaRecebimentosAtiva}">
+
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.6"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                       Text="Consulta dos pagamentos efetuados pelos alunos. Novos pagamentos são registados na ficha do aluno, no módulo Alunos."/>
+
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                                <Border Grid.Column="0" Classes="neo-card-inner" Padding="16,4">
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <materialIcons:MaterialIcon Grid.Column="0" Kind="Magnify" Width="18" Height="18"
+                                                                     Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                     VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBox Grid.Column="1" Text="{Binding PesquisaPagamento}"
+                                                 PlaceholderText="Pesquisar por aluno ou referência..."
+                                                 Background="Transparent" BorderThickness="0"
+                                                 Foreground="{StaticResource OnSurfaceBrush}"
+                                                 VerticalAlignment="Center" Padding="0,10"/>
+                                    </Grid>
+                                </Border>
+                                <Button Grid.Column="1" Classes="secundario" Command="{Binding ExportarPdfCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16"/>
+                                        <TextBlock Text="PDF"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="2" Classes="secundario" Command="{Binding ExportarExcelCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="FileExcelBox" Width="16" Height="16"/>
+                                        <TextBlock Text="Excel"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Filtros rápidos -->
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                                <ComboBox Classes="campo" Grid.Column="0" HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding OpcoesPeriodo}" SelectedItem="{Binding FiltroPeriodo}"/>
+                                <ComboBox Classes="campo" Grid.Column="1" HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding OpcoesMetodoPagamento}" SelectedItem="{Binding FiltroMetodoPagamento}"/>
+                                <ComboBox Classes="campo" Grid.Column="2" HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding OpcoesTipoCobranca}" SelectedItem="{Binding FiltroTipoCobranca}"/>
+                            </Grid>
+
+                            <!-- Intervalo personalizado (só relevante quando o período selecionado for "Intervalo personalizado") -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10"
+                                  IsVisible="{Binding MostrarIntervaloPersonalizado}">
+                                <CalendarDatePicker Grid.Column="0" HorizontalAlignment="Stretch"
+                                                     SelectedDate="{Binding FiltroDataInicio}" Watermark="De"/>
+                                <CalendarDatePicker Grid.Column="1" HorizontalAlignment="Stretch"
+                                                     SelectedDate="{Binding FiltroDataFim}" Watermark="Até"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="1.6*,120,100,110,120,90" Margin="20,0">
+                                <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="ALUNO"/>
+                                <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="REFERÊNCIA"/>
+                                <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="VALOR"/>
+                                <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="TIPO"/>
+                                <TextBlock Grid.Column="4" Classes="coluna-titulo" Text="DATA"/>
+                                <TextBlock Grid.Column="5" Classes="coluna-titulo" Text="ESTADO"/>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Pagamentos}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PagamentoItem">
+                                        <Button Classes="linha" Command="{Binding $parent[ItemsControl].((vm:FinanceiroViewModel)DataContext).AbrirDetalhesPagamentoCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Grid ColumnDefinitions="1.6*,120,100,110,120,90">
+                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Aluno}"/>
+                                                <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding Referencia}"/>
+                                                <TextBlock Grid.Column="2" Classes="valor" Text="{Binding Valor}"/>
+                                                <TextBlock Grid.Column="3" Classes="valor" Opacity="0.7" Text="{Binding TipoCobranca}"/>
+                                                <TextBlock Grid.Column="4" Classes="valor" Opacity="0.7" Text="{Binding Data}"/>
+                                                <TextBlock Grid.Column="5" Classes="valor" Opacity="0.85"
+                                                           Foreground="{StaticResource ErrorBrush}"
+                                                           IsVisible="{Binding Anulado}"
+                                                           Text="{Binding Estado}"/>
+                                                <TextBlock Grid.Column="5" Classes="valor" Opacity="0.85"
+                                                           Foreground="{StaticResource EmeraldBrush}"
+                                                           IsVisible="{Binding !Anulado}"
+                                                           Text="{Binding Estado}"/>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- ===== Aba: Entradas ===== -->
+                        <StackPanel Grid.Row="1" Spacing="16" Margin="24" IsVisible="{Binding AbaEntradasAtiva}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Entradas de caixa" FontSize="14" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" Foreground="{StaticResource OnSurfaceBrush}"/>
+                                <Button Grid.Column="1" Classes="primario" Command="{Binding AbrirNovaEntradaCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16"/>
+                                        <TextBlock Text="Nova Entrada"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="2*,140,120,120" Margin="20,0">
+                                <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="DESCRIÇÃO"/>
+                                <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="CATEGORIA"/>
+                                <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="VALOR"/>
+                                <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="DATA"/>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Entradas}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:MovimentoItem">
+                                        <Button Classes="linha" Command="{Binding $parent[ItemsControl].((vm:FinanceiroViewModel)DataContext).AbrirDetalhesMovimentoCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Grid ColumnDefinitions="2*,140,120,120">
+                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Descricao}"/>
+                                                <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding Categoria}"/>
+                                                <TextBlock Grid.Column="2" Classes="valor" Foreground="{StaticResource EmeraldBrush}" Text="{Binding Valor}"/>
+                                                <TextBlock Grid.Column="3" Classes="valor" Opacity="0.7" Text="{Binding Data}"/>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- ===== Aba: Saídas ===== -->
+                        <StackPanel Grid.Row="1" Spacing="16" Margin="24" IsVisible="{Binding AbaSaidasAtiva}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Saídas de caixa" FontSize="14" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" Foreground="{StaticResource OnSurfaceBrush}"/>
+                                <Button Grid.Column="1" Classes="primario" Command="{Binding AbrirNovaSaidaCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16"/>
+                                        <TextBlock Text="Nova Saída"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="2*,140,120,120" Margin="20,0">
+                                <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="DESCRIÇÃO"/>
+                                <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="CATEGORIA"/>
+                                <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="VALOR"/>
+                                <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="DATA"/>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Saidas}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:MovimentoItem">
+                                        <Button Classes="linha" Command="{Binding $parent[ItemsControl].((vm:FinanceiroViewModel)DataContext).AbrirDetalhesMovimentoCommand}"
+                                                CommandParameter="{Binding}">
+                                            <Grid ColumnDefinitions="2*,140,120,120">
+                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Descricao}"/>
+                                                <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding Categoria}"/>
+                                                <TextBlock Grid.Column="2" Classes="valor" Foreground="{StaticResource ErrorBrush}" Text="{Binding Valor}"/>
+                                                <TextBlock Grid.Column="3" Classes="valor" Opacity="0.7" Text="{Binding Data}"/>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- ===== Aba: Caixa ===== -->
+                        <StackPanel Grid.Row="1" Spacing="20" Margin="24" IsVisible="{Binding AbaCaixaAtiva}">
+
+                            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="16">
+                                <Border Grid.Column="0" Classes="neo-card-inner" Padding="16">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="ESTADO DO CAIXA"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource EmeraldBrush}"
+                                                       IsVisible="{Binding CaixaAberto}" Text="Aberto"/>
+                                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource ErrorBrush}"
+                                                       IsVisible="{Binding !CaixaAberto}" Text="Fechado"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" Classes="neo-card-inner" Padding="16">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="SALDO ATUAL"/>
+                                        <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}"
+                                                   Text="{Binding SaldoAtualLabel}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Button Classes="secundario" IsVisible="{Binding CaixaAberto}"
+                                            Command="{Binding AbrirFecharCaixaModalCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="LockOutline" Width="16" Height="16"/>
+                                            <TextBlock Text="Fechar Caixa"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="secundario" IsVisible="{Binding !CaixaAberto}"
+                                            Command="{Binding AbrirReabrirCaixaModalCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="LockOpenOutline" Width="16" Height="16"/>
+                                            <TextBlock Text="Reabrir Caixa"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="primario" IsVisible="{Binding !CaixaAberto}"
+                                            Command="{Binding AbrirAbrirCaixaModalCommand}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="LockOpenVariantOutline" Width="16" Height="16"/>
+                                            <TextBlock Text="Abrir Caixa"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Histórico de sessões" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+
+                            <Grid ColumnDefinitions="160,160,120,120,100" Margin="20,0">
+                                <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="ABERTURA"/>
+                                <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="FECHO"/>
+                                <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="SALDO INICIAL"/>
+                                <TextBlock Grid.Column="3" Classes="coluna-titulo" Text="SALDO FINAL"/>
+                                <TextBlock Grid.Column="4" Classes="coluna-titulo" Text="ESTADO"/>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding HistoricoCaixa}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel Spacing="4"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SessaoCaixaItem">
+                                        <Border Padding="20,10">
+                                            <Grid ColumnDefinitions="160,160,120,120,100">
+                                                <TextBlock Grid.Column="0" Classes="valor" Text="{Binding DataAbertura}"/>
+                                                <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding DataFecho, TargetNullValue=—}"/>
+                                                <TextBlock Grid.Column="2" Classes="valor" Text="{Binding SaldoInicial}"/>
+                                                <TextBlock Grid.Column="3" Classes="valor" Text="{Binding SaldoFinal, TargetNullValue=—}"/>
+                                                <TextBlock Grid.Column="4" Classes="valor" Opacity="0.8" Text="{Binding Estado}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                    </Grid>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ================================================================
+             OVERLAY DOS MODAIS
+             ================================================================ -->
+        <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
+            <Border Classes="neo-card" MaxWidth="480" Padding="24"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <!-- Detalhes do Recebimento / Ver Recibo (mesmo modal, troca de conteúdo) -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsDetalhesPagamentoAberto}">
+
+                        <StackPanel Spacing="14" IsVisible="{Binding !MostrandoRecibo}">
+                            <TextBlock Text="Detalhes do recebimento" FontSize="18" FontWeight="SemiBold"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="14" ColumnSpacing="20">
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Classes="rotulo" Text="ALUNO"/>
+                                    <TextBlock Classes="valor" FontWeight="SemiBold" Text="{Binding PagamentoSelecionado.Aluno}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Classes="rotulo" Text="REFERÊNCIA"/>
+                                    <TextBlock Classes="valor" Text="{Binding PagamentoSelecionado.Referencia}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="0">
+                                    <TextBlock Classes="rotulo" Text="VALOR"/>
+                                    <TextBlock Classes="valor" FontWeight="SemiBold" Text="{Binding PagamentoSelecionado.Valor}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1">
+                                    <TextBlock Classes="rotulo" Text="DATA / MÉTODO"/>
+                                    <TextBlock Classes="valor">
+                                        <Run Text="{Binding PagamentoSelecionado.Data}"/><Run Text=" · "/><Run Text="{Binding PagamentoSelecionado.Metodo}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock Classes="rotulo" Text="TIPO DE COBRANÇA"/>
+                                    <TextBlock Classes="valor" Text="{Binding PagamentoSelecionado.TipoCobranca}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="1">
+                                    <TextBlock Classes="rotulo" Text="ESTADO"/>
+                                    <TextBlock Classes="valor" FontWeight="SemiBold"
+                                               Foreground="{StaticResource ErrorBrush}"
+                                               IsVisible="{Binding PagamentoSelecionado.Anulado}"
+                                               Text="{Binding PagamentoSelecionado.Estado}"/>
+                                    <TextBlock Classes="valor" FontWeight="SemiBold"
+                                               Foreground="{StaticResource EmeraldBrush}"
+                                               IsVisible="{Binding !PagamentoSelecionado.Anulado}"
+                                               Text="{Binding PagamentoSelecionado.Estado}"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <Button Grid.Column="0" Classes="perigo" Content="Anular"
+                                        IsVisible="{Binding !PagamentoSelecionado.Anulado}"
+                                        Command="{Binding AbrirAnularPagamentoCommand}"/>
+                                <Button Grid.Column="2" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                                <Button Grid.Column="3" Classes="primario" Content="Ver Recibo" Command="{Binding AbrirVerReciboCommand}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="14" IsVisible="{Binding MostrandoRecibo}">
+                            <TextBlock Text="Recibo" FontSize="18" FontWeight="SemiBold"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <Border Classes="neo-card-inner" Padding="20">
+                                <StackPanel Spacing="10">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="ReceiptTextOutline" Width="22" Height="22"
+                                                                     Foreground="{StaticResource PrimaryBrush}"/>
+                                        <TextBlock Text="{Binding PagamentoSelecionado.NumeroRecibo}" FontSize="16" FontWeight="Bold"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </StackPanel>
+                                    <Border Height="1" Background="{StaticResource OutlineVariantBrush}" Opacity="0.3"/>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="Aluno" Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding PagamentoSelecionado.Aluno}" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="Referência" Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding PagamentoSelecionado.Referencia}" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="Método" Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding PagamentoSelecionado.Metodo}" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="Data" Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding PagamentoSelecionado.Data}" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </Grid>
+                                    <Border Height="1" Background="{StaticResource OutlineVariantBrush}" Opacity="0.3"/>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="Total Pago" Foreground="{StaticResource OnSurfaceBrush}" FontSize="14" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding PagamentoSelecionado.Valor}" FontSize="16" FontWeight="Bold"
+                                                   Foreground="{StaticResource EmeraldBrush}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                <Button Grid.Column="1" Classes="link" Content="Voltar" Command="{Binding VoltarDetalhesPagamentoCommand}"/>
+                                <Button Grid.Column="2" Classes="primario" Command="{Binding ImprimirReciboCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="PrinterOutline" Width="16" Height="16"/>
+                                        <TextBlock Text="Imprimir Recibo"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                    </StackPanel>
+
+                    <!-- Anular Pagamento (mediante autorização) -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsAnularPagamentoAberto}">
+                        <TextBlock Text="Anular pagamento" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}">
+                            <Run Text="Esta ação requer autorização e irá anular o pagamento de "/>
+                            <Run Text="{Binding PagamentoSelecionado.Aluno}" FontWeight="SemiBold"/>
+                            <Run Text=" ("/><Run Text="{Binding PagamentoSelecionado.Referencia}"/><Run Text=")."/>
+                        </TextBlock>
+                        <TextBox Classes="campo" Text="{Binding MotivoAnulacao}" PlaceholderText="Motivo da anulação"/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="perigo" Content="Confirmar Anulação" Command="{Binding ConfirmarAnularPagamentoCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Nova Entrada / Nova Saída (formulário partilhado) -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsNovoMovimentoAberto}">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"
+                                   Text="{Binding MovimentoTipoModal, StringFormat='Nova {0}'}"/>
+                        <TextBox Classes="campo" Text="{Binding NovoMovimentoDescricao}" PlaceholderText="Descrição"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <TextBox Classes="campo" Grid.Column="0" Text="{Binding NovoMovimentoCategoria}" PlaceholderText="Categoria"/>
+                            <TextBox Classes="campo" Grid.Column="1" Text="{Binding NovoMovimentoValor}" PlaceholderText="Valor (Kz)"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Guardar" Command="{Binding ConfirmarNovoMovimentoCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Editar Entrada / Editar Saída (mesmo formulário, pré-preenchido) -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsEditarMovimentoAberto}">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"
+                                   Text="{Binding MovimentoTipoModal, StringFormat='Editar {0}'}"/>
+                        <TextBox Classes="campo" Text="{Binding NovoMovimentoDescricao}" PlaceholderText="Descrição"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <TextBox Classes="campo" Grid.Column="0" Text="{Binding NovoMovimentoCategoria}" PlaceholderText="Categoria"/>
+                            <TextBox Classes="campo" Grid.Column="1" Text="{Binding NovoMovimentoValor}" PlaceholderText="Valor (Kz)"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Guardar Alterações" Command="{Binding ConfirmarEditarMovimentoCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Detalhes Entrada / Detalhes Saída -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsDetalhesMovimentoAberto}">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}"
+                                   Text="{Binding MovimentoTipoModal, StringFormat='Detalhes da {0}'}"/>
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="14" ColumnSpacing="20">
+                            <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                                <TextBlock Classes="rotulo" Text="DESCRIÇÃO"/>
+                                <TextBlock Classes="valor" FontWeight="SemiBold" Text="{Binding MovimentoSelecionado.Descricao}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="0">
+                                <TextBlock Classes="rotulo" Text="CATEGORIA"/>
+                                <TextBlock Classes="valor" Text="{Binding MovimentoSelecionado.Categoria}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1">
+                                <TextBlock Classes="rotulo" Text="VALOR / DATA"/>
+                                <TextBlock Classes="valor">
+                                    <Run Text="{Binding MovimentoSelecionado.Valor}"/><Run Text=" · "/><Run Text="{Binding MovimentoSelecionado.Data}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="secundario" Content="Editar" Command="{Binding AbrirEditarMovimentoCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Abrir Caixa -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsAbrirCaixaAberto}">
+                        <TextBlock Text="Abrir caixa" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Text="Define o valor com que o caixa começa o dia."/>
+                        <TextBox Classes="campo" Text="{Binding NovoSaldoInicialCaixa}" PlaceholderText="Saldo inicial (Kz)"/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Abrir Caixa" Command="{Binding ConfirmarAbrirCaixaCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Fechar Caixa -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsFecharCaixaAberto}">
+                        <TextBlock Text="Fechar caixa" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}">
+                            <Run Text="Saldo atual: "/><Run Text="{Binding SaldoAtualLabel}" FontWeight="SemiBold"/>
+                            <Run Text=". Confirme para encerrar a sessão do dia."/>
+                        </TextBlock>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Fechar Caixa" Command="{Binding ConfirmarFecharCaixaCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Reabrir Caixa -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsReabrirCaixaAberto}">
+                        <TextBlock Text="Reabrir caixa" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Text="A última sessão fechada será reaberta para novos movimentos."/>
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="primario" Content="Reabrir Caixa" Command="{Binding ConfirmarReabrirCaixaCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+    </Panel>
+
+</UserControl>
