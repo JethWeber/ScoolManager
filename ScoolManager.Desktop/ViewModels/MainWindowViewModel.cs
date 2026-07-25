@@ -37,7 +37,7 @@ public partial class MainWindowViewModel : ViewModelBase
             new(MaterialIconKind.AccountGroup,  "Alunos",         CriarPaginaAlunos),
             new(MaterialIconKind.CashMultiple,  "Financeiro",     () => new FinanceiroViewModel()),
             new(MaterialIconKind.ChartLine,     "Relatórios",     () => new DashboardViewModel()), // TODO: RelatoriosViewModel
-            new(MaterialIconKind.Domain,        "Escola",         () => new DashboardViewModel()), // TODO: EscolaViewModel
+            new(MaterialIconKind.Domain,        "Escola",         () => new EscolaViewModel()),
             new(MaterialIconKind.Cog,           "Configurações",  () => new ConfiguracoesViewModel()),
         };
 

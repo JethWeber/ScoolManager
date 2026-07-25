@@ -1,0 +1,287 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+             xmlns:models="using:ScoolManager.Desktop.Models"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="ScoolManager.Desktop.Views.Pages.EscolaView"
+             x:DataType="vm:EscolaViewModel">
+
+    <Design.DataContext>
+        <vm:EscolaViewModel />
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326" />
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D" />
+        <SolidColorBrush x:Key="SurfaceContainerHighestBrush" Color="#2D3449" />
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD" />
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF" />
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF" />
+        <SolidColorBrush x:Key="OutlineVariantBrush" Color="#424754" />
+
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0" />
+            <GradientStop Color="#111B2E" Offset="1" />
+        </LinearGradientBrush>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}" />
+            <Setter Property="BorderBrush" Value="#1A8C909F" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000" />
+        </Style>
+
+        <Style Selector="Button.primario">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.primario:pointerover">
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+
+        <!-- Faixa de abas horizontal: funciona igual com 1 aba ou com 5, sem alterações. -->
+        <Style Selector="ListBox.abas-escola">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox.abas-escola ScrollViewer">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+        <Style Selector="ListBox.abas-escola ListBoxItem">
+            <Setter Property="Padding" Value="18,10" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ListBox.abas-escola ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#141C2F3D" />
+        </Style>
+        <Style Selector="ListBox.abas-escola ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}" />
+        </Style>
+        <Style Selector="ListBox.abas-escola ListBoxItem:selected">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Background="{StaticResource BackgroundBrush}" RowDefinitions="Auto,Auto,*">
+
+        <!-- Cabeçalho do módulo -->
+        
+
+        <StackPanel Grid.Row="0" Margin="32,28,32,0" Spacing="4">
+                    <TextBlock Text="Escola" FontSize="24" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Dashboard" FontSize="12" Opacity="0.6"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                        <TextBlock Text="›" FontSize="12" Opacity="0.4"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                        <TextBlock Text="Escola" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                    </StackPanel>
+        </StackPanel>
+
+        <!-- Faixa de abas: Abas define quantas abas existem e em que ordem.
+             Trocar de aba só altera AbaItemSelecionada; todo o conteúdo das
+             abas vive mais abaixo, no mesmo Grid, ligado por IsVisible. -->
+        <Border Grid.Row="1" Margin="32,20,32,0" Padding="6"
+                Background="{StaticResource SurfaceContainerHighBrush}"
+                CornerRadius="999"
+                HorizontalAlignment="Left">
+            <ListBox Classes="abas-escola"
+                     ItemsSource="{Binding Abas}"
+                     SelectedItem="{Binding AbaItemSelecionada}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AbaEscolaItem">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="16" Height="16" />
+                            <TextBlock Text="{Binding Titulo}" FontSize="13" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- Conteúdo: um painel por aba, empilhados na mesma célula do Grid;
+             só o painel com IsVisible=True ocupa espaço/aparece. -->
+        <ScrollViewer Grid.Row="2" Margin="0,16,0,0">
+            <Grid>
+
+                <!-- ============================================================ -->
+                <!-- ABA "CLASSES" - única com conteúdo real por agora            -->
+                <!-- ============================================================ -->
+                <StackPanel IsVisible="{Binding AbaClassesAtiva}" Margin="32,0,32,32" Spacing="24" MaxWidth="1400">
+
+                    <!-- Pesquisa + ação -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Watermark="Procurar por classe ou curso..."
+                                 Text="{Binding TermoPesquisaClasses}"
+                                 Background="{StaticResource SurfaceContainerHighBrush}"
+                                 BorderThickness="0" CornerRadius="999" Padding="16,10"
+                                 MaxWidth="360" HorizontalAlignment="Left" />
+                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovaClasseCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="PlusCircle" Width="18" Height="18" />
+                                <TextBlock Text="Nova Classe" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- KPIs -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="20">
+                        <Border Grid.Column="0" Classes="neo-card" Padding="20">
+                            <StackPanel Spacing="6">
+                                <materialIcons:MaterialIcon Kind="AccountGroup" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+                                <TextBlock Text="{Binding TotalAlunosClassesTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="Total de Alunos" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Classes="neo-card" Padding="20">
+                            <StackPanel Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Domain" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+                                <TextBlock Text="{Binding CapacidadeTotalClassesTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="Capacidade Total" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Classes="neo-card" Padding="20">
+                            <StackPanel Spacing="6">
+                                <materialIcons:MaterialIcon Kind="DoorOpen" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+                                <TextBlock Text="{Binding VagasDisponiveisClassesTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="{Binding VagasEmClassesLabel}" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Nível > Curso > Cartões de Classe -->
+                    <ItemsControl ItemsSource="{Binding NiveisAgrupados}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:NivelGrupoViewModel">
+                                <StackPanel Spacing="16" Margin="0,0,0,24">
+
+                                    <TextBlock Text="{Binding NivelLabel}" FontSize="17" FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryBrush}" />
+
+                                    <ItemsControl ItemsSource="{Binding GruposPorCurso}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ClasseCursoGrupoViewModel">
+                                                <StackPanel Spacing="12" Margin="0,0,0,20">
+
+                                                    <TextBlock Text="{Binding CursoLabel}" FontSize="13" FontWeight="Medium"
+                                                               Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+
+                                                    <ItemsControl ItemsSource="{Binding Cards}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="models:ClasseCardModel">
+                                                                <Border Classes="neo-card" Width="260" Padding="20" Margin="0,0,16,16">
+                                                                    <StackPanel Spacing="14">
+
+                                                                        <Grid ColumnDefinitions="Auto,*">
+                                                                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#1A4D8EFF">
+                                                                                <materialIcons:MaterialIcon Kind="GoogleClassroom" Width="18" Height="18"
+                                                                                                             Foreground="{StaticResource PrimaryBrush}"
+                                                                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                            </Border>
+                                                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                                                <TextBlock Text="{Binding Classe.Nome}" FontSize="15" FontWeight="SemiBold"
+                                                                                           Foreground="{StaticResource OnSurfaceBrush}" />
+                                                                                <TextBlock Text="{Binding Curso.Nome}" FontSize="11" Opacity="0.6"
+                                                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" />
+                                                                            </StackPanel>
+                                                                        </Grid>
+
+                                                                        <StackPanel Spacing="4">
+                                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                                <TextBlock Grid.Column="0" Text="Matriculados" FontSize="12" Opacity="0.6"
+                                                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                                                                <TextBlock Grid.Column="1" Text="{Binding MatriculadosCapacidadeLabel}" FontSize="12"
+                                                                                           FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                                                            </Grid>
+                                                                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding OcupacaoPercentual}"
+                                                                                         Height="6" CornerRadius="3"
+                                                                                         Background="{StaticResource SurfaceContainerHighestBrush}"
+                                                                                         Foreground="{StaticResource PrimaryBrush}" />
+                                                                        </StackPanel>
+
+                                                                        <Grid ColumnDefinitions="*,Auto">
+                                                                            <TextBlock Grid.Column="0" Text="{Binding NumeroDeTurmasLabel}" FontSize="11"
+                                                                                       Opacity="0.5" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                       VerticalAlignment="Center" />
+                                                                            <Border Grid.Column="1" CornerRadius="6" Padding="8,3" Background="#331AFFB4">
+                                                                                <TextBlock Text="{Binding OcupacaoLabel}" FontSize="11" FontWeight="Bold"
+                                                                                           Foreground="{StaticResource PrimaryBrush}" />
+                                                                            </Border>
+                                                                        </Grid>
+
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Nenhuma classe encontrada para a pesquisa."
+                               IsVisible="{Binding SemResultadosClasses}"
+                               Opacity="0.5" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               HorizontalAlignment="Center" Margin="0,24" />
+
+                </StackPanel>
+
+                <!-- ============================================================ -->
+                <!-- ABAS "TURMAS" / "SALAS" / "CURSOS" / "ANOS LECTIVOS"          -->
+                <!-- ainda sem conteúdo - mesmo placeholder para todas.            -->
+                <!-- ============================================================ -->
+                <StackPanel IsVisible="{Binding !AbaClassesAtiva}" Margin="32" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Classes="neo-card" Padding="48" MinWidth="360">
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
+                            <materialIcons:MaterialIcon Kind="ProgressWrench" Width="40" Height="40"
+                                                         Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding TituloAbaEmDesenvolvimento}" FontSize="18" FontWeight="SemiBold"
+                                       Foreground="{StaticResource OnSurfaceBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Esta aba ainda está em desenvolvimento." FontSize="13" Opacity="0.6"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>
