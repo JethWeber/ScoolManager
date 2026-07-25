@@ -198,6 +198,7 @@ public partial class FinanceiroViewModel : ViewModelBase
             if (indice >= 0)
                 _todosPagamentos[indice] = PagamentoSelecionado with { Estado = "Anulado" };
             AplicarFiltroPagamentos();
+            AtualizarIndicadoresDashboard();
         }
         FecharModal();
     }
@@ -292,6 +293,7 @@ public partial class FinanceiroViewModel : ViewModelBase
 
             var destino = MovimentoTipoModal == "Entrada" ? Entradas : Saidas;
             destino.Insert(0, novo);
+            AtualizarIndicadoresDashboard();
         }
 
         FecharModal();
@@ -312,6 +314,7 @@ public partial class FinanceiroViewModel : ViewModelBase
                     string.IsNullOrWhiteSpace(NovoMovimentoValor) ? "0 Kz" : NovoMovimentoValor,
                     MovimentoSelecionado.Data);
             }
+            AtualizarIndicadoresDashboard();
         }
 
         FecharModal();
@@ -411,6 +414,56 @@ public partial class FinanceiroViewModel : ViewModelBase
     }
 
     // ================================================================
+    // Dashboard Financeiro (indicadores resumidos — secção 5 do relatório)
+    // ================================================================
+    [ObservableProperty] private string _recebimentosMesAtualLabel = "0 Kz";
+    [ObservableProperty] private string _recebimentosMesAnteriorLabel = "0 Kz";
+    [ObservableProperty] private string _totalEntradasMesLabel = "0 Kz";
+    [ObservableProperty] private string _totalSaidasMesLabel = "0 Kz";
+    // Saldo atual do caixa reutiliza SaldoAtualLabel (aba "Caixa").
+
+    private void AtualizarIndicadoresDashboard()
+    {
+        var hoje = DateTime.Now;
+        var mesAnterior = hoje.AddMonths(-1);
+
+        var recebimentosValidos = _todosPagamentos.Where(p => !p.Anulado).Select(p => (p.Data, p.Valor));
+
+        RecebimentosMesAtualLabel = FormatarKz(SomaValoresDoMes(recebimentosValidos, hoje.Year, hoje.Month));
+        RecebimentosMesAnteriorLabel = FormatarKz(SomaValoresDoMes(recebimentosValidos, mesAnterior.Year, mesAnterior.Month));
+        TotalEntradasMesLabel = FormatarKz(SomaValoresDoMes(Entradas.Select(e => (e.Data, e.Valor)), hoje.Year, hoje.Month));
+        TotalSaidasMesLabel = FormatarKz(SomaValoresDoMes(Saidas.Select(s => (s.Data, s.Valor)), hoje.Year, hoje.Month));
+    }
+
+    private static decimal SomaValoresDoMes(IEnumerable<(string Data, string Valor)> itens, int ano, int mes)
+    {
+        decimal total = 0m;
+        foreach (var (dataTexto, valorTexto) in itens)
+        {
+            if (DateTime.TryParseExact(dataTexto, "dd/MM/yyyy", null,
+                    System.Globalization.DateTimeStyles.None, out var data) &&
+                data.Year == ano && data.Month == mes)
+            {
+                total += ParseValorKz(valorTexto);
+            }
+        }
+        return total;
+    }
+
+    private static decimal ParseValorKz(string valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor)) return 0m;
+        var limpo = valor.Replace("Kz", string.Empty).Trim()
+            .Replace(".", string.Empty)   // remove separador de milhar
+            .Replace(",", ".");           // vírgula decimal -> ponto
+        return decimal.TryParse(limpo, System.Globalization.NumberStyles.Any,
+            System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0m;
+    }
+
+    private static string FormatarKz(decimal valor) =>
+        $"{valor.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".")} Kz";
+
+    // ================================================================
     // Dados mock
     // ================================================================
     public FinanceiroViewModel()
@@ -437,6 +490,8 @@ public partial class FinanceiroViewModel : ViewModelBase
         HistoricoCaixa.Add(new SessaoCaixaItem("20/07/2026 07:32", null, "50.000 Kz", null, "Aberto"));
         HistoricoCaixa.Add(new SessaoCaixaItem("17/07/2026 07:28", "17/07/2026 17:05", "40.000 Kz", "298.400 Kz", "Fechado"));
         HistoricoCaixa.Add(new SessaoCaixaItem("16/07/2026 07:30", "16/07/2026 17:10", "35.000 Kz", "271.200 Kz", "Fechado"));
+
+        AtualizarIndicadoresDashboard();
     }
 }
 

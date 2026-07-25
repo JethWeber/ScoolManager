@@ -111,13 +111,14 @@
         </Style>
         <Style Selector="Button.link:pointerover"><Setter Property="Opacity" Value="0.8"/></Style>
 
-        <!-- Linha de tabela clicável (Pagamentos / Entradas / Saídas) -->
+        <!-- Linha de tabela clicável (Recebimentos / Entradas / Saídas) -->
         <Style Selector="Button.linha">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,12"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
         <Style Selector="Button.linha:pointerover">
@@ -215,6 +216,45 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!-- Dashboard Financeiro: indicadores resumidos (ver secção 5 do relatório) -->
+                <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="12">
+                    <Border Grid.Column="0" Classes="neo-card-inner" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="rotulo" Text="RECEBIMENTOS (MÊS ATUAL)"/>
+                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource EmeraldBrush}"
+                                       Text="{Binding RecebimentosMesAtualLabel}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Classes="neo-card-inner" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="rotulo" Text="RECEBIMENTOS (MÊS ANTERIOR)"/>
+                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}"
+                                       Text="{Binding RecebimentosMesAnteriorLabel}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Classes="neo-card-inner" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="rotulo" Text="ENTRADAS GERAIS (MÊS)"/>
+                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource EmeraldBrush}"
+                                       Text="{Binding TotalEntradasMesLabel}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="3" Classes="neo-card-inner" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="rotulo" Text="SAÍDAS (MÊS)"/>
+                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource ErrorBrush}"
+                                       Text="{Binding TotalSaidasMesLabel}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="4" Classes="neo-card-inner" Padding="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="rotulo" Text="SALDO ATUAL DO CAIXA"/>
+                            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}"
+                                       Text="{Binding SaldoAtualLabel}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
                 <!-- Abas + conteúdo -->
                 <Border Classes="neo-card" Padding="0">
                     <Grid RowDefinitions="Auto,Auto">
@@ -286,7 +326,7 @@
                                                      SelectedDate="{Binding FiltroDataFim}" Watermark="Até"/>
                             </Grid>
 
-                            <Grid ColumnDefinitions="1.6*,120,100,110,120,90" Margin="20,0">
+                            <Grid ColumnDefinitions="1.6*,120,100,110,120,90" Margin="20,0" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="ALUNO"/>
                                 <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="REFERÊNCIA"/>
                                 <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="VALOR"/>
@@ -303,8 +343,8 @@
                                     <DataTemplate x:DataType="vm:PagamentoItem">
                                         <Button Classes="linha" Command="{Binding $parent[ItemsControl].((vm:FinanceiroViewModel)DataContext).AbrirDetalhesPagamentoCommand}"
                                                 CommandParameter="{Binding}">
-                                            <Grid ColumnDefinitions="1.6*,120,100,110,120,90">
-                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Aluno}"/>
+                                            <Grid ColumnDefinitions="1.6*,120,100,110,120,90" ColumnSpacing="12">
+                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Aluno}" TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding Referencia}"/>
                                                 <TextBlock Grid.Column="2" Classes="valor" Text="{Binding Valor}"/>
                                                 <TextBlock Grid.Column="3" Classes="valor" Opacity="0.7" Text="{Binding TipoCobranca}"/>
@@ -337,7 +377,7 @@
                                 </Button>
                             </Grid>
 
-                            <Grid ColumnDefinitions="2*,140,120,120" Margin="20,0">
+                            <Grid ColumnDefinitions="2*,140,120,120" Margin="20,0" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="DESCRIÇÃO"/>
                                 <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="CATEGORIA"/>
                                 <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="VALOR"/>
@@ -352,8 +392,8 @@
                                     <DataTemplate x:DataType="vm:MovimentoItem">
                                         <Button Classes="linha" Command="{Binding $parent[ItemsControl].((vm:FinanceiroViewModel)DataContext).AbrirDetalhesMovimentoCommand}"
                                                 CommandParameter="{Binding}">
-                                            <Grid ColumnDefinitions="2*,140,120,120">
-                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Descricao}"/>
+                                            <Grid ColumnDefinitions="2*,140,120,120" ColumnSpacing="12">
+                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Descricao}" TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding Categoria}"/>
                                                 <TextBlock Grid.Column="2" Classes="valor" Foreground="{StaticResource EmeraldBrush}" Text="{Binding Valor}"/>
                                                 <TextBlock Grid.Column="3" Classes="valor" Opacity="0.7" Text="{Binding Data}"/>
@@ -377,7 +417,7 @@
                                 </Button>
                             </Grid>
 
-                            <Grid ColumnDefinitions="2*,140,120,120" Margin="20,0">
+                            <Grid ColumnDefinitions="2*,140,120,120" Margin="20,0" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="DESCRIÇÃO"/>
                                 <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="CATEGORIA"/>
                                 <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="VALOR"/>
@@ -392,8 +432,8 @@
                                     <DataTemplate x:DataType="vm:MovimentoItem">
                                         <Button Classes="linha" Command="{Binding $parent[ItemsControl].((vm:FinanceiroViewModel)DataContext).AbrirDetalhesMovimentoCommand}"
                                                 CommandParameter="{Binding}">
-                                            <Grid ColumnDefinitions="2*,140,120,120">
-                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Descricao}"/>
+                                            <Grid ColumnDefinitions="2*,140,120,120" ColumnSpacing="12">
+                                                <TextBlock Grid.Column="0" Classes="valor" FontWeight="SemiBold" Text="{Binding Descricao}" TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding Categoria}"/>
                                                 <TextBlock Grid.Column="2" Classes="valor" Foreground="{StaticResource ErrorBrush}" Text="{Binding Valor}"/>
                                                 <TextBlock Grid.Column="3" Classes="valor" Opacity="0.7" Text="{Binding Data}"/>
@@ -455,7 +495,7 @@
                             <TextBlock Text="Histórico de sessões" FontSize="14" FontWeight="SemiBold"
                                        Foreground="{StaticResource OnSurfaceBrush}"/>
 
-                            <Grid ColumnDefinitions="160,160,120,120,100" Margin="20,0">
+                            <Grid ColumnDefinitions="160,160,120,120,100" Margin="20,0" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0" Classes="coluna-titulo" Text="ABERTURA"/>
                                 <TextBlock Grid.Column="1" Classes="coluna-titulo" Text="FECHO"/>
                                 <TextBlock Grid.Column="2" Classes="coluna-titulo" Text="SALDO INICIAL"/>
@@ -470,7 +510,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:SessaoCaixaItem">
                                         <Border Padding="20,10">
-                                            <Grid ColumnDefinitions="160,160,120,120,100">
+                                            <Grid ColumnDefinitions="160,160,120,120,100" ColumnSpacing="12">
                                                 <TextBlock Grid.Column="0" Classes="valor" Text="{Binding DataAbertura}"/>
                                                 <TextBlock Grid.Column="1" Classes="valor" Opacity="0.7" Text="{Binding DataFecho, TargetNullValue=—}"/>
                                                 <TextBlock Grid.Column="2" Classes="valor" Text="{Binding SaldoInicial}"/>
