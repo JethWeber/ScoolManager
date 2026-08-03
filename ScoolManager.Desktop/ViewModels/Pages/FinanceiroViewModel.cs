@@ -14,19 +14,6 @@ namespace ScoolManager.Desktop.ViewModels.Pages
 /// 4 abas internas: Recebimentos, Entradas, Saídas, Caixa. Segue o mesmo
 /// padrão de AlunosViewModel/DetalhesAlunoViewModel: dados locais/mock,
 /// modais em overlay, sem dependência do ScoolManager.Core.
-///
-/// IMPORTANTE (spec, ver Relatório de Organização do Módulo Financeiro):
-/// a aba "Recebimentos" é APENAS CONSULTA. Este módulo não efetua cobranças
-/// nem cria pagamentos — todos os registos chegam exclusivamente do módulo
-/// Alunos (ficha individual do aluno), que atualiza este ecrã automaticamente.
-/// Por isso não existe aqui nenhum comando "Novo Pagamento"; apenas
-/// pesquisa/filtros, consulta de detalhes, reimpressão de recibo, anulação
-/// (mediante autorização) e exportação de listagens.
-///
-/// IMPORTANTE (spec): "Recibo NÃO é View". O fluxo Recebimento -> Detalhes
-/// do Recebimento (Modal) -> Ver Recibo (Modal) é implementado como uma
-/// troca de CONTEÚDO dentro do mesmo modal "Detalhes do Recebimento" (ver
-/// <see cref="MostrandoRecibo"/>), nunca como um segundo modal empilhado.
 /// </summary>
 public partial class FinanceiroViewModel : ViewModelBase
 {

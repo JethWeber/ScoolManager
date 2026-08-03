@@ -7,7 +7,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
              x:Class="ScoolManager.Desktop.Views.Pages.EscolaView"
-             x:DataType="vm:EscolaViewModel">
+             x:DataType="vm:EscolaViewModel"
+             x:Name="RaizEscolaView">
 
     <Design.DataContext>
         <vm:EscolaViewModel />
@@ -52,6 +53,66 @@
             <Setter Property="Opacity" Value="0.9" />
         </Style>
 
+        <!-- Botões pequenos de ação (editar/eliminar) dentro dos cartões. -->
+        <Style Selector="Button.icone-cartao">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style Selector="Button.icone-cartao:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#141C2F3D" />
+        </Style>
+
+        <!-- Botão secundário (Cancelar) usado nos modais. -->
+        <Style Selector="Button.secundario">
+            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighestBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.secundario:pointerover">
+            <Setter Property="Opacity" Value="0.85" />
+        </Style>
+
+        <!-- Botão de perigo (Eliminar/confirmação destrutiva) usado nos modais. -->
+        <Style Selector="Button.perigo">
+            <Setter Property="Background" Value="#C4453B" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.perigo:pointerover">
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+
+        <!-- Campos de formulário usados dentro dos modais. -->
+        <Style Selector="TextBox.campo-modal">
+            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12,10" />
+        </Style>
+        <Style Selector="ComboBox.campo-modal">
+            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
         <!-- Faixa de abas horizontal: funciona igual com 1 aba ou com 5, sem alterações. -->
         <Style Selector="ListBox.abas-escola">
             <Setter Property="Background" Value="Transparent" />
@@ -84,19 +145,17 @@
     <Grid Background="{StaticResource BackgroundBrush}" RowDefinitions="Auto,Auto,*">
 
         <!-- Cabeçalho do módulo -->
-        
-
         <StackPanel Grid.Row="0" Margin="32,28,32,0" Spacing="4">
-                    <TextBlock Text="Escola" FontSize="24" FontWeight="SemiBold"
-                               Foreground="{StaticResource OnSurfaceBrush}"/>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="Dashboard" FontSize="12" Opacity="0.6"
-                                   Foreground="{StaticResource PrimaryBrush}"/>
-                        <TextBlock Text="›" FontSize="12" Opacity="0.4"
-                                   Foreground="{StaticResource PrimaryBrush}"/>
-                        <TextBlock Text="Escola" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryBrush}"/>
-                    </StackPanel>
+            <TextBlock Text="Escola" FontSize="24" FontWeight="SemiBold"
+                       Foreground="{StaticResource OnSurfaceBrush}"/>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="Dashboard" FontSize="12" Opacity="0.6"
+                           Foreground="{StaticResource PrimaryBrush}"/>
+                <TextBlock Text="›" FontSize="12" Opacity="0.4"
+                           Foreground="{StaticResource PrimaryBrush}"/>
+                <TextBlock Text="Escola" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{StaticResource PrimaryBrush}"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Faixa de abas: Abas define quantas abas existem e em que ordem.
@@ -131,21 +190,23 @@
             <Grid>
 
                 <!-- ============================================================ -->
-                <!-- ABA "CLASSES" - única com conteúdo real por agora            -->
+                <!-- ABA "TURMAS" - única com conteúdo real por agora             -->
                 <!-- ============================================================ -->
-                <StackPanel IsVisible="{Binding AbaClassesAtiva}" Margin="32,0,32,32" Spacing="24" MaxWidth="1400">
+                <StackPanel IsVisible="{Binding AbaTurmasAtiva}" Margin="32,0,32,32" Spacing="24" MaxWidth="1400">
 
                     <!-- Pesquisa + ação -->
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBox Grid.Column="0" Watermark="Procurar por classe ou curso..."
-                                 Text="{Binding TermoPesquisaClasses}"
-                                 Background="{StaticResource SurfaceContainerHighBrush}"
-                                 BorderThickness="0" CornerRadius="999" Padding="16,10"
-                                 MaxWidth="360" HorizontalAlignment="Left" />
-                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovaClasseCommand}">
+                        <TextBox Grid.Column="0" Text="{Binding TermoPesquisaTurmas}"
+                                PlaceholderText="Procurar por turma, sala ou curso..."
+                                Background="{StaticResource SurfaceContainerHighBrush}"
+                                Foreground="{StaticResource OnSurfaceBrush}"
+                                VerticalAlignment="Center" Padding="10,20"
+                                MaxWidth="1060"/>
+
+                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovaTurmaCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <materialIcons:MaterialIcon Kind="PlusCircle" Width="18" Height="18" />
-                                <TextBlock Text="Nova Classe" />
+                                <TextBlock Text="Nova Turma" />
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -155,119 +216,109 @@
                         <Border Grid.Column="0" Classes="neo-card" Padding="20">
                             <StackPanel Spacing="6">
                                 <materialIcons:MaterialIcon Kind="AccountGroup" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
-                                <TextBlock Text="{Binding TotalAlunosClassesTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="{Binding TotalAlunosTurmasTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
                                 <TextBlock Text="Total de Alunos" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="1" Classes="neo-card" Padding="20">
                             <StackPanel Spacing="6">
                                 <materialIcons:MaterialIcon Kind="Domain" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
-                                <TextBlock Text="{Binding CapacidadeTotalClassesTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="{Binding CapacidadeTotalTurmasTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
                                 <TextBlock Text="Capacidade Total" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="2" Classes="neo-card" Padding="20">
                             <StackPanel Spacing="6">
                                 <materialIcons:MaterialIcon Kind="DoorOpen" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
-                                <TextBlock Text="{Binding VagasDisponiveisClassesTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
-                                <TextBlock Text="{Binding VagasEmClassesLabel}" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                <TextBlock Text="{Binding VagasDisponiveisTurmasTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="{Binding VagasEmTurmasLabel}" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
-                    <!-- Nível > Curso > Cartões de Classe -->
-                    <ItemsControl ItemsSource="{Binding NiveisAgrupados}">
+                    <!-- Cartões de Turma -->
+                    <ItemsControl ItemsSource="{Binding TurmasListadas}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:NivelGrupoViewModel">
-                                <StackPanel Spacing="16" Margin="0,0,0,24">
+                            <DataTemplate x:DataType="models:TurmaModel">
+                                <Border Classes="neo-card" Width="260" Padding="20" Margin="0,0,16,16">
+                                    <StackPanel Spacing="14">
 
-                                    <TextBlock Text="{Binding NivelLabel}" FontSize="17" FontWeight="SemiBold"
-                                               Foreground="{StaticResource PrimaryBrush}" />
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#1A4D8EFF">
+                                                <materialIcons:MaterialIcon Kind="GoogleClassroom" Width="18" Height="18"
+                                                                             Foreground="{StaticResource PrimaryBrush}"
+                                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Nome}" FontSize="15" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource OnSurfaceBrush}" />
+                                                <TextBlock Text="{Binding Sala.Nome}" FontSize="11" Opacity="0.6"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Button Grid.Column="2" Classes="icone-cartao"
+                                                    Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EditarTurmaCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Editar turma">
+                                                <materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15"
+                                                                             Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                            </Button>
+                                            <Button Grid.Column="3" Classes="icone-cartao"
+                                                    Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EliminarTurmaCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Eliminar turma">
+                                                <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15"
+                                                                             Foreground="#E0777C" />
+                                            </Button>
+                                        </Grid>
 
-                                    <ItemsControl ItemsSource="{Binding GruposPorCurso}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="vm:ClasseCursoGrupoViewModel">
-                                                <StackPanel Spacing="12" Margin="0,0,0,20">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Turno" FontSize="12" Opacity="0.6"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding TurnoLabel}" FontSize="12"
+                                                       FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                        </Grid>
 
-                                                    <TextBlock Text="{Binding CursoLabel}" FontSize="13" FontWeight="Medium"
-                                                               Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                        <StackPanel Spacing="4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Matriculados" FontSize="12" Opacity="0.6"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding MatriculadosCapacidadeLabel}" FontSize="12"
+                                                           FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                            </Grid>
+                                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding OcupacaoPercentual}"
+                                                         Height="6" CornerRadius="3"
+                                                         Background="{StaticResource SurfaceContainerHighestBrush}"
+                                                         Foreground="{StaticResource PrimaryBrush}" />
+                                        </StackPanel>
 
-                                                    <ItemsControl ItemsSource="{Binding Cards}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <WrapPanel />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate x:DataType="models:ClasseCardModel">
-                                                                <Border Classes="neo-card" Width="260" Padding="20" Margin="0,0,16,16">
-                                                                    <StackPanel Spacing="14">
+                                        <Border CornerRadius="6" Padding="8,3" Background="#331AFFB4" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding OcupacaoLabel}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryBrush}" />
+                                        </Border>
 
-                                                                        <Grid ColumnDefinitions="Auto,*">
-                                                                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#1A4D8EFF">
-                                                                                <materialIcons:MaterialIcon Kind="GoogleClassroom" Width="18" Height="18"
-                                                                                                             Foreground="{StaticResource PrimaryBrush}"
-                                                                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                                            </Border>
-                                                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                                                                <TextBlock Text="{Binding Classe.Nome}" FontSize="15" FontWeight="SemiBold"
-                                                                                           Foreground="{StaticResource OnSurfaceBrush}" />
-                                                                                <TextBlock Text="{Binding Curso.Nome}" FontSize="11" Opacity="0.6"
-                                                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" />
-                                                                            </StackPanel>
-                                                                        </Grid>
-
-                                                                        <StackPanel Spacing="4">
-                                                                            <Grid ColumnDefinitions="*,Auto">
-                                                                                <TextBlock Grid.Column="0" Text="Matriculados" FontSize="12" Opacity="0.6"
-                                                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
-                                                                                <TextBlock Grid.Column="1" Text="{Binding MatriculadosCapacidadeLabel}" FontSize="12"
-                                                                                           FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
-                                                                            </Grid>
-                                                                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding OcupacaoPercentual}"
-                                                                                         Height="6" CornerRadius="3"
-                                                                                         Background="{StaticResource SurfaceContainerHighestBrush}"
-                                                                                         Foreground="{StaticResource PrimaryBrush}" />
-                                                                        </StackPanel>
-
-                                                                        <Grid ColumnDefinitions="*,Auto">
-                                                                            <TextBlock Grid.Column="0" Text="{Binding NumeroDeTurmasLabel}" FontSize="11"
-                                                                                       Opacity="0.5" Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                                                                       VerticalAlignment="Center" />
-                                                                            <Border Grid.Column="1" CornerRadius="6" Padding="8,3" Background="#331AFFB4">
-                                                                                <TextBlock Text="{Binding OcupacaoLabel}" FontSize="11" FontWeight="Bold"
-                                                                                           Foreground="{StaticResource PrimaryBrush}" />
-                                                                            </Border>
-                                                                        </Grid>
-
-                                                                    </StackPanel>
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-
-                                </StackPanel>
+                                    </StackPanel>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <TextBlock Text="Nenhuma classe encontrada para a pesquisa."
-                               IsVisible="{Binding SemResultadosClasses}"
+                    <TextBlock Text="Nenhuma turma encontrada para a pesquisa."
+                               IsVisible="{Binding SemResultadosTurmas}"
                                Opacity="0.5" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
                                HorizontalAlignment="Center" Margin="0,24" />
 
                 </StackPanel>
 
                 <!-- ============================================================ -->
-                <!-- ABAS "TURMAS" / "SALAS" / "CURSOS" / "ANOS LECTIVOS"          -->
+                <!-- ABAS "SALAS" / "CURSOS" / "ANOS LECTIVOS"                     -->
                 <!-- ainda sem conteúdo - mesmo placeholder para todas.            -->
                 <!-- ============================================================ -->
-                <StackPanel IsVisible="{Binding !AbaClassesAtiva}" Margin="32" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel IsVisible="{Binding !AbaTurmasAtiva}" Margin="32" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border Classes="neo-card" Padding="48" MinWidth="360">
                         <StackPanel Spacing="12" HorizontalAlignment="Center">
                             <materialIcons:MaterialIcon Kind="ProgressWrench" Width="40" Height="40"
@@ -282,6 +333,154 @@
 
             </Grid>
         </ScrollViewer>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Nova Turma" / "Editar Turma"                               -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalTurmaVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ScrollViewer MaxHeight="640">
+                <StackPanel Spacing="16">
+
+                    <TextBlock Text="{Binding ModalTurmaTitulo}" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}" />
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Ano lectivo" FontSize="12" Opacity="0.7"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <ComboBox Classes="campo-modal" ItemsSource="{Binding AnosLectivosOpcoes}"
+                                  SelectedItem="{Binding FormAnoLectivoSelecionado}"
+                                  IsEnabled="{Binding !ModalTurmaModoEdicao}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:AnoLectivoModel">
+                                    <TextBlock Text="{Binding Nome}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Classe" FontSize="12" Opacity="0.7"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <ComboBox Classes="campo-modal" ItemsSource="{Binding ClassesOpcoes}"
+                                  SelectedItem="{Binding FormClasseSelecionada}"
+                                  IsEnabled="{Binding !ModalTurmaModoEdicao}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ClasseModel">
+                                    <TextBlock Text="{Binding Nome}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding CursoAplicavel}">
+                        <TextBlock Text="Curso" FontSize="12" Opacity="0.7"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <ComboBox Classes="campo-modal" ItemsSource="{Binding CursosOpcoes}"
+                                  SelectedItem="{Binding FormCursoSelecionado}"
+                                  IsEnabled="{Binding !ModalTurmaModoEdicao}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:CursoModel">
+                                    <TextBlock Text="{Binding Nome}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Sala" FontSize="12" Opacity="0.7"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <ComboBox Classes="campo-modal" ItemsSource="{Binding SalasOpcoes}"
+                                  SelectedItem="{Binding FormSalaSelecionada}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:SalaModel">
+                                    <TextBlock Text="{Binding Nome}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Turno" FontSize="12" Opacity="0.7"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <ComboBox Classes="campo-modal" ItemsSource="{Binding TurnoOpcoes}"
+                                  SelectedItem="{Binding FormTurnoSelecionado}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TurnoOpcao">
+                                    <TextBlock Text="{Binding Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Capacidade" FontSize="12" Opacity="0.7"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormCapacidadeTurma}"
+                                 PlaceholderText="Ex.: 40" />
+                    </StackPanel>
+
+                    <Border CornerRadius="10" Padding="12,10" Background="#141C2F3D"
+                            IsVisible="{Binding !!FormNomePreview}">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Nome gerado automaticamente" FontSize="11" Opacity="0.6"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                            <TextBlock Text="{Binding FormNomePreview}" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="{Binding ModalTurmaErro}"
+                               IsVisible="{Binding !!ModalTurmaErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarModalTurmaCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="primario" Content="Guardar"
+                                Command="{Binding SalvarTurmaCommand}" />
+                    </Grid>
+
+                </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Eliminar Turma" (confirmação)                              -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalEliminarTurmaVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="24" Height="24" Foreground="#E0777C" />
+                        <TextBlock Text="Eliminar turma" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}">
+                        <Run Text="Tem a certeza que deseja eliminar a turma" />
+                        <Run Text="{Binding ModalEliminarTurmaNome}" FontWeight="SemiBold" />
+                        <Run Text="? Esta ação não pode ser desfeita." />
+                    </TextBlock>
+
+                    <TextBlock Text="{Binding ModalEliminarTurmaErro}"
+                               IsVisible="{Binding !!ModalEliminarTurmaErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarEliminarTurmaCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="perigo" Content="Eliminar"
+                                Command="{Binding ConfirmarEliminarTurmaCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
 
     </Grid>
 </UserControl>

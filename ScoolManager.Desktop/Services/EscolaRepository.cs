@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using ScoolManager.Desktop.Models;
@@ -5,62 +6,69 @@ using ScoolManager.Desktop.Models;
 namespace ScoolManager.Desktop.Services;
 
 /// <summary>
-/// "Base de dados" em memória do módulo Escola. É partilhada entre as
-/// ViewModels de Classes e de Turmas para que os números fiquem consistentes
-/// entre os dois ecrãs (ex.: o total de matriculados de "10ª Classe" em
-/// Classes é sempre a soma das Turmas dessa classe), e para que as Turmas
-/// criadas durante a sessão persistam ao navegar entre páginas (o
-/// MainWindowViewModel recria a ViewModel de cada página a cada navegação).
+/// "Base de dados" em memória do módulo Escola. Partilhada entre todas as
+/// ViewModels das abas (Turmas, Salas, Cursos, Anos Lectivos) para que os
+/// dados fiquem consistentes ao navegar entre páginas (o MainWindowViewModel
+/// recria a ViewModel de cada página a cada navegação).
+///
+/// <see cref="Classes"/> é um catálogo interno (1ª à 13ª) fornecido pelo
+/// sistema - não tem CRUD, é só usado como campo de seleção no modal
+/// "Nova Turma"/"Editar Turma".
 ///
 /// TODO: substituir por um EscolaService real (ligado a ScoolManager.Core /
-/// base de dados) quando existir, mantendo a mesma forma pública (Cursos,
-/// Classes, Salas, AnosLectivos, Turmas) para minimizar alterações nas
-/// ViewModels que já consomem este repositório.
+/// base de dados) quando existir, mantendo a mesma forma pública.
 /// </summary>
 public static class EscolaRepository
 {
-    public static ObservableCollection<CursoModel> Cursos { get; }
+    /// <summary>Catálogo interno de Classes (1ª à 13ª) - sem CRUD.</summary>
     public static ObservableCollection<ClasseModel> Classes { get; }
+
+    public static ObservableCollection<CursoModel> Cursos { get; }
     public static ObservableCollection<SalaModel> Salas { get; }
     public static ObservableCollection<AnoLectivoModel> AnosLectivos { get; }
     public static ObservableCollection<TurmaModel> Turmas { get; }
 
     static EscolaRepository()
     {
+        Classes = new ObservableCollection<ClasseModel>(
+            Enumerable.Range(1, 13).Select(numero => new ClasseModel
+            {
+                Id = numero,
+                Numero = numero,
+                Nivel = numero <= 6 ? NivelEnsino.Primario
+                      : numero <= 9 ? NivelEnsino.Secundario
+                      : NivelEnsino.Medio
+            }));
+
         Cursos = new ObservableCollection<CursoModel>
         {
-            new() { Id = 1, Nome = "Formação Geral",                Nivel = NivelEnsino.Primario },
-            new() { Id = 2, Nome = "Formação Geral",                Nivel = NivelEnsino.Secundario },
-            new() { Id = 3, Nome = "Informática",                   Nivel = NivelEnsino.Medio },
-            new() { Id = 4, Nome = "Ciências Físicas e Biológicas", Nivel = NivelEnsino.Medio },
-            new() { Id = 5, Nome = "Economia e Contabilidade",      Nivel = NivelEnsino.Medio },
-            new() { Id = 6, Nome = "Ciências Jurídicas",            Nivel = NivelEnsino.Medio },
-        };
-
-        Classes = new ObservableCollection<ClasseModel>
-        {
-            new() { Id = 1, Numero = 7,  Nivel = NivelEnsino.Secundario, Descricao = "I Ciclo do Ensino Secundário" },
-            new() { Id = 2, Numero = 8,  Nivel = NivelEnsino.Secundario, Descricao = "I Ciclo do Ensino Secundário" },
-            new() { Id = 3, Numero = 9,  Nivel = NivelEnsino.Secundario, Descricao = "I Ciclo do Ensino Secundário" },
-            new() { Id = 4, Numero = 10, Nivel = NivelEnsino.Medio,      Descricao = "Ensino Médio Regular" },
-            new() { Id = 5, Numero = 11, Nivel = NivelEnsino.Medio,      Descricao = "Ensino Médio Regular" },
-            new() { Id = 6, Numero = 12, Nivel = NivelEnsino.Medio,      Descricao = "Finalistas / Exames" },
-            new() { Id = 7, Numero = 13, Nivel = NivelEnsino.Medio,      Descricao = "Ensino Médio Profissionalizante" },
+            new() { Id = 1, Nome = "Gestão de Redes e Sistemas Informáticos", Sigla = "GRSI" },
+            new() { Id = 2, Nome = "Gestão de Recursos Humanos",              Sigla = "GRH" },
+            new() { Id = 3, Nome = "Gestão Empresarial",                     Sigla = "GE" },
+            new() { Id = 4, Nome = "Ciências Físicas e Biológicas",          Sigla = "CFB" },
+            new() { Id = 5, Nome = "Ciências Jurídicas",                     Sigla = "CJ" },
         };
 
         Salas = new ObservableCollection<SalaModel>
         {
-            new() { Id = 1, Nome = "Sala 01",     Capacidade = 40 },
-            new() { Id = 2, Nome = "Sala 04",     Capacidade = 40 },
-            new() { Id = 3, Nome = "Sala 08",     Capacidade = 40 },
-            new() { Id = 4, Nome = "Sala 12",     Capacidade = 40 },
-            new() { Id = 5, Nome = "Lab Info 2",  Capacidade = 25 },
-            new() { Id = 6, Nome = "Oficina B",   Capacidade = 30 },
+            new() { Id = 1, Nome = "Sala 01",    Capacidade = 40, Bloco = "Bloco A" },
+            new() { Id = 2, Nome = "Sala 04",    Capacidade = 40, Bloco = "Bloco A" },
+            new() { Id = 3, Nome = "Sala 08",    Capacidade = 40, Bloco = "Bloco B" },
+            new() { Id = 4, Nome = "Sala 12",    Capacidade = 40, Bloco = "Bloco B" },
+            new() { Id = 5, Nome = "Lab Info 2", Capacidade = 25, Bloco = "Bloco C", Observacoes = "Computadores - requer marcação prévia" },
+            new() { Id = 6, Nome = "Oficina B",  Capacidade = 30, Bloco = "Bloco C" },
         };
 
         AnosLectivos = new ObservableCollection<AnoLectivoModel>
         {
-            new() { Id = 1, Nome = "2025/2026", Ativo = true },
+            new()
+            {
+                Id = 1,
+                Nome = "2025/2026",
+                DataInicio = new DateTime(2025, 10, 1),
+                DataTermino = new DateTime(2026, 8, 15),
+                Estado = EstadoAnoLectivo.Aberto
+            },
         };
 
         var classe7  = Classes.First(c => c.Numero == 7);
@@ -68,10 +76,9 @@ public static class EscolaRepository
         var classe11 = Classes.First(c => c.Numero == 11);
         var classe12 = Classes.First(c => c.Numero == 12);
 
-        var geralSecundario = Cursos.First(c => c.Nivel == NivelEnsino.Secundario);
-        var informatica     = Cursos.First(c => c.Nome == "Informática");
-        var ciencias        = Cursos.First(c => c.Nome == "Ciências Físicas e Biológicas");
-        var economia        = Cursos.First(c => c.Nome == "Economia e Contabilidade");
+        var grsi = Cursos.First(c => c.Sigla == "GRSI");
+        var cfb  = Cursos.First(c => c.Sigla == "CFB");
+        var ge   = Cursos.First(c => c.Sigla == "GE");
 
         var sala01   = Salas.First(s => s.Nome == "Sala 01");
         var sala04   = Salas.First(s => s.Nome == "Sala 04");
@@ -79,26 +86,31 @@ public static class EscolaRepository
         var sala12   = Salas.First(s => s.Nome == "Sala 12");
         var labInfo2 = Salas.First(s => s.Nome == "Lab Info 2");
 
+        var anoAtivo = AnosLectivos.First();
+
         Turmas = new ObservableCollection<TurmaModel>
         {
-            // 7ª Classe (Secundário, curso genérico) - duas turmas, mesma sala em turnos diferentes.
-            new() { Id = 1, Classe = classe7,  Curso = geralSecundario, Letra = 'A', Sala = sala01,   Periodo = PeriodoLetivo.Manha, CapacidadeMaxima = 40, AlunosMatriculados = 24 },
-            new() { Id = 2, Classe = classe7,  Curso = geralSecundario, Letra = 'B', Sala = sala01,   Periodo = PeriodoLetivo.Tarde, CapacidadeMaxima = 40, AlunosMatriculados = 36 },
+            // 7ª Classe (Secundário, sem curso) - duas turmas, mesma sala em turnos diferentes.
+            new() { Id = 1, AnoLectivo = anoAtivo, Classe = classe7,  Curso = null, Letra = 'A', Sala = sala01,   Turno = TurnoLetivo.Manha, Capacidade = 40, Matriculados = 24 },
+            new() { Id = 2, AnoLectivo = anoAtivo, Classe = classe7,  Curso = null, Letra = 'B', Sala = sala01,   Turno = TurnoLetivo.Tarde, Capacidade = 40, Matriculados = 36 },
 
-            // 10ª Classe de Informática: a "A" já está cheia -> foi por isso que a "B" foi aberta.
-            new() { Id = 3, Classe = classe10, Curso = informatica,    Letra = 'A', Sala = labInfo2, Periodo = PeriodoLetivo.Noite, CapacidadeMaxima = 25, AlunosMatriculados = 25 },
-            new() { Id = 4, Classe = classe10, Curso = informatica,    Letra = 'B', Sala = sala12,   Periodo = PeriodoLetivo.Tarde, CapacidadeMaxima = 40, AlunosMatriculados = 28 },
+            // 10ª GRSI: a "A" já está cheia -> foi por isso que a "B" foi aberta.
+            new() { Id = 3, AnoLectivo = anoAtivo, Classe = classe10, Curso = grsi, Letra = 'A', Sala = labInfo2, Turno = TurnoLetivo.Noite, Capacidade = 25, Matriculados = 25 },
+            new() { Id = 4, AnoLectivo = anoAtivo, Classe = classe10, Curso = grsi, Letra = 'B', Sala = sala12,   Turno = TurnoLetivo.Tarde, Capacidade = 40, Matriculados = 28 },
 
-            // 10ª Classe de Ciências: só a "A", ainda com vagas.
-            new() { Id = 5, Classe = classe10, Curso = ciencias,       Letra = 'A', Sala = sala04,   Periodo = PeriodoLetivo.Manha, CapacidadeMaxima = 40, AlunosMatriculados = 32 },
+            // 10ª CFB: só a "A", ainda com vagas.
+            new() { Id = 5, AnoLectivo = anoAtivo, Classe = classe10, Curso = cfb,  Letra = 'A', Sala = sala04,   Turno = TurnoLetivo.Manha, Capacidade = 40, Matriculados = 32 },
 
-            // 11ª Classe de Ciências: ainda com vagas -> não é permitido abrir a "B" já.
-            new() { Id = 6, Classe = classe11, Curso = ciencias,       Letra = 'A', Sala = sala12,   Periodo = PeriodoLetivo.Tarde, CapacidadeMaxima = 40, AlunosMatriculados = 28 },
+            // 11ª CFB: ainda com vagas -> não é permitido abrir a "B" já.
+            new() { Id = 6, AnoLectivo = anoAtivo, Classe = classe11, Curso = cfb,  Letra = 'A', Sala = sala12,   Turno = TurnoLetivo.Tarde, Capacidade = 40, Matriculados = 28 },
 
-            // 12ª Classe de Economia: cheia -> gera o alerta de lotação na UI.
-            new() { Id = 7, Classe = classe12, Curso = economia,       Letra = 'A', Sala = sala08,   Periodo = PeriodoLetivo.Manha, CapacidadeMaxima = 40, AlunosMatriculados = 40 },
+            // 12ª GE: cheia -> gera o alerta de lotação na UI.
+            new() { Id = 7, AnoLectivo = anoAtivo, Classe = classe12, Curso = ge,   Letra = 'A', Sala = sala08,   Turno = TurnoLetivo.Manha, Capacidade = 40, Matriculados = 40 },
         };
     }
 
     public static int ProximoIdTurma() => (Turmas.Count == 0 ? 0 : Turmas.Max(t => t.Id)) + 1;
+    public static int ProximoIdCurso() => (Cursos.Count == 0 ? 0 : Cursos.Max(c => c.Id)) + 1;
+    public static int ProximoIdSala() => (Salas.Count == 0 ? 0 : Salas.Max(s => s.Id)) + 1;
+    public static int ProximoIdAnoLectivo() => (AnosLectivos.Count == 0 ? 0 : AnosLectivos.Max(a => a.Id)) + 1;
 }
