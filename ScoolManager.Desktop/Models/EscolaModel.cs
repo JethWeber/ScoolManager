@@ -145,6 +145,9 @@ public class AnoLectivoModel
     public EstadoAnoLectivo Estado { get; set; }
 
     public string EstadoLabel => Estado.ParaLabel();
+
+    /// <summary>Verdadeiro enquanto o ano lectivo estiver Aberto (editável e ainda por encerrar).</summary>
+    public bool EstaAberto => Estado == EstadoAnoLectivo.Aberto;
 }
 
 // =====================================================================

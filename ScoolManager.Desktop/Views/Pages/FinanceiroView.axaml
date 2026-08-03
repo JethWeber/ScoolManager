@@ -125,24 +125,29 @@
             <Setter Property="Background" Value="#0DFFFFFF"/>
         </Style>
 
-        <!-- Abas: Pagamentos / Entradas / Saídas / Caixa -->
+        <!-- Abas: Pagamentos / Entradas / Saídas / Caixa - mesmo visual "pílula" da EscolaView -->
         <Style Selector="Button.aba">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="20,14"/>
-            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="CornerRadius" Value="999"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.aba.ativa">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
         <Style Selector="Button.aba:pointerover">
+            <Setter Property="Background" Value="#141C2F3D"/>
             <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        </Style>
+        <Style Selector="Button.aba.ativa:pointerover">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
 
         <Style Selector="TextBlock.coluna-titulo">
@@ -259,8 +264,10 @@
                 <Border Classes="neo-card" Padding="0">
                     <Grid RowDefinitions="Auto,Auto">
 
-                        <Border Grid.Row="0" Background="#0DFFFFFF" BorderThickness="0,0,0,1"
-                                BorderBrush="{StaticResource OutlineVariantBrush}">
+                        <Border Grid.Row="0" Margin="20,20,20,0" Padding="6"
+                                Background="{StaticResource SurfaceContainerHighBrush}"
+                                CornerRadius="999"
+                                HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="aba" Classes.ativa="{Binding AbaRecebimentosAtiva}"
                                         Content="Recebimentos" Command="{Binding AbrirAbaRecebimentosCommand}"/>

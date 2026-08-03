@@ -72,28 +72,21 @@ public partial class EscolaViewModel : ViewModelBase
     public bool AbaCursosAtiva => AbaItemSelecionada?.Valor == AbaEscola.Cursos;
     public bool AbaAnosLectivosAtiva => AbaItemSelecionada?.Valor == AbaEscola.AnosLectivos;
 
-    /// <summary>Título mostrado no placeholder de qualquer aba ainda não implementada.</summary>
-    public string TituloAbaEmDesenvolvimento => AbaItemSelecionada?.Valor switch
-    {
-        AbaEscola.Salas => "Salas",
-        AbaEscola.Cursos => "Cursos",
-        AbaEscola.AnosLectivos => "Anos Lectivos",
-        _ => string.Empty
-    };
-
     partial void OnAbaItemSelecionadaChanged(AbaEscolaItem? value)
     {
         OnPropertyChanged(nameof(AbaTurmasAtiva));
         OnPropertyChanged(nameof(AbaSalasAtiva));
         OnPropertyChanged(nameof(AbaCursosAtiva));
         OnPropertyChanged(nameof(AbaAnosLectivosAtiva));
-        OnPropertyChanged(nameof(TituloAbaEmDesenvolvimento));
     }
 
     public EscolaViewModel()
     {
         _abaItemSelecionada = Abas[0]; // Turmas
         AtualizarListagemTurmas();
+        AtualizarListagemSalas();
+        AtualizarListagemCursos();
+        AtualizarListagemAnosLectivos();
     }
 
     // =================================================================
@@ -397,20 +390,504 @@ public partial class EscolaViewModel : ViewModelBase
     }
 
     // =================================================================
-    // Aba "Salas" (vazia por agora)
-    // TODO: CRUD simples sobre EscolaRepository.Salas (Nome, Capacidade,
-    // Bloco opcional, Observações opcional).
+    // Aba "Salas"
     // =================================================================
 
-    // =================================================================
-    // Aba "Cursos" (vazia por agora)
-    // TODO: CRUD simples sobre EscolaRepository.Cursos (Nome, Sigla).
-    // =================================================================
+    [ObservableProperty] private string _termoPesquisaSalas = string.Empty;
+    [ObservableProperty] private bool _semResultadosSalas;
+
+    public ObservableCollection<SalaModel> SalasListadas { get; } = new();
+
+    [ObservableProperty] private string _totalSalasTexto = "0";
+    [ObservableProperty] private string _capacidadeTotalSalasTexto = "0";
+
+    partial void OnTermoPesquisaSalasChanged(string value) => AtualizarListagemSalas();
+
+    private void AtualizarListagemSalas()
+    {
+        SalasListadas.Clear();
+
+        var salas = EscolaRepository.Salas.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(TermoPesquisaSalas))
+        {
+            var termo = TermoPesquisaSalas.Trim();
+            salas = salas.Where(s =>
+                s.Nome.Contains(termo, StringComparison.OrdinalIgnoreCase) ||
+                (s.Bloco != null && s.Bloco.Contains(termo, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        foreach (var sala in salas.OrderBy(s => s.Nome))
+            SalasListadas.Add(sala);
+
+        SemResultadosSalas = SalasListadas.Count == 0;
+
+        TotalSalasTexto = EscolaRepository.Salas.Count.ToString();
+        CapacidadeTotalSalasTexto = EscolaRepository.Salas.Sum(s => s.Capacidade).ToString();
+    }
+
+    // -----------------------------------------------------------------
+    // Modal "Nova Sala" / "Editar Sala"
+    // -----------------------------------------------------------------
+
+    [ObservableProperty] private bool _modalSalaVisivel;
+    [ObservableProperty] private string _modalSalaTitulo = "Nova Sala";
+    [ObservableProperty] private string _modalSalaErro = string.Empty;
+
+    [ObservableProperty] private string _formNomeSala = string.Empty;
+    [ObservableProperty] private string _formCapacidadeSala = string.Empty;
+    [ObservableProperty] private string _formBlocoSala = string.Empty;
+    [ObservableProperty] private string _formObservacoesSala = string.Empty;
+
+    private SalaModel? _salaEmEdicao;
+
+    [RelayCommand]
+    private void NovaSala()
+    {
+        _salaEmEdicao = null;
+        ModalSalaTitulo = "Nova Sala";
+        ModalSalaErro = string.Empty;
+        FormNomeSala = string.Empty;
+        FormCapacidadeSala = string.Empty;
+        FormBlocoSala = string.Empty;
+        FormObservacoesSala = string.Empty;
+        ModalSalaVisivel = true;
+    }
+
+    [RelayCommand]
+    private void EditarSala(SalaModel sala)
+    {
+        _salaEmEdicao = sala;
+        ModalSalaTitulo = "Editar Sala";
+        ModalSalaErro = string.Empty;
+        FormNomeSala = sala.Nome;
+        FormCapacidadeSala = sala.Capacidade.ToString();
+        FormBlocoSala = sala.Bloco ?? string.Empty;
+        FormObservacoesSala = sala.Observacoes ?? string.Empty;
+        ModalSalaVisivel = true;
+    }
+
+    [RelayCommand]
+    private void CancelarModalSala() => ModalSalaVisivel = false;
+
+    [RelayCommand]
+    private void SalvarSala()
+    {
+        var nome = FormNomeSala.Trim();
+        if (string.IsNullOrWhiteSpace(nome))
+        {
+            ModalSalaErro = "Indique o nome da sala.";
+            return;
+        }
+
+        if (!int.TryParse(FormCapacidadeSala, out var capacidade) || capacidade <= 0)
+        {
+            ModalSalaErro = "Indique uma capacidade válida.";
+            return;
+        }
+
+        var duplicada = EscolaRepository.Salas.Any(s =>
+            s.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && s != _salaEmEdicao);
+        if (duplicada)
+        {
+            ModalSalaErro = "Já existe uma sala com esse nome.";
+            return;
+        }
+
+        var bloco = string.IsNullOrWhiteSpace(FormBlocoSala) ? null : FormBlocoSala.Trim();
+        var observacoes = string.IsNullOrWhiteSpace(FormObservacoesSala) ? null : FormObservacoesSala.Trim();
+
+        if (_salaEmEdicao is null)
+        {
+            EscolaRepository.Salas.Add(new SalaModel
+            {
+                Id = EscolaRepository.ProximoIdSala(),
+                Nome = nome,
+                Capacidade = capacidade,
+                Bloco = bloco,
+                Observacoes = observacoes
+            });
+        }
+        else
+        {
+            _salaEmEdicao.Nome = nome;
+            _salaEmEdicao.Capacidade = capacidade;
+            _salaEmEdicao.Bloco = bloco;
+            _salaEmEdicao.Observacoes = observacoes;
+        }
+
+        ModalSalaVisivel = false;
+        AtualizarListagemSalas();
+        AtualizarListagemTurmas(); // os cartões de Turma mostram o nome da Sala
+    }
+
+    // -----------------------------------------------------------------
+    // Modal "Eliminar Sala"
+    // -----------------------------------------------------------------
+
+    [ObservableProperty] private bool _modalEliminarSalaVisivel;
+    [ObservableProperty] private string _modalEliminarSalaErro = string.Empty;
+    [ObservableProperty] private string _modalEliminarSalaNome = string.Empty;
+
+    private SalaModel? _salaParaEliminar;
+
+    [RelayCommand]
+    private void EliminarSala(SalaModel sala)
+    {
+        _salaParaEliminar = sala;
+        ModalEliminarSalaNome = sala.Nome;
+        ModalEliminarSalaErro = string.Empty;
+        ModalEliminarSalaVisivel = true;
+    }
+
+    [RelayCommand]
+    private void CancelarEliminarSala() => ModalEliminarSalaVisivel = false;
+
+    [RelayCommand]
+    private void ConfirmarEliminarSala()
+    {
+        if (_salaParaEliminar is null)
+        {
+            ModalEliminarSalaVisivel = false;
+            return;
+        }
+
+        var emUso = EscolaRepository.Turmas.Any(t => t.Sala.Id == _salaParaEliminar.Id);
+        if (emUso)
+        {
+            ModalEliminarSalaErro = "Não é possível eliminar: existem turmas a usar esta sala.";
+            return;
+        }
+
+        EscolaRepository.Salas.Remove(_salaParaEliminar);
+        ModalEliminarSalaVisivel = false;
+        AtualizarListagemSalas();
+    }
 
     // =================================================================
-    // Aba "Anos Lectivos" (vazia por agora)
-    // TODO: CRUD + fluxo "Encerrar Ano Lectivo" sobre
-    // EscolaRepository.AnosLectivos (Designação, Data Início, Data Término,
-    // Estado Aberto/Encerrado).
+    // Aba "Cursos"
     // =================================================================
+
+    [ObservableProperty] private string _termoPesquisaCursos = string.Empty;
+    [ObservableProperty] private bool _semResultadosCursos;
+
+    public ObservableCollection<CursoModel> CursosListados { get; } = new();
+
+    [ObservableProperty] private string _totalCursosTexto = "0";
+
+    partial void OnTermoPesquisaCursosChanged(string value) => AtualizarListagemCursos();
+
+    private void AtualizarListagemCursos()
+    {
+        CursosListados.Clear();
+
+        var cursos = EscolaRepository.Cursos.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(TermoPesquisaCursos))
+        {
+            var termo = TermoPesquisaCursos.Trim();
+            cursos = cursos.Where(c =>
+                c.Nome.Contains(termo, StringComparison.OrdinalIgnoreCase) ||
+                c.Sigla.Contains(termo, StringComparison.OrdinalIgnoreCase));
+        }
+
+        foreach (var curso in cursos.OrderBy(c => c.Nome))
+            CursosListados.Add(curso);
+
+        SemResultadosCursos = CursosListados.Count == 0;
+        TotalCursosTexto = EscolaRepository.Cursos.Count.ToString();
+    }
+
+    // -----------------------------------------------------------------
+    // Modal "Novo Curso" / "Editar Curso"
+    // -----------------------------------------------------------------
+
+    [ObservableProperty] private bool _modalCursoVisivel;
+    [ObservableProperty] private string _modalCursoTitulo = "Novo Curso";
+    [ObservableProperty] private string _modalCursoErro = string.Empty;
+
+    [ObservableProperty] private string _formNomeCurso = string.Empty;
+    [ObservableProperty] private string _formSiglaCurso = string.Empty;
+
+    private CursoModel? _cursoEmEdicao;
+
+    [RelayCommand]
+    private void NovoCurso()
+    {
+        _cursoEmEdicao = null;
+        ModalCursoTitulo = "Novo Curso";
+        ModalCursoErro = string.Empty;
+        FormNomeCurso = string.Empty;
+        FormSiglaCurso = string.Empty;
+        ModalCursoVisivel = true;
+    }
+
+    [RelayCommand]
+    private void EditarCurso(CursoModel curso)
+    {
+        _cursoEmEdicao = curso;
+        ModalCursoTitulo = "Editar Curso";
+        ModalCursoErro = string.Empty;
+        FormNomeCurso = curso.Nome;
+        FormSiglaCurso = curso.Sigla;
+        ModalCursoVisivel = true;
+    }
+
+    [RelayCommand]
+    private void CancelarModalCurso() => ModalCursoVisivel = false;
+
+    [RelayCommand]
+    private void SalvarCurso()
+    {
+        var nome = FormNomeCurso.Trim();
+        var sigla = FormSiglaCurso.Trim().ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(nome))
+        {
+            ModalCursoErro = "Indique o nome do curso.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sigla))
+        {
+            ModalCursoErro = "Indique a sigla do curso.";
+            return;
+        }
+
+        var duplicado = EscolaRepository.Cursos.Any(c =>
+            c.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase) && c != _cursoEmEdicao);
+        if (duplicado)
+        {
+            ModalCursoErro = "Já existe um curso com essa sigla.";
+            return;
+        }
+
+        if (_cursoEmEdicao is null)
+        {
+            EscolaRepository.Cursos.Add(new CursoModel
+            {
+                Id = EscolaRepository.ProximoIdCurso(),
+                Nome = nome,
+                Sigla = sigla
+            });
+        }
+        else
+        {
+            _cursoEmEdicao.Nome = nome;
+            _cursoEmEdicao.Sigla = sigla;
+        }
+
+        ModalCursoVisivel = false;
+        AtualizarListagemCursos();
+        AtualizarListagemTurmas(); // os nomes das Turmas ("10ª GRSI A") dependem da sigla do Curso
+    }
+
+    // -----------------------------------------------------------------
+    // Modal "Eliminar Curso"
+    // -----------------------------------------------------------------
+
+    [ObservableProperty] private bool _modalEliminarCursoVisivel;
+    [ObservableProperty] private string _modalEliminarCursoErro = string.Empty;
+    [ObservableProperty] private string _modalEliminarCursoNome = string.Empty;
+
+    private CursoModel? _cursoParaEliminar;
+
+    [RelayCommand]
+    private void EliminarCurso(CursoModel curso)
+    {
+        _cursoParaEliminar = curso;
+        ModalEliminarCursoNome = $"{curso.Nome} ({curso.Sigla})";
+        ModalEliminarCursoErro = string.Empty;
+        ModalEliminarCursoVisivel = true;
+    }
+
+    [RelayCommand]
+    private void CancelarEliminarCurso() => ModalEliminarCursoVisivel = false;
+
+    [RelayCommand]
+    private void ConfirmarEliminarCurso()
+    {
+        if (_cursoParaEliminar is null)
+        {
+            ModalEliminarCursoVisivel = false;
+            return;
+        }
+
+        var emUso = EscolaRepository.Turmas.Any(t => t.Curso?.Id == _cursoParaEliminar.Id);
+        if (emUso)
+        {
+            ModalEliminarCursoErro = "Não é possível eliminar: existem turmas associadas a este curso.";
+            return;
+        }
+
+        EscolaRepository.Cursos.Remove(_cursoParaEliminar);
+        ModalEliminarCursoVisivel = false;
+        AtualizarListagemCursos();
+    }
+
+    // =================================================================
+    // Aba "Anos Lectivos"
+    //
+    // Não existe "Eliminar Ano Lectivo" (só Novo, Editar e Encerrar - ver
+    // documentação do módulo). Uma vez Encerrado, o ano deixa de poder ser
+    // editado (fica só histórico); "Encerrar" também só é possível enquanto
+    // o ano estiver Aberto.
+    // =================================================================
+
+    [ObservableProperty] private string _termoPesquisaAnosLectivos = string.Empty;
+    [ObservableProperty] private bool _semResultadosAnosLectivos;
+
+    public ObservableCollection<AnoLectivoModel> AnosLectivosListados { get; } = new();
+
+    partial void OnTermoPesquisaAnosLectivosChanged(string value) => AtualizarListagemAnosLectivos();
+
+    private void AtualizarListagemAnosLectivos()
+    {
+        AnosLectivosListados.Clear();
+
+        var anos = EscolaRepository.AnosLectivos.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(TermoPesquisaAnosLectivos))
+        {
+            var termo = TermoPesquisaAnosLectivos.Trim();
+            anos = anos.Where(a => a.Nome.Contains(termo, StringComparison.OrdinalIgnoreCase));
+        }
+
+        foreach (var ano in anos.OrderByDescending(a => a.DataInicio))
+            AnosLectivosListados.Add(ano);
+
+        SemResultadosAnosLectivos = AnosLectivosListados.Count == 0;
+    }
+
+    // -----------------------------------------------------------------
+    // Modal "Novo Ano Lectivo" / "Editar Ano Lectivo"
+    // -----------------------------------------------------------------
+
+    [ObservableProperty] private bool _modalAnoLectivoVisivel;
+    [ObservableProperty] private string _modalAnoLectivoTitulo = "Novo Ano Lectivo";
+    [ObservableProperty] private string _modalAnoLectivoErro = string.Empty;
+
+    [ObservableProperty] private string _formNomeAnoLectivo = string.Empty;
+    [ObservableProperty] private DateTime? _formDataInicioAnoLectivo;
+    [ObservableProperty] private DateTime? _formDataTerminoAnoLectivo;
+
+    private AnoLectivoModel? _anoLectivoEmEdicao;
+
+    [RelayCommand]
+    private void NovoAnoLectivo()
+    {
+        _anoLectivoEmEdicao = null;
+        ModalAnoLectivoTitulo = "Novo Ano Lectivo";
+        ModalAnoLectivoErro = string.Empty;
+        FormNomeAnoLectivo = string.Empty;
+        FormDataInicioAnoLectivo = null;
+        FormDataTerminoAnoLectivo = null;
+        ModalAnoLectivoVisivel = true;
+    }
+
+    [RelayCommand]
+    private void EditarAnoLectivo(AnoLectivoModel ano)
+    {
+        if (ano.Estado == EstadoAnoLectivo.Encerrado)
+            return; // ano encerrado é só histórico - não é editável.
+
+        _anoLectivoEmEdicao = ano;
+        ModalAnoLectivoTitulo = "Editar Ano Lectivo";
+        ModalAnoLectivoErro = string.Empty;
+        FormNomeAnoLectivo = ano.Nome;
+        FormDataInicioAnoLectivo = ano.DataInicio;
+        FormDataTerminoAnoLectivo = ano.DataTermino;
+        ModalAnoLectivoVisivel = true;
+    }
+
+    [RelayCommand]
+    private void CancelarModalAnoLectivo() => ModalAnoLectivoVisivel = false;
+
+    [RelayCommand]
+    private void SalvarAnoLectivo()
+    {
+        var nome = FormNomeAnoLectivo.Trim();
+        if (string.IsNullOrWhiteSpace(nome))
+        {
+            ModalAnoLectivoErro = "Indique a designação do ano lectivo.";
+            return;
+        }
+
+        if (FormDataInicioAnoLectivo is not { } dataInicio || FormDataTerminoAnoLectivo is not { } dataTermino)
+        {
+            ModalAnoLectivoErro = "Indique a data de início e a data de término.";
+            return;
+        }
+
+        if (dataTermino <= dataInicio)
+        {
+            ModalAnoLectivoErro = "A data de término tem de ser posterior à data de início.";
+            return;
+        }
+
+        var duplicado = EscolaRepository.AnosLectivos.Any(a =>
+            a.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && a != _anoLectivoEmEdicao);
+        if (duplicado)
+        {
+            ModalAnoLectivoErro = "Já existe um ano lectivo com essa designação.";
+            return;
+        }
+
+        if (_anoLectivoEmEdicao is null)
+        {
+            EscolaRepository.AnosLectivos.Add(new AnoLectivoModel
+            {
+                Id = EscolaRepository.ProximoIdAnoLectivo(),
+                Nome = nome,
+                DataInicio = dataInicio,
+                DataTermino = dataTermino,
+                Estado = EstadoAnoLectivo.Aberto
+            });
+        }
+        else
+        {
+            _anoLectivoEmEdicao.Nome = nome;
+            _anoLectivoEmEdicao.DataInicio = dataInicio;
+            _anoLectivoEmEdicao.DataTermino = dataTermino;
+        }
+
+        ModalAnoLectivoVisivel = false;
+        AtualizarListagemAnosLectivos();
+    }
+
+    // -----------------------------------------------------------------
+    // Modal "Encerrar Ano Lectivo"
+    // -----------------------------------------------------------------
+
+    [ObservableProperty] private bool _modalEncerrarAnoLectivoVisivel;
+    [ObservableProperty] private string _modalEncerrarAnoLectivoErro = string.Empty;
+    [ObservableProperty] private string _modalEncerrarAnoLectivoNome = string.Empty;
+
+    private AnoLectivoModel? _anoLectivoParaEncerrar;
+
+    [RelayCommand]
+    private void EncerrarAnoLectivo(AnoLectivoModel ano)
+    {
+        _anoLectivoParaEncerrar = ano;
+        ModalEncerrarAnoLectivoNome = ano.Nome;
+        ModalEncerrarAnoLectivoErro = string.Empty;
+        ModalEncerrarAnoLectivoVisivel = true;
+    }
+
+    [RelayCommand]
+    private void CancelarEncerrarAnoLectivo() => ModalEncerrarAnoLectivoVisivel = false;
+
+    [RelayCommand]
+    private void ConfirmarEncerrarAnoLectivo()
+    {
+        if (_anoLectivoParaEncerrar is null)
+        {
+            ModalEncerrarAnoLectivoVisivel = false;
+            return;
+        }
+
+        _anoLectivoParaEncerrar.Estado = EstadoAnoLectivo.Encerrado;
+        ModalEncerrarAnoLectivoVisivel = false;
+        AtualizarListagemAnosLectivos();
+    }
 }

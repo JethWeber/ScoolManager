@@ -315,20 +315,263 @@
                 </StackPanel>
 
                 <!-- ============================================================ -->
-                <!-- ABAS "SALAS" / "CURSOS" / "ANOS LECTIVOS"                     -->
-                <!-- ainda sem conteúdo - mesmo placeholder para todas.            -->
+                <!-- ABA "SALAS"                                                   -->
                 <!-- ============================================================ -->
-                <StackPanel IsVisible="{Binding !AbaTurmasAtiva}" Margin="32" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Border Classes="neo-card" Padding="48" MinWidth="360">
-                        <StackPanel Spacing="12" HorizontalAlignment="Center">
-                            <materialIcons:MaterialIcon Kind="ProgressWrench" Width="40" Height="40"
-                                                         Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="{Binding TituloAbaEmDesenvolvimento}" FontSize="18" FontWeight="SemiBold"
-                                       Foreground="{StaticResource OnSurfaceBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Esta aba ainda está em desenvolvimento." FontSize="13" Opacity="0.6"
-                                       Foreground="{StaticResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
+                <StackPanel IsVisible="{Binding AbaSalasAtiva}" Margin="32,0,32,32" Spacing="24" MaxWidth="1400">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Text="{Binding TermoPesquisaSalas}"
+                                PlaceholderText="Procurar por sala ou bloco..."
+                                Background="{StaticResource SurfaceContainerHighBrush}"
+                                Foreground="{StaticResource OnSurfaceBrush}"
+                                VerticalAlignment="Center" Padding="10,20"
+                                MaxWidth="1060"/>
+
+                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovaSalaCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="PlusCircle" Width="18" Height="18" />
+                                <TextBlock Text="Nova Sala" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                        <Border Grid.Column="0" Classes="neo-card" Padding="20">
+                            <StackPanel Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Door" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+                                <TextBlock Text="{Binding TotalSalasTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="Total de Salas" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Classes="neo-card" Padding="20">
+                            <StackPanel Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Domain" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+                                <TextBlock Text="{Binding CapacidadeTotalSalasTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                <TextBlock Text="Capacidade Total" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding SalasListadas}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:SalaModel">
+                                <Border Classes="neo-card" Width="240" Padding="20" Margin="0,0,16,16">
+                                    <StackPanel Spacing="10">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#1A4D8EFF">
+                                                <materialIcons:MaterialIcon Kind="Door" Width="18" Height="18"
+                                                                             Foreground="{StaticResource PrimaryBrush}"
+                                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Nome}" FontSize="15" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource OnSurfaceBrush}" />
+                                                <TextBlock Text="{Binding Bloco}" FontSize="11" Opacity="0.6"
+                                                           IsVisible="{Binding !!Bloco}"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="2" Classes="icone-cartao"
+                                                    Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EditarSalaCommand}"
+                                                    CommandParameter="{Binding}" ToolTip.Tip="Editar sala">
+                                                <materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15"
+                                                                             Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                            </Button>
+                                            <Button Grid.Column="3" Classes="icone-cartao"
+                                                    Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EliminarSalaCommand}"
+                                                    CommandParameter="{Binding}" ToolTip.Tip="Eliminar sala">
+                                                <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#E0777C" />
+                                            </Button>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="Capacidade" FontSize="12" Opacity="0.6"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Capacidade}" FontSize="12"
+                                                       FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                        </Grid>
+
+                                        <TextBlock Text="{Binding Observacoes}" FontSize="11" Opacity="0.55" TextWrapping="Wrap"
+                                                   IsVisible="{Binding !!Observacoes}"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Nenhuma sala encontrada para a pesquisa."
+                               IsVisible="{Binding SemResultadosSalas}"
+                               Opacity="0.5" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               HorizontalAlignment="Center" Margin="0,24" />
+
+                </StackPanel>
+
+                <!-- ============================================================ -->
+                <!-- ABA "CURSOS"                                                  -->
+                <!-- ============================================================ -->
+                <StackPanel IsVisible="{Binding AbaCursosAtiva}" Margin="32,0,32,32" Spacing="24" MaxWidth="1400">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Text="{Binding TermoPesquisaCursos}"
+                                PlaceholderText="Procurar por curso ou sigla..."
+                                Background="{StaticResource SurfaceContainerHighBrush}"
+                                Foreground="{StaticResource OnSurfaceBrush}"
+                                VerticalAlignment="Center" Padding="10,20"
+                                MaxWidth="1060"/>
+
+                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovoCursoCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="PlusCircle" Width="18" Height="18" />
+                                <TextBlock Text="Novo Curso" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <Border Classes="neo-card" Padding="20" MaxWidth="260">
+                        <StackPanel Spacing="6">
+                            <materialIcons:MaterialIcon Kind="BookOpenVariant" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" />
+                            <TextBlock Text="{Binding TotalCursosTexto}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource OnSurfaceBrush}" />
+                            <TextBlock Text="Total de Cursos" FontSize="12" Opacity="0.6" Foreground="{StaticResource OnSurfaceVariantBrush}" />
                         </StackPanel>
                     </Border>
+
+                    <ItemsControl ItemsSource="{Binding CursosListados}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:CursoModel">
+                                <Border Classes="neo-card" Width="260" Padding="20" Margin="0,0,16,16">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#1A4D8EFF">
+                                            <TextBlock Text="{Binding Sigla}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Nome}" FontSize="14" FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{StaticResource OnSurfaceBrush}" />
+                                            <TextBlock Text="{Binding Sigla}" FontSize="11" Opacity="0.6"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Classes="icone-cartao"
+                                                Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EditarCursoCommand}"
+                                                CommandParameter="{Binding}" ToolTip.Tip="Editar curso">
+                                            <materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15"
+                                                                         Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                        </Button>
+                                        <Button Grid.Column="3" Classes="icone-cartao"
+                                                Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EliminarCursoCommand}"
+                                                CommandParameter="{Binding}" ToolTip.Tip="Eliminar curso">
+                                            <materialIcons:MaterialIcon Kind="TrashCanOutline" Width="15" Height="15" Foreground="#E0777C" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Nenhum curso encontrado para a pesquisa."
+                               IsVisible="{Binding SemResultadosCursos}"
+                               Opacity="0.5" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               HorizontalAlignment="Center" Margin="0,24" />
+
+                </StackPanel>
+
+                <!-- ============================================================ -->
+                <!-- ABA "ANOS LECTIVOS"                                           -->
+                <!-- ============================================================ -->
+                <StackPanel IsVisible="{Binding AbaAnosLectivosAtiva}" Margin="32,0,32,32" Spacing="24" MaxWidth="1400">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Text="{Binding TermoPesquisaAnosLectivos}"
+                                PlaceholderText="Procurar por designação..."
+                                Background="{StaticResource SurfaceContainerHighBrush}"
+                                Foreground="{StaticResource OnSurfaceBrush}"
+                                VerticalAlignment="Center" Padding="10,20"
+                                MaxWidth="1060"/>
+                        <Button Grid.Column="1" Classes="primario" Command="{Binding NovoAnoLectivoCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="PlusCircle" Width="18" Height="18" />
+                                <TextBlock Text="Novo Ano Lectivo" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding AnosLectivosListados}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:AnoLectivoModel">
+                                <Border Classes="neo-card" Width="300" Padding="20" Margin="0,0,16,16">
+                                    <StackPanel Spacing="12">
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10" Background="#1A4D8EFF">
+                                                <materialIcons:MaterialIcon Kind="CalendarMonth" Width="18" Height="18"
+                                                                             Foreground="{StaticResource PrimaryBrush}"
+                                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{Binding Nome}" FontSize="16" FontWeight="SemiBold"
+                                                       Margin="10,0,0,0" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource OnSurfaceBrush}" />
+                                            <Button Grid.Column="2" Classes="icone-cartao"
+                                                    IsVisible="{Binding EstaAberto}"
+                                                    Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EditarAnoLectivoCommand}"
+                                                    CommandParameter="{Binding}" ToolTip.Tip="Editar ano lectivo">
+                                                <materialIcons:MaterialIcon Kind="PencilOutline" Width="15" Height="15"
+                                                                             Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                            </Button>
+                                        </Grid>
+
+                                        <StackPanel Spacing="4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Início" FontSize="12" Opacity="0.6"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding DataInicio, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12"
+                                                           FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                            </Grid>
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Término" FontSize="12" Opacity="0.6"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding DataTermino, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12"
+                                                           FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <Border CornerRadius="6" Padding="8,3" HorizontalAlignment="Left"
+                                                Background="#331AFFB4">
+                                            <TextBlock Text="{Binding EstadoLabel}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryBrush}" />
+                                        </Border>
+
+                                        <Button Classes="secundario" Content="Encerrar Ano Lectivo" HorizontalAlignment="Stretch"
+                                                IsVisible="{Binding EstaAberto}"
+                                                Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EncerrarAnoLectivoCommand}"
+                                                CommandParameter="{Binding}" />
+
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Nenhum ano lectivo encontrado para a pesquisa."
+                               IsVisible="{Binding SemResultadosAnosLectivos}"
+                               Opacity="0.5" FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               HorizontalAlignment="Center" Margin="0,24" />
+
                 </StackPanel>
 
             </Grid>
@@ -476,6 +719,230 @@
                                 Command="{Binding CancelarEliminarTurmaCommand}" Margin="0,0,10,0" />
                         <Button Grid.Column="2" Classes="perigo" Content="Eliminar"
                                 Command="{Binding ConfirmarEliminarTurmaCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Nova Sala" / "Editar Sala"                                 -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalSalaVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+
+                    <TextBlock Text="{Binding ModalSalaTitulo}" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}" />
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Nome" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormNomeSala}" PlaceholderText="Ex.: Sala 01" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Capacidade" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormCapacidadeSala}" PlaceholderText="Ex.: 40" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Bloco (opcional)" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormBlocoSala}" PlaceholderText="Ex.: Bloco A" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Observações (opcional)" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormObservacoesSala}" AcceptsReturn="True" Height="70"
+                                 TextWrapping="Wrap" PlaceholderText="Ex.: requer marcação prévia" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ModalSalaErro}" IsVisible="{Binding !!ModalSalaErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarModalSalaCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="primario" Content="Guardar"
+                                Command="{Binding SalvarSalaCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Eliminar Sala" (confirmação)                               -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalEliminarSalaVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="24" Height="24" Foreground="#E0777C" />
+                        <TextBlock Text="Eliminar sala" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}">
+                        <Run Text="Tem a certeza que deseja eliminar a" />
+                        <Run Text="{Binding ModalEliminarSalaNome}" FontWeight="SemiBold" />
+                        <Run Text="? Esta ação não pode ser desfeita." />
+                    </TextBlock>
+
+                    <TextBlock Text="{Binding ModalEliminarSalaErro}" IsVisible="{Binding !!ModalEliminarSalaErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarEliminarSalaCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="perigo" Content="Eliminar"
+                                Command="{Binding ConfirmarEliminarSalaCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Novo Curso" / "Editar Curso"                               -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalCursoVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+
+                    <TextBlock Text="{Binding ModalCursoTitulo}" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}" />
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Nome" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormNomeCurso}"
+                                 PlaceholderText="Ex.: Gestão de Redes e Sistemas Informáticos" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Sigla" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormSiglaCurso}" PlaceholderText="Ex.: GRSI" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ModalCursoErro}" IsVisible="{Binding !!ModalCursoErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarModalCursoCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="primario" Content="Guardar"
+                                Command="{Binding SalvarCursoCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Eliminar Curso" (confirmação)                              -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalEliminarCursoVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="24" Height="24" Foreground="#E0777C" />
+                        <TextBlock Text="Eliminar curso" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}">
+                        <Run Text="Tem a certeza que deseja eliminar o curso" />
+                        <Run Text="{Binding ModalEliminarCursoNome}" FontWeight="SemiBold" />
+                        <Run Text="? Esta ação não pode ser desfeita." />
+                    </TextBlock>
+
+                    <TextBlock Text="{Binding ModalEliminarCursoErro}" IsVisible="{Binding !!ModalEliminarCursoErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarEliminarCursoCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="perigo" Content="Eliminar"
+                                Command="{Binding ConfirmarEliminarCursoCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Novo Ano Lectivo" / "Editar Ano Lectivo"                   -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalAnoLectivoVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+
+                    <TextBlock Text="{Binding ModalAnoLectivoTitulo}" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}" />
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Designação" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <TextBox Classes="campo-modal" Text="{Binding FormNomeAnoLectivo}" PlaceholderText="Ex.: 2025/2026" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Data de início" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <CalendarDatePicker SelectedDate="{Binding FormDataInicioAnoLectivo}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Data de término" FontSize="12" Opacity="0.7" Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                        <CalendarDatePicker SelectedDate="{Binding FormDataTerminoAnoLectivo}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ModalAnoLectivoErro}" IsVisible="{Binding !!ModalAnoLectivoErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarModalAnoLectivoCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="primario" Content="Guardar"
+                                Command="{Binding SalvarAnoLectivoCommand}" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ================================================================ -->
+        <!-- MODAL "Encerrar Ano Lectivo" (confirmação)                        -->
+        <!-- ================================================================ -->
+        <Border Grid.Row="0" Grid.RowSpan="3" IsVisible="{Binding ModalEncerrarAnoLectivoVisivel}"
+                Background="#B3000814" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Classes="neo-card" Padding="28" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <materialIcons:MaterialIcon Kind="AlertCircleOutline" Width="24" Height="24" Foreground="#E0777C" />
+                        <TextBlock Text="Encerrar ano lectivo" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}">
+                        <Run Text="Tem a certeza que deseja encerrar o ano lectivo" />
+                        <Run Text="{Binding ModalEncerrarAnoLectivoNome}" FontWeight="SemiBold" />
+                        <Run Text="? Depois de encerrado deixa de poder ser editado." />
+                    </TextBlock>
+
+                    <TextBlock Text="{Binding ModalEncerrarAnoLectivoErro}" IsVisible="{Binding !!ModalEncerrarAnoLectivoErro}"
+                               FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="secundario" Content="Cancelar"
+                                Command="{Binding CancelarEncerrarAnoLectivoCommand}" Margin="0,0,10,0" />
+                        <Button Grid.Column="2" Classes="perigo" Content="Encerrar"
+                                Command="{Binding ConfirmarEncerrarAnoLectivoCommand}" />
                     </Grid>
 
                 </StackPanel>
