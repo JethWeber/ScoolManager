@@ -6,9 +6,29 @@ using ScoolManager.Desktop.Models;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
 
+/// <summary>Identifica cada aba do módulo Configurações.</summary>
+public enum AbaConfiguracoes
+{
+    Institucional,
+    Utilizadores,
+    Permissoes,
+    Backup,
+    Licenca
+}
+
+/// <summary>Item da faixa de abas (ícone + título + o valor do enum correspondente).
+/// Mesmo padrão usado em EscolaViewModel.AbaEscolaItem, para que a faixa de
+/// abas de Configurações use exatamente o mesmo visual (ListBox "pill").</summary>
+public class AbaConfiguracoesItem
+{
+    public required MaterialIconKind Icon { get; init; }
+    public required string Titulo { get; init; }
+    public required AbaConfiguracoes Valor { get; init; }
+}
+
 /// <summary>
 /// ViewModel da View 7 - Configurações (ver SM_Flow.md).
-/// Abas: Dados da Escola, Utilizadores, Permissões, Backup &amp; Segurança.
+/// Abas: Dados da Escola, Utilizadores, Permissões, Backup &amp; Segurança, Licença.
 /// Cada aba é "poucas views, muitos modais": as ações (Editar Utilizador,
 /// Criar Backup, etc.) abrem modais - por agora marcadas como TODO, seguindo
 /// o mesmo padrão usado no resto do projeto (ex.: MainWindowViewModel).
@@ -16,27 +36,35 @@ namespace ScoolManager.Desktop.ViewModels.Pages;
 public partial class ConfiguracoesViewModel : ViewModelBase
 {
     // ================================================================
-    // NAVEGAÇÃO ENTRE ABAS
+    // NAVEGAÇÃO ENTRE ABAS (faixa "pill", igual à usada em EscolaView)
     // ================================================================
 
+    public ObservableCollection<AbaConfiguracoesItem> Abas { get; } = new()
+    {
+        new() { Icon = MaterialIconKind.School,        Titulo = "Dados da Escola",    Valor = AbaConfiguracoes.Institucional },
+        new() { Icon = MaterialIconKind.AccountCog,    Titulo = "Utilizadores",       Valor = AbaConfiguracoes.Utilizadores },
+        new() { Icon = MaterialIconKind.ShieldAccount, Titulo = "Permissões",         Valor = AbaConfiguracoes.Permissoes },
+        new() { Icon = MaterialIconKind.CloudSync,     Titulo = "Backup & Segurança", Valor = AbaConfiguracoes.Backup },
+        new() { Icon = MaterialIconKind.Key,           Titulo = "Licença",            Valor = AbaConfiguracoes.Licenca },
+    };
+
     [ObservableProperty]
-    private string _tabAtual = "institucional";
+    private AbaConfiguracoesItem? _abaItemSelecionada;
 
-    public bool EhTabInstitucional => TabAtual == "institucional";
-    public bool EhTabUtilizadores => TabAtual == "utilizadores";
-    public bool EhTabPermissoes => TabAtual == "permissoes";
-    public bool EhTabBackup => TabAtual == "backup";
+    public bool EhTabInstitucional => AbaItemSelecionada?.Valor == AbaConfiguracoes.Institucional;
+    public bool EhTabUtilizadores => AbaItemSelecionada?.Valor == AbaConfiguracoes.Utilizadores;
+    public bool EhTabPermissoes => AbaItemSelecionada?.Valor == AbaConfiguracoes.Permissoes;
+    public bool EhTabBackup => AbaItemSelecionada?.Valor == AbaConfiguracoes.Backup;
+    public bool EhTabLicenca => AbaItemSelecionada?.Valor == AbaConfiguracoes.Licenca;
 
-    partial void OnTabAtualChanged(string value)
+    partial void OnAbaItemSelecionadaChanged(AbaConfiguracoesItem? value)
     {
         OnPropertyChanged(nameof(EhTabInstitucional));
         OnPropertyChanged(nameof(EhTabUtilizadores));
         OnPropertyChanged(nameof(EhTabPermissoes));
         OnPropertyChanged(nameof(EhTabBackup));
+        OnPropertyChanged(nameof(EhTabLicenca));
     }
-
-    [RelayCommand]
-    private void SelecionarTab(string tab) => TabAtual = tab;
 
     // ================================================================
     // ABA 1 - DADOS DA ESCOLA
@@ -147,6 +175,67 @@ public partial class ConfiguracoesViewModel : ViewModelBase
     }
 
     // ================================================================
+    // ABA 5 - LICENÇA
+    // ================================================================
+    // Campos alinhados com o payload da licença descrito em
+    // WeberTech_Licensing_Documentacao_V01.pdf (LicenseId, ProductId,
+    // MachineId, Plan, Type, Features, IssuedAt, ExpiresAt). Por agora os
+    // valores são estáticos; quando WeberTech.Licensing estiver integrado,
+    // devem vir de Licensing.GetLicenseInfo() / Licensing.CurrentStatus.
+
+    [ObservableProperty]
+    private string _licencaEstado = "Válida";
+
+    [ObservableProperty]
+    private string _licencaProduto = "School Manager Desktop";
+
+    [ObservableProperty]
+    private string _licencaCliente = "Complexo Escolar Politécnico de Luanda";
+
+    [ObservableProperty]
+    private string _licencaPlano = "Professional";
+
+    [ObservableProperty]
+    private string _licencaTipo = "Assinatura Anual";
+
+    [ObservableProperty]
+    private string _licencaDataEmissao = "30/07/2025";
+
+    [ObservableProperty]
+    private string _licencaDataExpiracao = "30/07/2026";
+
+    /// <summary>Machine ID local (ver MachineIdService no documento de licenciamento).</summary>
+    [ObservableProperty]
+    private string _licencaMachineId = "9F2C7A1E4B6D0083";
+
+    public ObservableCollection<string> LicencaModulos { get; } = new()
+    {
+        "Alunos", "Propinas", "Financeiro", "Relatórios"
+    };
+
+    [RelayCommand]
+    private void CopiarMachineId()
+    {
+        // TODO: copiar LicencaMachineId para a área de transferência
+        // (Avalonia IClipboard via TopLevel.GetTopLevel(view)).
+    }
+
+    [RelayCommand]
+    private void GerarPedidoAtivacao()
+    {
+        // TODO: gerar o pedido de ativação (ActivationRequestService) e
+        // mostrar o QR Code correspondente neste cartão, tal como descrito
+        // na secção 6-7 de WeberTech_Licensing_Documentacao_V01.pdf.
+    }
+
+    [RelayCommand]
+    private void ImportarLicenca()
+    {
+        // TODO: abrir seletor de ficheiros (IStorageProvider) filtrado por
+        // *.wta e chamar Licensing.ImportLicenseFile(caminho).
+    }
+
+    // ================================================================
     // AÇÃO GLOBAL
     // ================================================================
 
@@ -158,6 +247,8 @@ public partial class ConfiguracoesViewModel : ViewModelBase
 
     public ConfiguracoesViewModel()
     {
+        _abaItemSelecionada = Abas[0]; // Dados da Escola
+
         Utilizadores = new ObservableCollection<UtilizadorItemModel>
         {
             new()

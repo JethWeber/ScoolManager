@@ -126,21 +126,33 @@
             <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
         </Style>
 
-        <!-- Item de aba (Dados da Escola / Utilizadores / Permissões / Backup) -->
-        <Style Selector="Button.tab-item">
+        <!-- Faixa de abas horizontal em "pill" (Dados da Escola / Utilizadores /
+             Permissões / Backup / Licença) - mesmo estilo usado em EscolaView. -->
+        <Style Selector="ListBox.abas-config">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0,0,0,14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.abas-config ScrollViewer">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+        <Style Selector="ListBox.abas-config ListBoxItem">
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
-        <Style Selector="Button.tab-item:pointerover">
-            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        <Style Selector="ListBox.abas-config ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#141C2F3D"/>
         </Style>
-        <Style Selector="Button.tab-item.active">
-            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        <Style Selector="ListBox.abas-config ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+        <Style Selector="ListBox.abas-config ListBoxItem:selected">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <!-- Interruptor liga/desliga (Backup Diário Automático, etc.) -->
@@ -198,61 +210,31 @@
 
                 <Grid ColumnDefinitions="*,Auto">
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="32">
-
-                        <StackPanel Spacing="0">
-                            <Button Classes="tab-item" Classes.active="{Binding EhTabInstitucional}"
-                                    Command="{Binding SelecionarTabCommand}" CommandParameter="institucional">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <materialIcons:MaterialIcon Kind="School" Width="18" Height="18"/>
-                                    <TextBlock Text="Dados da Escola"/>
-                                </StackPanel>
-                            </Button>
-                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
-                                    Background="{StaticResource PrimaryBrush}"
-                                    IsVisible="{Binding EhTabInstitucional}"/>
-                        </StackPanel>
-
-                        <StackPanel Spacing="0">
-                            <Button Classes="tab-item" Classes.active="{Binding EhTabUtilizadores}"
-                                    Command="{Binding SelecionarTabCommand}" CommandParameter="utilizadores">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <materialIcons:MaterialIcon Kind="AccountCog" Width="18" Height="18"/>
-                                    <TextBlock Text="Utilizadores"/>
-                                </StackPanel>
-                            </Button>
-                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
-                                    Background="{StaticResource PrimaryBrush}"
-                                    IsVisible="{Binding EhTabUtilizadores}"/>
-                        </StackPanel>
-
-                        <StackPanel Spacing="0">
-                            <Button Classes="tab-item" Classes.active="{Binding EhTabPermissoes}"
-                                    Command="{Binding SelecionarTabCommand}" CommandParameter="permissoes">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <materialIcons:MaterialIcon Kind="ShieldAccount" Width="18" Height="18"/>
-                                    <TextBlock Text="Permissões"/>
-                                </StackPanel>
-                            </Button>
-                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
-                                    Background="{StaticResource PrimaryBrush}"
-                                    IsVisible="{Binding EhTabPermissoes}"/>
-                        </StackPanel>
-
-                        <StackPanel Spacing="0">
-                            <Button Classes="tab-item" Classes.active="{Binding EhTabBackup}"
-                                    Command="{Binding SelecionarTabCommand}" CommandParameter="backup">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <materialIcons:MaterialIcon Kind="CloudSync" Width="18" Height="18"/>
-                                    <TextBlock Text="Backup &amp; Segurança"/>
-                                </StackPanel>
-                            </Button>
-                            <Border Height="3" CornerRadius="2" Margin="0,6,0,0"
-                                    Background="{StaticResource PrimaryBrush}"
-                                    IsVisible="{Binding EhTabBackup}"/>
-                        </StackPanel>
-
-                    </StackPanel>
+                    <!-- Faixa de abas "pill", igual à usada em EscolaView.axaml:
+                         Abas define quantas abas existem e em que ordem; trocar de
+                         aba só altera AbaItemSelecionada, e todo o conteúdo abaixo
+                         liga-se a essa seleção via IsVisible. -->
+                    <Border Grid.Column="0" Padding="6" CornerRadius="999"
+                            Background="{StaticResource SurfaceContainerHighBrush}"
+                            HorizontalAlignment="Left">
+                        <ListBox Classes="abas-config"
+                                 ItemsSource="{Binding Abas}"
+                                 SelectedItem="{Binding AbaItemSelecionada}">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AbaConfiguracoesItem">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="16" Height="16"/>
+                                        <TextBlock Text="{Binding Titulo}" FontSize="13"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
 
                     <Button Grid.Column="1" Classes="primario" Command="{Binding GuardarAlteracoesCommand}"
                             VerticalAlignment="Top">
@@ -641,6 +623,155 @@
                                                Foreground="{StaticResource OnSurfaceVariantBrush}"/>
                                 </StackPanel>
                             </Border>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+            </Grid>
+
+            <!-- ============================================================
+                 ABA 5 - LICENÇA
+                 Conceitos alinhados com WeberTech_Licensing_Documentacao_V01.pdf:
+                 licença .wta ligada a esta máquina (Machine ID), ativação
+                 offline por QR Code, e módulos/plano contratados.
+                 ============================================================ -->
+            <Grid ColumnDefinitions="1.4*,1*" ColumnSpacing="24" IsVisible="{Binding EhTabLicenca}">
+
+                <StackPanel Grid.Column="0" Spacing="24">
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="16">
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="Key" Width="20" Height="20"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <TextBlock Classes="titulo-cartao" Text="Licença Atual"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Classes="pill-estado"
+                                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding LicencaEstado}"/>
+                                </Border>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="24" RowSpacing="16">
+                                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Produto"/>
+                                    <TextBlock Text="{Binding LicencaProduto}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Cliente"/>
+                                    <TextBlock Text="{Binding LicencaCliente}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Plano"/>
+                                    <TextBlock Text="{Binding LicencaPlano}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Tipo"/>
+                                    <TextBlock Text="{Binding LicencaTipo}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="0" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Emitida em"/>
+                                    <TextBlock Text="{Binding LicencaDataEmissao}" FontSize="13"
+                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="6">
+                                    <TextBlock Classes="rotulo-campo" Text="Expira em"/>
+                                    <TextBlock FontSize="13" Foreground="{StaticResource OnSurfaceBrush}">
+                                        <Run Text="{Binding LicencaDataExpiracao}"/><Run Text=" ("/><Run Text="{Binding LicencaDiasRestantes}"/><Run Text=" dias)"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Classes="rotulo-campo" Text="Módulos Contratados"/>
+                                <ItemsControl ItemsSource="{Binding LicencaModulos}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Border Background="#1A34D399" CornerRadius="999" Padding="10,5" Margin="0,0,8,8">
+                                                <TextBlock Text="{Binding}" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource EmeraldBrush}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <Border Classes="neo-card-inner" Padding="12">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <materialIcons:MaterialIcon Grid.Column="0" Kind="Laptop" Width="16" Height="16"
+                                                                 Foreground="{StaticResource PrimaryBrush}"
+                                                                 VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="Machine ID desta instalação" FontSize="11" Opacity="0.6"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        <TextBlock Text="{Binding LicencaMachineId}" FontSize="13" FontFamily="Consolas,Monospace"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Classes="icone-discreto" VerticalAlignment="Center"
+                                            Command="{Binding CopiarMachineIdCommand}"
+                                            ToolTip.Tip="Copiar Machine ID">
+                                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="16" Height="16"
+                                                                     Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="24">
+
+                    <Border Classes="neo-card" Padding="24">
+                        <StackPanel Spacing="16" HorizontalAlignment="Center">
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="QrcodeScan" Width="20" Height="20"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Classes="titulo-cartao" Text="Ativação Offline"/>
+                            </StackPanel>
+
+                            <Border Width="160" Height="160" Classes="neo-card-inner" Padding="8">
+                                <materialIcons:MaterialIcon Kind="Qrcode" Width="72" Height="72"
+                                                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                             Foreground="{StaticResource PrimaryBrush}" Opacity="0.5"/>
+                            </Border>
+
+                            <TextBlock FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Opacity="0.7"
+                                       Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                       Text="Gere um pedido de ativação para renovar ou trocar a licença desta máquina, sem precisar de internet."/>
+
+                            <Button Classes="primario" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding GerarPedidoAtivacaoCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="QrcodeScan" Width="16" Height="16"/>
+                                    <TextBlock Text="Gerar QR Code de Ativação"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="icone-discreto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding ImportarLicencaCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <materialIcons:MaterialIcon Kind="Upload" Width="16" Height="16"
+                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    <TextBlock Text="Importar Ficheiro de Licença (.wta)" FontSize="12"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                            </Button>
+
                         </StackPanel>
                     </Border>
 
