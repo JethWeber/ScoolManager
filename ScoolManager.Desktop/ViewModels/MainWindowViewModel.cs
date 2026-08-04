@@ -26,17 +26,18 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        // 6 views principais, conforme School_Manager_Fluxo_Navegacao.txt.
-        // Alunos, Financeiro e Configurações já usam as ViewModels reais;
-        // Relatórios e Escola ainda apontam para o DashboardViewModel
-        // (placeholder) até serem criadas - basta trocar a lambda do
-        // PageFactory quando existirem.
+        // 6 views principais, conforme SM_Flow.md. Alunos, Financeiro,
+        // Escola, Relatórios e Configurações já usam as ViewModels reais.
+        // Relatórios está na Fase 0-1 do seu roadmap: a ViewModel já existe
+        // (galeria + estado dos modais), mas a RelatoriosView ainda não foi
+        // criada (Fase 2) - até lá, o ViewLocator mostra o fallback
+        // "Not Found: ..." ao navegar para este item, o que é esperado.
         NavigationItems = new ObservableCollection<NavigationItemViewModel>
         {
             new(MaterialIconKind.ViewDashboard, "Dashboard",      () => new DashboardViewModel()),
             new(MaterialIconKind.AccountGroup,  "Alunos",         CriarPaginaAlunos),
             new(MaterialIconKind.CashMultiple,  "Financeiro",     () => new FinanceiroViewModel()),
-            new(MaterialIconKind.ChartLine,     "Relatórios",     () => new DashboardViewModel()), // TODO: RelatoriosViewModel
+            new(MaterialIconKind.ChartLine,     "Relatórios",     () => new RelatoriosViewModel()),
             new(MaterialIconKind.Domain,        "Escola",         () => new EscolaViewModel()),
             new(MaterialIconKind.Cog,           "Configurações",  () => new ConfiguracoesViewModel()),
         };

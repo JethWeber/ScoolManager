@@ -1,0 +1,199 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="ScoolManager.Desktop.Views.Pages.RelatoriosView"
+             x:DataType="vm:RelatoriosViewModel">
+
+    <Design.DataContext>
+        <vm:RelatoriosViewModel/>
+    </Design.DataContext>
+
+    <!-- ================================================================
+         RECURSOS: mesma paleta de FinanceiroView.axaml / EscolaView.axaml.
+         Fase 2 só usa o essencial (galeria + overlay); TextBox/ComboBox de
+         campo, cores de erro/sucesso, etc. entram nas Fases 3+ conforme
+         forem necessários.
+         ================================================================ -->
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6"/>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF"/>
+
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0"/>
+            <GradientStop Color="#111B2E" Offset="1"/>
+        </LinearGradientBrush>
+    </UserControl.Resources>
+
+    <!-- ================================================================
+         ESTILOS
+         ================================================================ -->
+    <UserControl.Styles>
+
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000"/>
+        </Style>
+
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.link:pointerover"><Setter Property="Opacity" Value="0.8"/></Style>
+
+        <!-- Cartão clicável da galeria: o Button só captura o clique/hover;
+             a aparência (fundo gradiente, borda, sombra) vive no Border.neo-card
+             lá dentro, reaproveitando o mesmo estilo comprovado das outras views. -->
+        <Style Selector="Button.cartao-relatorio">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="Button.cartao-relatorio:pointerover Border.neo-card">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- ================================================================
+         CONTEÚDO
+         ================================================================ -->
+    <Panel>
+        <ScrollViewer>
+            <StackPanel Margin="32" Spacing="20" MaxWidth="1400">
+
+                <!-- Cabeçalho -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Relatórios" FontSize="24" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Dashboard" FontSize="12" Opacity="0.6"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="›" FontSize="12" Opacity="0.4"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="Relatórios" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.6"
+                           Foreground="{StaticResource OnSurfaceVariantBrush}"
+                           Text="Selecione um relatório para configurar os filtros e gerar a pré-visualização."/>
+
+                <!-- Galeria dos 7 relatórios (SM_Flow.md > View 6) -->
+                <ItemsControl ItemsSource="{Binding RelatoriosDisponiveis}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RelatorioTipoItem">
+                            <Button Classes="cartao-relatorio" Width="300" Margin="0,0,16,16"
+                                    Command="{Binding $parent[ItemsControl].((vm:RelatoriosViewModel)DataContext).AbrirConfigurarRelatorioCommand}"
+                                    CommandParameter="{Binding}">
+                                <Border Classes="neo-card" Padding="20">
+                                    <StackPanel Spacing="14">
+
+                                        <Border Width="40" Height="40" CornerRadius="10" Background="#1A4D8EFF">
+                                            <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="20" Height="20"
+                                                                         Foreground="{StaticResource PrimaryBrush}"
+                                                                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="{Binding Titulo}" FontSize="15" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            <TextBlock Text="{Binding Descricao}" FontSize="12" Opacity="0.65"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="Configurar relatório" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                            <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14"
+                                                                         Foreground="{StaticResource PrimaryBrush}"/>
+                                        </StackPanel>
+
+                                    </StackPanel>
+                                </Border>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ================================================================
+             OVERLAY DOS MODAIS
+             Por agora só placeholders — confirmam visualmente que o clique
+             no cartão já abre o modal certo (Fase 0-1 ligada de ponta a
+             ponta). Cada StackPanel abaixo ganha o conteúdo real na sua fase.
+             ================================================================ -->
+        <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
+            <Border Classes="neo-card" MaxWidth="480" Padding="24"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+
+                    <!-- Configurar Relatório - formulário de filtros: Fase 3 -->
+                    <StackPanel Spacing="14" IsVisible="{Binding ModalConfigurarVisivel}">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}">
+                            <Run Text="Configurar: "/><Run Text="{Binding RelatorioSelecionado.Titulo}"/>
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.65"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Text="Formulário de filtros por tipo de relatório - chega na Fase 3."/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Pré-Visualizar - tabela de resultados: Fase 4 -->
+                    <StackPanel Spacing="14" IsVisible="{Binding ModalPreVisualizarVisivel}">
+                        <TextBlock Text="Pré-Visualização" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.65"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                   Text="Tabela de resultados e exportações - chega nas Fases 4 a 7."/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Exportação / Impressão: Fases 5-7 -->
+                    <StackPanel Spacing="14" IsVisible="{Binding ModalExportacaoVisivel}">
+                        <TextBlock Text="Exportação" FontSize="18" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <TextBlock Text="{Binding MensagemExportacao}" TextWrapping="Wrap" FontSize="13"
+                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                        </Grid>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+    </Panel>
+
+</UserControl>
