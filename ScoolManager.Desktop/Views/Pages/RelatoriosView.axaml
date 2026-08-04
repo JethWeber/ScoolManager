@@ -14,9 +14,6 @@
 
     <!-- ================================================================
          RECURSOS: mesma paleta de FinanceiroView.axaml / EscolaView.axaml.
-         Fase 2 só usa o essencial (galeria + overlay); TextBox/ComboBox de
-         campo, cores de erro/sucesso, etc. entram nas Fases 3+ conforme
-         forem necessários.
          ================================================================ -->
     <UserControl.Resources>
         <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
@@ -68,6 +65,27 @@
         </Style>
         <Style Selector="Button.cartao-relatorio:pointerover Border.neo-card">
             <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+
+        <Style Selector="TextBlock.campo-label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+        </Style>
+
+        <Style Selector="TextBlock.col-header">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+
+        <Style Selector="TextBlock.col-cell">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
         </Style>
 
     </UserControl.Styles>
@@ -145,52 +163,244 @@
 
         <!-- ================================================================
              OVERLAY DOS MODAIS
-             Por agora só placeholders — confirmam visualmente que o clique
-             no cartão já abre o modal certo (Fase 0-1 ligada de ponta a
-             ponta). Cada StackPanel abaixo ganha o conteúdo real na sua fase.
              ================================================================ -->
         <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
-            <Border Classes="neo-card" MaxWidth="480" Padding="24"
+            <Border Classes="neo-card" MaxWidth="900" Padding="24" ClipToBounds="True"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
-                <StackPanel Spacing="18">
+              <Panel>
 
-                    <!-- Configurar Relatório - formulário de filtros: Fase 3 -->
-                    <StackPanel Spacing="14" IsVisible="{Binding ModalConfigurarVisivel}">
-                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}">
-                            <Run Text="Configurar: "/><Run Text="{Binding RelatorioSelecionado.Titulo}"/>
-                        </TextBlock>
-                        <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.65"
-                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                   Text="Formulário de filtros por tipo de relatório - chega na Fase 3."/>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                <!-- ======================================================
+                     Configurar Relatório - formulário de filtros (Fase 3).
+                     Só mostra os campos relevantes para o tipo selecionado
+                     (MostrarFiltroXxx no ViewModel).
+                     ====================================================== -->
+                <StackPanel Spacing="16" Width="480" IsVisible="{Binding ModalConfigurarVisivel}">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}">
+                        <Run Text="Configurar: "/><Run Text="{Binding RelatorioSelecionado.Titulo}"/>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.65"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"
+                               Text="{Binding RelatorioSelecionado.Descricao}"/>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding MostrarFiltroPeriodo}">
+                        <TextBlock Classes="campo-label" Text="Período"/>
+                        <ComboBox SelectedItem="{Binding FiltroAtual.Periodo}" HorizontalAlignment="Stretch">
+                            <x:String>Este mês</x:String>
+                            <x:String>Mês passado</x:String>
+                            <x:String>Este ano</x:String>
+                            <x:String>Personalizado</x:String>
+                        </ComboBox>
+                        <StackPanel Spacing="6" Margin="0,4,0,0">
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="campo-label" FontSize="11" Text="Data Início"/>
+                                <DatePicker SelectedDate="{Binding FiltroAtual.DataInicio}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="campo-label" FontSize="11" Text="Data Fim"/>
+                                <DatePicker SelectedDate="{Binding FiltroAtual.DataFim}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding MostrarFiltroAnoLectivo}">
+                        <TextBlock Classes="campo-label" Text="Ano Lectivo"/>
+                        <TextBox Text="{Binding FiltroAtual.AnoLectivo}" PlaceholderText="ex.: 2026/2027"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding MostrarFiltroTurmaClasse}">
+                        <Grid ColumnDefinitions="*,12,*">
+                            <StackPanel Grid.Column="0" Spacing="6" MinWidth="0">
+                                <TextBlock Classes="campo-label" Text="Classe"/>
+                                <TextBox Text="{Binding FiltroAtual.Classe}" PlaceholderText="ex.: 10ª" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="6" MinWidth="0">
+                                <TextBlock Classes="campo-label" Text="Turma"/>
+                                <TextBox Text="{Binding FiltroAtual.Turma}" PlaceholderText="ex.: GRSI A" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
 
-                    <!-- Pré-Visualizar - tabela de resultados: Fase 4 -->
-                    <StackPanel Spacing="14" IsVisible="{Binding ModalPreVisualizarVisivel}">
-                        <TextBlock Text="Pré-Visualização" FontSize="18" FontWeight="SemiBold"
-                                   Foreground="{StaticResource OnSurfaceBrush}"/>
-                        <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.65"
-                                   Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                   Text="Tabela de resultados e exportações - chega nas Fases 4 a 7."/>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
-                        </Grid>
+                    <StackPanel Spacing="6" IsVisible="{Binding MostrarFiltroMetodoPagamento}">
+                        <TextBlock Classes="campo-label" Text="Método de Pagamento"/>
+                        <ComboBox SelectedItem="{Binding FiltroAtual.MetodoPagamento}" HorizontalAlignment="Stretch">
+                            <x:String>Todos</x:String>
+                            <x:String>Numerário</x:String>
+                            <x:String>Transferência</x:String>
+                            <x:String>TPA</x:String>
+                        </ComboBox>
                     </StackPanel>
 
-                    <!-- Exportação / Impressão: Fases 5-7 -->
-                    <StackPanel Spacing="14" IsVisible="{Binding ModalExportacaoVisivel}">
-                        <TextBlock Text="Exportação" FontSize="18" FontWeight="SemiBold"
-                                   Foreground="{StaticResource OnSurfaceBrush}"/>
-                        <TextBlock Text="{Binding MensagemExportacao}" TextWrapping="Wrap" FontSize="13"
-                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
-                        </Grid>
-                    </StackPanel>
-
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                        <Button Grid.Column="2" Classes="link" Content="Pré-Visualizar"
+                                Foreground="{StaticResource PrimaryBrush}"
+                                Command="{Binding GerarPreVisualizacaoCommand}"/>
+                    </Grid>
                 </StackPanel>
+
+                <!-- ======================================================
+                     Pré-Visualizar - tabela de resultados (Fase 4)
+                     ====================================================== -->
+                <StackPanel Spacing="14" Width="820" IsVisible="{Binding ModalPreVisualizarVisivel}">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource OnSurfaceBrush}">
+                        <Run Text="Pré-Visualização: "/><Run Text="{Binding RelatorioSelecionado.Titulo}"/>
+                    </TextBlock>
+
+                    <ScrollViewer MaxHeight="360" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="8">
+
+                            <!-- Matrículas -->
+                            <Grid IsVisible="{Binding MostrarMatriculas}" RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="2*,1.2*,*,*,1.2*,*" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Classes="col-header" Text="Aluno"/>
+                                    <TextBlock Grid.Column="1" Classes="col-header" Text="Nº Matrícula"/>
+                                    <TextBlock Grid.Column="2" Classes="col-header" Text="Classe"/>
+                                    <TextBlock Grid.Column="3" Classes="col-header" Text="Turma"/>
+                                    <TextBlock Grid.Column="4" Classes="col-header" Text="Data"/>
+                                    <TextBlock Grid.Column="5" Classes="col-header" Text="Estado"/>
+                                </Grid>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding ResultadoMatriculas}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:MatriculaRelatorioItem">
+                                            <Grid ColumnDefinitions="2*,1.2*,*,*,1.2*,*" Margin="0,4">
+                                                <TextBlock Grid.Column="0" Classes="col-cell" Foreground="{StaticResource OnSurfaceBrush}" Text="{Binding Aluno}"/>
+                                                <TextBlock Grid.Column="1" Classes="col-cell" Text="{Binding NumeroMatricula}"/>
+                                                <TextBlock Grid.Column="2" Classes="col-cell" Text="{Binding Classe}"/>
+                                                <TextBlock Grid.Column="3" Classes="col-cell" Text="{Binding Turma}"/>
+                                                <TextBlock Grid.Column="4" Classes="col-cell" Text="{Binding DataMatricula}"/>
+                                                <TextBlock Grid.Column="5" Classes="col-cell" Text="{Binding Estado}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- Lista de Alunos -->
+                            <Grid IsVisible="{Binding MostrarAlunos}" RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="2*,1.2*,*,*,1.2*,1.2*" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Classes="col-header" Text="Nome"/>
+                                    <TextBlock Grid.Column="1" Classes="col-header" Text="Nº Matrícula"/>
+                                    <TextBlock Grid.Column="2" Classes="col-header" Text="Classe"/>
+                                    <TextBlock Grid.Column="3" Classes="col-header" Text="Turma"/>
+                                    <TextBlock Grid.Column="4" Classes="col-header" Text="Situação"/>
+                                    <TextBlock Grid.Column="5" Classes="col-header" Text="Contacto"/>
+                                </Grid>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding ResultadoAlunos}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:AlunoRelatorioItem">
+                                            <Grid ColumnDefinitions="2*,1.2*,*,*,1.2*,1.2*" Margin="0,4">
+                                                <TextBlock Grid.Column="0" Classes="col-cell" Foreground="{StaticResource OnSurfaceBrush}" Text="{Binding Nome}"/>
+                                                <TextBlock Grid.Column="1" Classes="col-cell" Text="{Binding NumeroMatricula}"/>
+                                                <TextBlock Grid.Column="2" Classes="col-cell" Text="{Binding Classe}"/>
+                                                <TextBlock Grid.Column="3" Classes="col-cell" Text="{Binding Turma}"/>
+                                                <TextBlock Grid.Column="4" Classes="col-cell" Text="{Binding Situacao}"/>
+                                                <TextBlock Grid.Column="5" Classes="col-cell" Text="{Binding Contacto}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- Propinas (Pagas ou em Atraso) -->
+                            <Grid IsVisible="{Binding MostrarPropinas}" RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="2*,1.2*,*,1.2*,1.2*,1*" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Classes="col-header" Text="Aluno"/>
+                                    <TextBlock Grid.Column="1" Classes="col-header" Text="Referência"/>
+                                    <TextBlock Grid.Column="2" Classes="col-header" Text="Valor"/>
+                                    <TextBlock Grid.Column="3" Classes="col-header" Text="Vencimento"/>
+                                    <TextBlock Grid.Column="4" Classes="col-header" Text="Pagamento"/>
+                                    <TextBlock Grid.Column="5" Classes="col-header" Text="Estado"/>
+                                </Grid>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding ResultadoPropinas}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PropinaRelatorioItem">
+                                            <Grid ColumnDefinitions="2*,1.2*,*,1.2*,1.2*,1*" Margin="0,4">
+                                                <TextBlock Grid.Column="0" Classes="col-cell" Foreground="{StaticResource OnSurfaceBrush}" Text="{Binding Aluno}"/>
+                                                <TextBlock Grid.Column="1" Classes="col-cell" Text="{Binding Referencia}"/>
+                                                <TextBlock Grid.Column="2" Classes="col-cell" Text="{Binding Valor}"/>
+                                                <TextBlock Grid.Column="3" Classes="col-cell" Text="{Binding DataVencimento}"/>
+                                                <TextBlock Grid.Column="4" Classes="col-cell" Text="{Binding DataPagamento}"/>
+                                                <TextBlock Grid.Column="5" Classes="col-cell" Text="{Binding Estado}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- Entradas / Saídas -->
+                            <Grid IsVisible="{Binding MostrarMovimentos}" RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="1.2*,2*,1.2*,1.2*,*" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Classes="col-header" Text="Data"/>
+                                    <TextBlock Grid.Column="1" Classes="col-header" Text="Descrição"/>
+                                    <TextBlock Grid.Column="2" Classes="col-header" Text="Categoria"/>
+                                    <TextBlock Grid.Column="3" Classes="col-header" Text="Valor"/>
+                                    <TextBlock Grid.Column="4" Classes="col-header" Text="Tipo"/>
+                                </Grid>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding ResultadoMovimentos}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:RelatorioMovimentoItem">
+                                            <Grid ColumnDefinitions="1.2*,2*,1.2*,1.2*,*" Margin="0,4">
+                                                <TextBlock Grid.Column="0" Classes="col-cell" Text="{Binding Data}"/>
+                                                <TextBlock Grid.Column="1" Classes="col-cell" Foreground="{StaticResource OnSurfaceBrush}" Text="{Binding Descricao}"/>
+                                                <TextBlock Grid.Column="2" Classes="col-cell" Text="{Binding Categoria}"/>
+                                                <TextBlock Grid.Column="3" Classes="col-cell" Text="{Binding Valor}"/>
+                                                <TextBlock Grid.Column="4" Classes="col-cell" Text="{Binding Tipo}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- Fluxo de Caixa -->
+                            <Grid IsVisible="{Binding MostrarFluxoCaixa}" RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="1.2*,*,*,*,*" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Classes="col-header" Text="Período"/>
+                                    <TextBlock Grid.Column="1" Classes="col-header" Text="Saldo Inicial"/>
+                                    <TextBlock Grid.Column="2" Classes="col-header" Text="Entradas"/>
+                                    <TextBlock Grid.Column="3" Classes="col-header" Text="Saídas"/>
+                                    <TextBlock Grid.Column="4" Classes="col-header" Text="Saldo Final"/>
+                                </Grid>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding ResultadoFluxoCaixa}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:FluxoCaixaRelatorioItem">
+                                            <Grid ColumnDefinitions="1.2*,*,*,*,*" Margin="0,4">
+                                                <TextBlock Grid.Column="0" Classes="col-cell" Foreground="{StaticResource OnSurfaceBrush}" Text="{Binding Periodo}"/>
+                                                <TextBlock Grid.Column="1" Classes="col-cell" Text="{Binding SaldoInicial}"/>
+                                                <TextBlock Grid.Column="2" Classes="col-cell" Text="{Binding TotalEntradas}"/>
+                                                <TextBlock Grid.Column="3" Classes="col-cell" Text="{Binding TotalSaidas}"/>
+                                                <TextBlock Grid.Column="4" Classes="col-cell" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" Text="{Binding SaldoFinal}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                        <Button Grid.Column="0" Classes="link" Content="Voltar" Command="{Binding VoltarConfigurarCommand}"/>
+                        <Button Grid.Column="2" Classes="link" Content="Exportar PDF" Command="{Binding ExportarPdfCommand}"/>
+                        <Button Grid.Column="3" Classes="link" Content="Exportar Excel" Command="{Binding ExportarExcelCommand}"/>
+                        <Button Grid.Column="4" Classes="link" Content="Imprimir" Command="{Binding ImprimirCommand}"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- ======================================================
+                     Exportação / Impressão (Fases 5-7 - placeholder, sem
+                     geração de ficheiro real por agora)
+                     ====================================================== -->
+                <StackPanel Spacing="14" Width="420" IsVisible="{Binding ModalExportacaoVisivel}">
+                    <TextBlock Text="Exportação" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                    <TextBlock Text="{Binding MensagemExportacao}" TextWrapping="Wrap" FontSize="13"
+                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Button Grid.Column="1" Classes="link" Content="Fechar" Command="{Binding FecharModalCommand}"/>
+                    </Grid>
+                </StackPanel>
+
+              </Panel>
             </Border>
         </Border>
 
