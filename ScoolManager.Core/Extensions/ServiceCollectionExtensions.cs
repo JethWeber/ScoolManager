@@ -100,6 +100,10 @@ public static class ServiceCollectionExtensions
         // (guarda um Utilizador do Core), não depende de nenhum SDK externo.
         services.AddScoped<ISessaoAtualService, SessaoAtualService>();
 
+        // CORREÇÃO URGENTE: verificação de PerfilPermissao antes de agir —
+        // depende de ISessaoAtualService (Scoped), por isso também Scoped.
+        services.AddScoped<IAutorizacaoService, AutorizacaoService>();
+
         // Gap 4: exportação transversal — sem estado (além do License
         // estático do QuestPDF, definido uma vez no construtor estático),
         // por isso Singleton é seguro e evita recriar a cada resolução.

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Repositories;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Configuracoes;
@@ -18,21 +19,40 @@ public class BackupService : IBackupService
     private readonly IBackupRepository _backups;
     private readonly IConfiguracaoBackupRepository _configuracao;
     private readonly ScoolManagerDbContext _db;
+    private readonly IAutorizacaoService _autorizacao;
 
-    public BackupService(IBackupRepository backups, IConfiguracaoBackupRepository configuracao, ScoolManagerDbContext db)
+    public BackupService(IBackupRepository backups, IConfiguracaoBackupRepository configuracao, ScoolManagerDbContext db, IAutorizacaoService autorizacao)
     {
         _backups = backups;
         _configuracao = configuracao;
         _db = db;
+        _autorizacao = autorizacao;
     }
 
-    public Task<ConfiguracaoBackup> ObterConfiguracaoAsync(CancellationToken ct = default) => _configuracao.ObterAsync(ct);
-    public Task AtualizarConfiguracaoAsync(ConfiguracaoBackup configuracao, CancellationToken ct = default) => _configuracao.AtualizarAsync(configuracao, ct);
+    private void GarantirAcesso() => _autorizacao.GarantirPermissao(p => p.Configuracoes, "Configuracoes");
 
-    public Task<IReadOnlyList<BackupRegistro>> ObterTodosAsync(CancellationToken ct = default) => _backups.ObterTodosAsync(ct);
+    public Task<ConfiguracaoBackup> ObterConfiguracaoAsync(CancellationToken ct = default)
+    {
+        GarantirAcesso();
+        return _configuracao.ObterAsync(ct);
+    }
+
+    public Task AtualizarConfiguracaoAsync(ConfiguracaoBackup configuracao, CancellationToken ct = default)
+    {
+        GarantirAcesso();
+        return _configuracao.AtualizarAsync(configuracao, ct);
+    }
+
+    public Task<IReadOnlyList<BackupRegistro>> ObterTodosAsync(CancellationToken ct = default)
+    {
+        GarantirAcesso();
+        return _backups.ObterTodosAsync(ct);
+    }
 
     public async Task<BackupRegistro> CriarBackupAsync(CancellationToken ct = default)
     {
+        GarantirAcesso();
+
         var caminhoOrigem = ObterCaminhoBaseDeDados();
         var pastaBackups = Path.Combine(Path.GetDirectoryName(caminhoOrigem)!, "Backups");
         Directory.CreateDirectory(pastaBackups);
@@ -56,6 +76,8 @@ public class BackupService : IBackupService
 
     public async Task RestaurarAsync(int backupId, CancellationToken ct = default)
     {
+        GarantirAcesso();
+
         var registo = await _backups.ObterPorIdAsync(backupId, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(BackupRegistro), backupId);
 

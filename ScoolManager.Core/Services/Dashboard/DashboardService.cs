@@ -32,7 +32,14 @@ public class DashboardService : IDashboardService
 
         var inicioAno = new DateTime(dia.Year, 1, 1);
         var fimAno = new DateTime(dia.Year, 12, 31);
-        var pagamentosDoAno = await _pagamentos.ObterPorPeriodoAsync(inicioAno, fimAno, ct);
+
+        // CORREÇÃO: um pagamento Anulado não deve contar como receita nem
+        // como dívida — filtra-se uma única vez aqui, antes de qualquer
+        // soma, para todos os cálculos abaixo herdarem a exclusão.
+        var pagamentosDoAno = (await _pagamentos.ObterPorPeriodoAsync(inicioAno, fimAno, ct))
+            .Where(p => !p.Anulado)
+            .ToList();
+
         var propinasPagas = pagamentosDoAno.Where(p => p.Estado == EstadoPagamento.Pago).Sum(p => p.Valor);
         var propinasEmAtraso = pagamentosDoAno.Where(p => p.Estado == EstadoPagamento.EmAtraso).Sum(p => p.Valor);
 

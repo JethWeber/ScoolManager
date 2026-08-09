@@ -15,23 +15,29 @@ public class FinanceiroService : IFinanceiroService
     private readonly IMovimentoCaixaRepository _movimentos;
     private readonly ISessaoCaixaRepository _sessoesCaixa;
     private readonly ILicenseGate _licenseGate;
+    private readonly IAutorizacaoService _autorizacao;
 
     public FinanceiroService(
         IPagamentoRepository pagamentos,
         IMovimentoCaixaRepository movimentos,
         ISessaoCaixaRepository sessoesCaixa,
-        ILicenseGate licenseGate)
+        ILicenseGate licenseGate,
+        IAutorizacaoService autorizacao)
     {
         _pagamentos = pagamentos;
         _movimentos = movimentos;
         _sessoesCaixa = sessoesCaixa;
         _licenseGate = licenseGate;
+        _autorizacao = autorizacao;
     }
 
-    private void GarantirLicenciado()
+    /// <summary>Substitui GarantirLicenciado() em todas as chamadas — licença E permissão são exigidas juntas para qualquer operação do módulo Financeiro.</summary>
+    private void GarantirAcesso()
     {
         if (!_licenseGate.HasFeature(Feature))
             throw new FuncionalidadeNaoLicenciadaException(Feature);
+
+        _autorizacao.GarantirPermissao(p => p.Financeiro, "Financeiro");
     }
 
     private async Task<SessaoCaixa> GarantirCaixaAbertaAsync(CancellationToken ct)
@@ -41,19 +47,19 @@ public class FinanceiroService : IFinanceiroService
 
     public Task<IReadOnlyList<Pagamento>> ObterHistoricoPagamentosAsync(int alunoId, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         return _pagamentos.ObterPorAlunoAsync(alunoId, ct);
     }
 
     public Task<IReadOnlyList<Pagamento>> ObterPagamentosAsync(DateTime inicio, DateTime fim, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         return _pagamentos.ObterPorPeriodoAsync(inicio, fim, ct);
     }
 
     public async Task<Pagamento> RegistarPagamentoAsync(int alunoId, TipoCobranca tipo, decimal valor, string? metodoPagamento, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var sessao = await GarantirCaixaAbertaAsync(ct);
 
         var pagamento = new Pagamento
@@ -75,7 +81,7 @@ public class FinanceiroService : IFinanceiroService
 
     public async Task AnularPagamentoAsync(int pagamentoId, string motivo, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
 
         var pagamento = await _pagamentos.ObterPorIdAsync(pagamentoId, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(Pagamento), pagamentoId);
@@ -97,27 +103,27 @@ public class FinanceiroService : IFinanceiroService
 
     public async Task<decimal> ObterSaldoDevedorAsync(int alunoId, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var historico = await _pagamentos.ObterPorAlunoAsync(alunoId, ct);
-        return historico.Where(p => p.Estado == EstadoPagamento.EmAtraso).Sum(p => p.Valor);
+        return historico.Where(p => p.Estado == EstadoPagamento.EmAtraso && !p.Anulado).Sum(p => p.Valor);
     }
 
     public Task<IReadOnlyList<MovimentoCaixa>> ObterMovimentosAsync(DateTime inicio, DateTime fim, TipoMovimentoCaixa? tipo = null, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         return _movimentos.ObterPorPeriodoAsync(inicio, fim, tipo, ct);
     }
 
     public async Task<MovimentoCaixa> ObterMovimentoPorIdAsync(int id, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         return await _movimentos.ObterPorIdAsync(id, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(MovimentoCaixa), id);
     }
 
     public Task AtualizarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         // Não reabre a validação de "caixa aberta" aqui de propósito: editar
         // um lançamento de uma sessão já FECHADA continua a ser uma correção
         // legítima (ex.: descrição errada), desde que não se altere o Valor/
@@ -129,7 +135,7 @@ public class FinanceiroService : IFinanceiroService
 
     public async Task<MovimentoCaixa> RegistarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var sessao = await GarantirCaixaAbertaAsync(ct);
 
         movimento.SessaoCaixaId = sessao.Id;
@@ -141,7 +147,7 @@ public class FinanceiroService : IFinanceiroService
 
     public async Task<(decimal Entradas, decimal Saidas, decimal Saldo)> ObterResumoDiarioAsync(DateTime dia, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var inicio = dia.Date;
         var fim = inicio.AddDays(1).AddTicks(-1);
 

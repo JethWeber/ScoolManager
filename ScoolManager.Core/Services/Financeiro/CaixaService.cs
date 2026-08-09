@@ -1,3 +1,4 @@
+using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Repositories;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Financeiro;
@@ -11,16 +12,27 @@ public class CaixaService : ICaixaService
     private readonly ISessaoCaixaRepository _sessoesCaixa;
     private readonly IMovimentoCaixaRepository _movimentos;
     private readonly IPagamentoRepository _pagamentos;
+    private readonly IAutorizacaoService _autorizacao;
 
-    public CaixaService(ISessaoCaixaRepository sessoesCaixa, IMovimentoCaixaRepository movimentos, IPagamentoRepository pagamentos)
+    public CaixaService(
+        ISessaoCaixaRepository sessoesCaixa,
+        IMovimentoCaixaRepository movimentos,
+        IPagamentoRepository pagamentos,
+        IAutorizacaoService autorizacao)
     {
         _sessoesCaixa = sessoesCaixa;
         _movimentos = movimentos;
         _pagamentos = pagamentos;
+        _autorizacao = autorizacao;
     }
+
+    /// <summary>A aba "Caixa" é parte do módulo Financeiro — mesma permissão.</summary>
+    private void GarantirAcesso() => _autorizacao.GarantirPermissao(p => p.Financeiro, "Financeiro");
 
     public async Task<SessaoCaixa> AbrirCaixaAsync(int utilizadorId, decimal saldoInicial, CancellationToken ct = default)
     {
+        GarantirAcesso();
+
         if (await _sessoesCaixa.ObterSessaoAbertaAsync(ct) is not null)
             throw new InvalidOperationException("Já existe uma sessão de caixa aberta — feche-a antes de abrir uma nova.");
 
@@ -37,6 +49,8 @@ public class CaixaService : ICaixaService
 
     public async Task<SessaoCaixa> FecharCaixaAsync(int utilizadorId, CancellationToken ct = default)
     {
+        GarantirAcesso();
+
         var sessao = await _sessoesCaixa.ObterSessaoAbertaAsync(ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(SessaoCaixa), "sessão aberta");
 
@@ -45,7 +59,7 @@ public class CaixaService : ICaixaService
         var saidas = movimentosDaSessao.Where(m => m.Tipo == TipoMovimentoCaixa.Saida).Sum(m => m.Valor);
 
         var pagamentosDaSessao = (await _pagamentos.ObterPorPeriodoAsync(sessao.DataAbertura, DateTime.Now, ct))
-            .Where(p => p.SessaoCaixaId == sessao.Id)
+            .Where(p => p.SessaoCaixaId == sessao.Id && !p.Anulado)
             .Sum(p => p.Valor);
 
         sessao.SaldoFinal = sessao.SaldoInicial + entradas + pagamentosDaSessao - saidas;
@@ -59,6 +73,8 @@ public class CaixaService : ICaixaService
 
     public async Task<SessaoCaixa> ReabrirCaixaAsync(int utilizadorId, CancellationToken ct = default)
     {
+        GarantirAcesso();
+
         if (await _sessoesCaixa.ObterSessaoAbertaAsync(ct) is not null)
             throw new InvalidOperationException("Já existe uma sessão de caixa aberta.");
 
@@ -77,5 +93,9 @@ public class CaixaService : ICaixaService
         return ultimaFechada;
     }
 
-    public Task<SessaoCaixa?> ObterSessaoAtualAsync(CancellationToken ct = default) => _sessoesCaixa.ObterSessaoAbertaAsync(ct);
+    public Task<SessaoCaixa?> ObterSessaoAtualAsync(CancellationToken ct = default)
+    {
+        GarantirAcesso();
+        return _sessoesCaixa.ObterSessaoAbertaAsync(ct);
+    }
 }

@@ -10,13 +10,19 @@ public class EfUtilizadorRepository : IUtilizadorRepository
     public EfUtilizadorRepository(ScoolManagerDbContext db) => _db = db;
 
     public async Task<IReadOnlyList<Utilizador>> ObterTodosAsync(CancellationToken ct = default) =>
-        await _db.Utilizadores.OrderBy(u => u.Nome).ToListAsync(ct);
+        await _db.Utilizadores.Include(u => u.PerfilPermissao).OrderBy(u => u.Nome).ToListAsync(ct);
 
     public async Task<Utilizador?> ObterPorIdAsync(int id, CancellationToken ct = default) =>
-        await _db.Utilizadores.FindAsync([id], ct);
+        await _db.Utilizadores.Include(u => u.PerfilPermissao).FirstOrDefaultAsync(u => u.Id == id, ct);
 
+    /// <summary>
+    /// CORREÇÃO URGENTE: faltava o Include — usado por AuthService.AutenticarAsync,
+    /// cujo resultado alimenta ISessaoAtualService.IniciarSessao. Sem o
+    /// PerfilPermissao carregado aqui, IAutorizacaoService negava sempre
+    /// tudo (perfil sempre null), mesmo para utilizadores com perfil atribuído.
+    /// </summary>
     public async Task<Utilizador?> ObterPorTelefoneAsync(string telefone, CancellationToken ct = default) =>
-        await _db.Utilizadores.FirstOrDefaultAsync(u => u.Telefone == telefone, ct);
+        await _db.Utilizadores.Include(u => u.PerfilPermissao).FirstOrDefaultAsync(u => u.Telefone == telefone, ct);
 
     public async Task<Utilizador> AdicionarAsync(Utilizador utilizador, CancellationToken ct = default)
     {
