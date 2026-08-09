@@ -15,28 +15,33 @@ public class RelatorioService : IRelatorioService
     private readonly IPagamentoRepository _pagamentos;
     private readonly IMovimentoCaixaRepository _movimentos;
     private readonly ILicenseGate _licenseGate;
+    private readonly IAutorizacaoService _autorizacao;
 
     public RelatorioService(
         IAlunoRepository alunos,
         IPagamentoRepository pagamentos,
         IMovimentoCaixaRepository movimentos,
-        ILicenseGate licenseGate)
+        ILicenseGate licenseGate,
+        IAutorizacaoService autorizacao)
     {
         _alunos = alunos;
         _pagamentos = pagamentos;
         _movimentos = movimentos;
         _licenseGate = licenseGate;
+        _autorizacao = autorizacao;
     }
 
-    private void GarantirLicenciado()
+    private void GarantirAcesso()
     {
         if (!_licenseGate.HasFeature(Feature))
             throw new FuncionalidadeNaoLicenciadaException(Feature);
+
+        _autorizacao.GarantirPermissao(p => p.Relatorios, "Relatorios");
     }
 
     public async Task<IReadOnlyList<MatriculaRelatorioDto>> GerarMatriculasAsync(FiltroRelatorioDto filtro, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var inicio = filtro.DataInicio ?? DateTime.Today.AddMonths(-1);
         var fim = filtro.DataFim ?? DateTime.Today;
 
@@ -56,7 +61,7 @@ public class RelatorioService : IRelatorioService
 
     public async Task<IReadOnlyList<AlunoRelatorioDto>> GerarListaAlunosAsync(FiltroRelatorioDto filtro, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var alunos = await _alunos.ObterTodosAsync(ct);
 
         return alunos.Select(a => new AlunoRelatorioDto
@@ -78,11 +83,12 @@ public class RelatorioService : IRelatorioService
 
     private async Task<IReadOnlyList<PropinaRelatorioDto>> GerarPropinasAsync(FiltroRelatorioDto filtro, EstadoPagamento estado, CancellationToken ct)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var inicio = filtro.DataInicio ?? DateTime.Today.AddMonths(-1);
         var fim = filtro.DataFim ?? DateTime.Today;
 
-        var pagamentos = (await _pagamentos.ObterPorPeriodoAsync(inicio, fim, ct)).Where(p => p.Estado == estado);
+        var pagamentos = (await _pagamentos.ObterPorPeriodoAsync(inicio, fim, ct))
+            .Where(p => p.Estado == estado && !p.Anulado);
         var alunosPorId = (await _alunos.ObterTodosAsync(ct)).ToDictionary(a => a.Id);
 
         return pagamentos.Select(p => new PropinaRelatorioDto
@@ -104,7 +110,7 @@ public class RelatorioService : IRelatorioService
 
     private async Task<IReadOnlyList<RelatorioMovimentoDto>> GerarMovimentosAsync(FiltroRelatorioDto filtro, TipoMovimentoCaixa tipo, CancellationToken ct)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var inicio = filtro.DataInicio ?? DateTime.Today.AddMonths(-1);
         var fim = filtro.DataFim ?? DateTime.Today;
 
@@ -122,7 +128,7 @@ public class RelatorioService : IRelatorioService
 
     public async Task<IReadOnlyList<FluxoCaixaRelatorioDto>> GerarFluxoCaixaAsync(FiltroRelatorioDto filtro, CancellationToken ct = default)
     {
-        GarantirLicenciado();
+        GarantirAcesso();
         var inicio = filtro.DataInicio ?? DateTime.Today.AddMonths(-6);
         var fim = filtro.DataFim ?? DateTime.Today;
 
