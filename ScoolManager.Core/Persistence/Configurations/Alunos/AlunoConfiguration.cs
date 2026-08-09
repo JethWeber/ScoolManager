@@ -16,6 +16,10 @@ public class AlunoConfiguration : IEntityTypeConfiguration<Aluno>
 
         builder.Property(a => a.Nome).IsRequired().HasMaxLength(200);
         builder.Property(a => a.Telefone).IsRequired().HasMaxLength(30);
+        builder.Property(a => a.Naturalidade).HasMaxLength(100);
+        builder.Property(a => a.Provincia).HasMaxLength(100);
+        builder.Property(a => a.Pais).HasMaxLength(100);
+        builder.Property(a => a.DescricaoCondicaoMedica).HasMaxLength(500);
 
         builder.HasOne(a => a.Turma).WithMany().HasForeignKey(a => a.TurmaId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(a => a.AnoLectivo).WithMany().HasForeignKey(a => a.AnoLectivoId).OnDelete(DeleteBehavior.Restrict);
