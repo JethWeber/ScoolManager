@@ -12,8 +12,10 @@ public class PagamentoConfiguration : IEntityTypeConfiguration<Pagamento>
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.Estado).HasConversion<string>();
+        builder.Property(p => p.Tipo).HasConversion<string>();
         builder.Property(p => p.Valor).HasColumnType("decimal(18,2)");
         builder.Property(p => p.NumeroRecibo).IsRequired().HasMaxLength(30);
+        builder.Property(p => p.MotivoAnulacao).HasMaxLength(300);
 
         // DateOnly não tem mapeamento nativo no provider SQLite do EF Core
         // — conversão explícita para/de DateTime (hora sempre 00:00).

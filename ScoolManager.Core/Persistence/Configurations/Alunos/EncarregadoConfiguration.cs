@@ -13,5 +13,6 @@ public class EncarregadoConfiguration : IEntityTypeConfiguration<Encarregado>
         builder.Property(e => e.Tipo).HasConversion<string>();
         builder.Property(e => e.Nome).IsRequired().HasMaxLength(200);
         builder.Property(e => e.Contacto).IsRequired().HasMaxLength(30);
+        builder.Property(e => e.Profissao).HasMaxLength(100);
     }
 }

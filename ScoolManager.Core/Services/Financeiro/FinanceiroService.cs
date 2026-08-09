@@ -51,7 +51,7 @@ public class FinanceiroService : IFinanceiroService
         return _pagamentos.ObterPorPeriodoAsync(inicio, fim, ct);
     }
 
-    public async Task<Pagamento> RegistarPagamentoAsync(int alunoId, decimal valor, string? metodoPagamento, CancellationToken ct = default)
+    public async Task<Pagamento> RegistarPagamentoAsync(int alunoId, TipoCobranca tipo, decimal valor, string? metodoPagamento, CancellationToken ct = default)
     {
         GarantirLicenciado();
         var sessao = await GarantirCaixaAbertaAsync(ct);
@@ -60,6 +60,7 @@ public class FinanceiroService : IFinanceiroService
         {
             AlunoId = alunoId,
             MesReferencia = DateOnly.FromDateTime(DateTime.Now),
+            Tipo = tipo,
             NumeroRecibo = await GerarProximoNumeroReciboAsync(ct),
             Valor = valor,
             DataVencimento = DateTime.Now,
@@ -70,6 +71,18 @@ public class FinanceiroService : IFinanceiroService
         };
 
         return await _pagamentos.AdicionarAsync(pagamento, ct);
+    }
+
+    public async Task AnularPagamentoAsync(int pagamentoId, string motivo, CancellationToken ct = default)
+    {
+        GarantirLicenciado();
+
+        var pagamento = await _pagamentos.ObterPorIdAsync(pagamentoId, ct)
+            ?? throw new EntidadeNaoEncontradaException(nameof(Pagamento), pagamentoId);
+
+        pagamento.Anulado = true;
+        pagamento.MotivoAnulacao = motivo;
+        await _pagamentos.AtualizarAsync(pagamento, ct);
     }
 
     private async Task<string> GerarProximoNumeroReciboAsync(CancellationToken ct)
