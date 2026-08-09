@@ -1,8 +1,12 @@
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Exceptions;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
 
 public partial class LoginViewModel : ViewModelBase
 {
+    private readonly IAuthService _authService;
+
     [ObservableProperty]
     private string phone = string.Empty;
 
@@ -19,6 +23,11 @@ public partial class LoginViewModel : ViewModelBase
     private string errorMessage = string.Empty;
 
     public event EventHandler? LoginSucceeded;
+
+    public LoginViewModel(IAuthService authService)
+    {
+        _authService = authService;
+    }
 
     [RelayCommand(CanExecute = nameof(CanExecuteLogin))]
     private async Task LoginAsync()
@@ -42,15 +51,16 @@ public partial class LoginViewModel : ViewModelBase
 
         try
         {
-            await Task.Delay(600);
-
-            if (Phone.Trim().Length < 9 || Password.Trim().Length < 4)
-            {
-                ErrorMessage = "Telefone ou senha inválidos.";
-                return;
-            }
+            // TODO: guardar o Utilizador devolvido (ex.: numa sessão/serviço
+            // partilhado) assim que MainWindowViewModel precisar de
+            // UserName/UserRole reais em vez dos placeholders atuais.
+            await _authService.AutenticarAsync(Phone.Trim(), Password);
 
             LoginSucceeded?.Invoke(this, EventArgs.Empty);
+        }
+        catch (CredenciaisInvalidasException ex)
+        {
+            ErrorMessage = ex.Message; // "Telefone ou senha inválidos."
         }
         finally
         {

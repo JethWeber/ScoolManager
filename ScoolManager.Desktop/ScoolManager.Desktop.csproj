@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,11 +8,22 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>Assets\SM_icon.ico</ApplicationIcon>
   </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
+
   <ItemGroup>
+    <!-- Voltámos ao Avalonia 12.0.5 (versão original do projeto). O downgrade
+         para 11.3.0 foi revertido: o projeto já usa APIs exclusivas do
+         Avalonia 12 noutras views (ex.: DragEventArgs.DataTransfer em
+         AlunosView.axaml.cs, da nova API de drag-and-drop), por isso baixar
+         a versão do Avalonia quebra outras partes da aplicação, não só o
+         Dashboard. O gráfico de receita passou a ser desenhado à mão
+         (Path/SVG) em vez de usar LiveChartsCore.SkiaSharpView.Avalonia,
+         que ainda não tem build compatível com o Avalonia 12
+         (ver https://github.com/Live-Charts/LiveCharts2/issues/2117). -->
     <PackageReference Include="Avalonia" Version="12.0.5" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.1" />
     <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
@@ -23,13 +35,14 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.0.5" />
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.4" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ScoolManager.Core\ScoolManager.Core.csproj" />
   </ItemGroup>
+
 </Project>

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
+using Microsoft.Extensions.DependencyInjection;
 using ScoolManager.Desktop.Models;
 using ScoolManager.Desktop.ViewModels.Pages;
 
@@ -21,25 +22,24 @@ public partial class MainWindowViewModel : ViewModelBase
 
     // Dados do utilizador autenticado - placeholder por agora,
     // depois ligamos à sessão/serviço de autenticação real.
+    // TODO: LoginViewModel já recebe o Utilizador de AutenticarAsync — falta
+    // propagar essa sessão até aqui (ex.: um ISessaoAtualService no Core).
     public string UserName { get; } = "Secretaria";
     public string UserRole { get; } = "Administrador";
 
     public MainWindowViewModel()
     {
-        // 6 views principais, conforme SM_Flow.md. Alunos, Financeiro,
-        // Escola, Relatórios e Configurações já usam as ViewModels reais.
-        // Relatórios está na Fase 0-1 do seu roadmap: a ViewModel já existe
-        // (galeria + estado dos modais), mas a RelatoriosView ainda não foi
-        // criada (Fase 2) - até lá, o ViewLocator mostra o fallback
-        // "Not Found: ..." ao navegar para este item, o que é esperado.
+        // 6 views principais, conforme SM_Flow.md. As páginas passam a ser
+        // resolvidas pelo container de DI (App.Services) em vez de `new`,
+        // porque agora recebem Services do Core no construtor.
         NavigationItems = new ObservableCollection<NavigationItemViewModel>
         {
-            new(MaterialIconKind.ViewDashboard, "Dashboard",      () => new DashboardViewModel()),
-            new(MaterialIconKind.AccountGroup,  "Alunos",         CriarPaginaAlunos),
-            new(MaterialIconKind.CashMultiple,  "Financeiro",     () => new FinanceiroViewModel()),
-            new(MaterialIconKind.ChartLine,     "Relatórios",     () => new RelatoriosViewModel()),
-            new(MaterialIconKind.Domain,        "Escola",         () => new EscolaViewModel()),
-            new(MaterialIconKind.Cog,           "Configurações",  () => new ConfiguracoesViewModel()),
+            new(MaterialIconKind.ViewDashboard, "Dashboard",     () => App.Services.GetRequiredService<DashboardViewModel>()),
+            new(MaterialIconKind.AccountGroup,  "Alunos",        CriarPaginaAlunos),
+            new(MaterialIconKind.CashMultiple,  "Financeiro",    () => App.Services.GetRequiredService<FinanceiroViewModel>()),
+            new(MaterialIconKind.ChartLine,     "Relatórios",    () => App.Services.GetRequiredService<RelatoriosViewModel>()),
+            new(MaterialIconKind.Domain,        "Escola",        () => App.Services.GetRequiredService<EscolaViewModel>()),
+            new(MaterialIconKind.Cog,           "Configurações", () => App.Services.GetRequiredService<ConfiguracoesViewModel>()),
         };
 
         _selectedNavigationItem = NavigationItems[0];
@@ -53,7 +53,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private ViewModelBase CriarPaginaAlunos()
     {
-        var alunosViewModel = new AlunosViewModel();
+        var alunosViewModel = App.Services.GetRequiredService<AlunosViewModel>();
         alunosViewModel.DetalhesAlunoSolicitado += (_, aluno) => AbrirDetalhesAluno(aluno);
         return alunosViewModel;
     }
@@ -66,6 +66,8 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private void AbrirDetalhesAluno(AlunoListItemModel aluno)
     {
+        // DetalhesAlunoViewModel não está no container de DI: depende do
+        // `aluno` clicado, um parâmetro de runtime, por isso continua `new`.
         var detalhes = new DetalhesAlunoViewModel(aluno);
 
         // "Voltar para Alunos" e "Excluir Aluno" (dentro de Detalhes) levam

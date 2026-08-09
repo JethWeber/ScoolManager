@@ -91,18 +91,6 @@
             <Setter Property="Padding" Value="8,3"/>
         </Style>
 
-        <!-- Botão de atalho rápido -->
-        <Style Selector="Button.atalho">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.atalho:pointerover">
-            <Setter Property="Background" Value="#1A4D8EFF"/>
-        </Style>
-
         <!-- Botão "Fechar Dia" -->
         <Style Selector="Button.primario">
             <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
@@ -255,21 +243,27 @@
             </ItemsControl>
 
             <!-- ============================================================
-                 GRÁFICO DE RECEITA + TOP 5 DEVEDORES
+                 GRÁFICO DE RECEITA POR TRIMESTRE + TOP 5 DEVEDORES
                  ============================================================ -->
             <Grid ColumnDefinitions="2*,1*" ColumnSpacing="24">
 
-                <!-- Receita dos Últimos 6 Meses -->
+                <!-- Receita por Trimestre (desenhado à mão: Path/SVG via Viewbox,
+                     sem dependência de bibliotecas de gráficos externas) -->
                 <Border Grid.Column="0" Classes="neo-card" Padding="24">
-                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="24">
+                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
 
-                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Receita dos Últimos 6 Meses" FontSize="16" FontWeight="Medium"
-                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                            <ComboBox Grid.Column="1" SelectedIndex="0" FontSize="13">
-                                <ComboBoxItem Content="6 Meses"/>
-                                <ComboBoxItem Content="12 Meses"/>
-                            </ComboBox>
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <TextBlock Grid.Column="0" Text="Receita por Trimestre" FontSize="16" FontWeight="Medium"
+                                       Foreground="{StaticResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+
+                            <ComboBox Grid.Column="1" FontSize="13" MinWidth="110"
+                                      ItemsSource="{Binding AnosLetivos}"
+                                      SelectedItem="{Binding AnoLetivoSelecionado}"/>
+
+                            <ComboBox Grid.Column="2" FontSize="13" MinWidth="150"
+                                      ItemsSource="{Binding Trimestres}"
+                                      SelectedItem="{Binding TrimestreSelecionado}"
+                                      DisplayMemberBinding="{Binding Label}"/>
                         </Grid>
 
                         <!-- Área do gráfico: viewBox lógico 800x250, escalado com Viewbox -->
@@ -297,11 +291,11 @@
                             </Grid>
                         </Viewbox>
 
-                        <!-- Rótulos dos meses -->
+                        <!-- Rótulos dos meses do trimestre selecionado -->
                         <ItemsControl Grid.Row="2" ItemsSource="{Binding ChartMonthLabels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <UniformGrid Columns="6"/>
+                                    <UniformGrid Columns="3"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -374,126 +368,86 @@
             </Grid>
 
             <!-- ============================================================
-                 ATALHOS RÁPIDOS + RESUMO FINANCEIRO DO DIA
+                 RESUMO FINANCEIRO DO DIA
                  ============================================================ -->
-            <Grid ColumnDefinitions="7*,5*" ColumnSpacing="24">
+            <Border Classes="neo-card" Padding="24" BorderBrush="#334D8EFF" Background="#0D4D8EFF">
+                <StackPanel Spacing="16">
 
-                <!-- Atalhos Rápidos -->
-                <Border Grid.Column="0" Classes="neo-card" Padding="24">
-                    <StackPanel Spacing="20">
-                        <TextBlock Text="Atalhos Rápidos" FontSize="16" FontWeight="Medium"
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Resumo Financeiro do Dia" FontSize="16" FontWeight="Medium"
                                    Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <Button Grid.Column="1" Classes="primario" Content="Fechar Dia"
+                                Command="{Binding FecharDiaCommand}"/>
+                    </Grid>
 
-                        <ItemsControl ItemsSource="{Binding AtalhosRapidos}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="5"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:AtalhoRapidoModel">
-                                    <Button Classes="atalho" HorizontalAlignment="Stretch"
-                                            Command="{Binding $parent[ItemsControl].((vm:DashboardViewModel)DataContext).ExecutarAtalhoCommand}"
-                                            CommandParameter="{Binding}">
-                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <Border Width="48" Height="48" CornerRadius="999"
-                                                    Background="#1A4D8EFF">
-                                                <materialIcons:MaterialIcon Kind="{Binding Icon}" Width="24" Height="24"
-                                                                             HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                             Foreground="{StaticResource PrimaryBrush}"/>
-                                            </Border>
-                                            <TextBlock Text="{Binding Label}" FontSize="11" TextAlignment="Center"
-                                                       TextWrapping="Wrap" Opacity="0.7"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                    </Button>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-
-                <!-- Resumo Financeiro do Dia -->
-                <Border Grid.Column="1" Classes="neo-card" Padding="24" BorderBrush="#334D8EFF" Background="#0D4D8EFF">
-                    <StackPanel Spacing="16">
-
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Resumo Financeiro do Dia" FontSize="16" FontWeight="Medium"
-                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                            <Button Grid.Column="1" Classes="primario" Content="Fechar Dia"
-                                    Command="{Binding FecharDiaCommand}"/>
-                        </Grid>
-
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
-                            <Border Grid.Column="0" Classes="neo-card-inner" Padding="12">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Border Width="36" Height="36" CornerRadius="8" Background="#1A34D399">
-                                        <materialIcons:MaterialIcon Kind="TrendingUp" Width="18" Height="18"
-                                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                     Foreground="{StaticResource EmeraldBrush}"/>
-                                    </Border>
-                                    <StackPanel>
-                                        <TextBlock Text="ENTRADAS" FontSize="9" Opacity="0.6" FontWeight="Bold"
-                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <TextBlock Text="{Binding EntradasHoje}" FontSize="15"
-                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                                            <TextBlock Text="Kz" FontSize="10" Opacity="0.4"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Column="1" Classes="neo-card-inner" Padding="12">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <Border Width="36" Height="36" CornerRadius="8" Background="#1AFFB4AB">
-                                        <materialIcons:MaterialIcon Kind="TrendingDown" Width="18" Height="18"
-                                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                     Foreground="{StaticResource ErrorBrush}"/>
-                                    </Border>
-                                    <StackPanel>
-                                        <TextBlock Text="SAÍDAS" FontSize="9" Opacity="0.6" FontWeight="Bold"
-                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <TextBlock Text="{Binding SaidasHoje}" FontSize="15"
-                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
-                                            <TextBlock Text="Kz" FontSize="10" Opacity="0.4"
-                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <Border Classes="neo-card" Padding="16" Background="#1A4D8EFF" BorderBrush="#4D4D8EFF">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="12"
-                                        Background="{StaticResource PrimaryBrush}">
-                                    <materialIcons:MaterialIcon Kind="Wallet" Width="28" Height="28"
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                        <Border Grid.Column="0" Classes="neo-card-inner" Padding="12">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="36" Height="36" CornerRadius="8" Background="#1A34D399">
+                                    <materialIcons:MaterialIcon Kind="TrendingUp" Width="18" Height="18"
                                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                 Foreground="{StaticResource OnPrimaryContainerBrush}"/>
+                                                                 Foreground="{StaticResource EmeraldBrush}"/>
                                 </Border>
-                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="SALDO DO DIA" FontSize="10" Opacity="0.8" FontWeight="Bold"
+                                <StackPanel>
+                                    <TextBlock Text="ENTRADAS" FontSize="9" Opacity="0.6" FontWeight="Bold"
                                                Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="{Binding SaldoHoje}" FontSize="24" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Kz" FontSize="16" Opacity="0.6" VerticalAlignment="Bottom" Margin="0,0,0,2"
-                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding EntradasHoje}" FontSize="15"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Kz" FontSize="10" Opacity="0.4"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <materialIcons:MaterialIcon Grid.Column="2" Kind="CheckDecagram" Width="40" Height="40"
-                                                             Opacity="0.3" VerticalAlignment="Center"
-                                                             Foreground="{StaticResource PrimaryBrush}"/>
-                            </Grid>
+                            </StackPanel>
                         </Border>
 
-                    </StackPanel>
-                </Border>
+                        <Border Grid.Column="1" Classes="neo-card-inner" Padding="12">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="36" Height="36" CornerRadius="8" Background="#1AFFB4AB">
+                                    <materialIcons:MaterialIcon Kind="TrendingDown" Width="18" Height="18"
+                                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                 Foreground="{StaticResource ErrorBrush}"/>
+                                </Border>
+                                <StackPanel>
+                                    <TextBlock Text="SAÍDAS" FontSize="9" Opacity="0.6" FontWeight="Bold"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding SaidasHoje}" FontSize="15"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Kz" FontSize="10" Opacity="0.4"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
-            </Grid>
+                    <Border Classes="neo-card" Padding="16" Background="#1A4D8EFF" BorderBrush="#4D4D8EFF">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Border Grid.Column="0" Width="48" Height="48" CornerRadius="12"
+                                    Background="{StaticResource PrimaryBrush}">
+                                <materialIcons:MaterialIcon Kind="Wallet" Width="28" Height="28"
+                                                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                             Foreground="{StaticResource OnPrimaryContainerBrush}"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="SALDO DO DIA" FontSize="10" Opacity="0.8" FontWeight="Bold"
+                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding SaldoHoje}" FontSize="24" FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                    <TextBlock Text="Kz" FontSize="16" Opacity="0.6" VerticalAlignment="Bottom" Margin="0,0,0,2"
+                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <materialIcons:MaterialIcon Grid.Column="2" Kind="CheckDecagram" Width="40" Height="40"
+                                                         Opacity="0.3" VerticalAlignment="Center"
+                                                         Foreground="{StaticResource PrimaryBrush}"/>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+            </Border>
 
             <!-- ============================================================
                  RODAPÉ

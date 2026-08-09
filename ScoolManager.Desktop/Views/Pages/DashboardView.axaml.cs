@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using ScoolManager.Desktop.ViewModels;
@@ -9,6 +10,14 @@ public partial class DashboardView : UserControl
     public DashboardView()
     {
         InitializeComponent();
+    }
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+
+        if (DataContext is IAsyncInitializable initializable)
+            _ = initializable.InitializeAsync(); // fire-and-forget deliberado; IsLoading cobre o feedback visual
     }
 
     private void NotificationBellButton_PointerPressed(object? sender, PointerPressedEventArgs e)
