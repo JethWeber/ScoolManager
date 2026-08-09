@@ -21,4 +21,7 @@ public class Encarregado
     public TipoEncarregado Tipo { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Contacto { get; set; } = string.Empty;
+
+    /// <summary>CORREÇÃO (gap): faltava — o wizard "Novo Aluno" do Desktop (Passo 2) pede a profissão do Pai/Mãe.</summary>
+    public string? Profissao { get; set; }
 }
