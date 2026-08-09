@@ -1,8 +1,10 @@
+using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Repositories;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Dtos.Alunos;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Core.Entities.Escola;
+using ScoolManager.Core.Entities.Identidade;
 using ScoolManager.Core.Exceptions;
 
 namespace ScoolManager.Core.Services.Alunos;
@@ -11,21 +13,31 @@ public class AlunoService : IAlunoService
 {
     private readonly IAlunoRepository _alunos;
     private readonly ITurmaRepository _turmas;
+    private readonly IAutorizacaoService _autorizacao;
 
-    public AlunoService(IAlunoRepository alunos, ITurmaRepository turmas)
+    public AlunoService(IAlunoRepository alunos, ITurmaRepository turmas, IAutorizacaoService autorizacao)
     {
         _alunos = alunos;
         _turmas = turmas;
+        _autorizacao = autorizacao;
     }
 
-    public Task<IReadOnlyList<Aluno>> ObterListaAsync(FiltroAlunoDto filtro, CancellationToken ct = default) =>
-        _alunos.ObterPorFiltroAsync(filtro, ct);
+    public Task<IReadOnlyList<Aluno>> ObterListaAsync(FiltroAlunoDto filtro, CancellationToken ct = default)
+    {
+        _autorizacao.GarantirPermissao(p => p.VerAlunos, "Ver Alunos");
+        return _alunos.ObterPorFiltroAsync(filtro, ct);
+    }
 
-    public async Task<Aluno> ObterDetalhesAsync(int id, CancellationToken ct = default) =>
-        await _alunos.ObterPorIdAsync(id, ct) ?? throw new EntidadeNaoEncontradaException(nameof(Aluno), id);
+    public async Task<Aluno> ObterDetalhesAsync(int id, CancellationToken ct = default)
+    {
+        _autorizacao.GarantirPermissao(p => p.VerAlunos, "Ver Alunos");
+        return await _alunos.ObterPorIdAsync(id, ct) ?? throw new EntidadeNaoEncontradaException(nameof(Aluno), id);
+    }
 
     public async Task<Aluno> CriarAsync(Aluno aluno, IEnumerable<Encarregado> encarregados, CancellationToken ct = default)
     {
+        _autorizacao.GarantirPermissao(p => p.EditarAlunos, "Editar Alunos");
+
         var turma = await _turmas.ObterPorIdAsync(aluno.TurmaId, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(Turma), aluno.TurmaId);
 
@@ -41,11 +53,22 @@ public class AlunoService : IAlunoService
         return criado;
     }
 
-    public Task AtualizarAsync(Aluno aluno, CancellationToken ct = default) => _alunos.AtualizarAsync(aluno, ct);
-    public Task RemoverAsync(int id, CancellationToken ct = default) => _alunos.RemoverAsync(id, ct);
+    public Task AtualizarAsync(Aluno aluno, CancellationToken ct = default)
+    {
+        _autorizacao.GarantirPermissao(p => p.EditarAlunos, "Editar Alunos");
+        return _alunos.AtualizarAsync(aluno, ct);
+    }
+
+    public Task RemoverAsync(int id, CancellationToken ct = default)
+    {
+        _autorizacao.GarantirPermissao(p => p.EditarAlunos, "Editar Alunos");
+        return _alunos.RemoverAsync(id, ct);
+    }
 
     public async Task RenovarMatriculaAsync(int alunoId, int novoAnoLectivoId, int novaTurmaId, CancellationToken ct = default)
     {
+        _autorizacao.GarantirPermissao(p => p.EditarAlunos, "Editar Alunos");
+
         var aluno = await _alunos.ObterPorIdAsync(alunoId, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(Aluno), alunoId);
 
@@ -64,6 +87,8 @@ public class AlunoService : IAlunoService
 
     public async Task AdicionarDocumentoAsync(int alunoId, DocumentoAluno documento, CancellationToken ct = default)
     {
+        _autorizacao.GarantirPermissao(p => p.EditarAlunos, "Editar Alunos");
+
         var aluno = await _alunos.ObterPorIdAsync(alunoId, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(Aluno), alunoId);
 
