@@ -4,8 +4,8 @@ using ScoolManager.Core.Enums;
 namespace ScoolManager.Core.Entities.Financeiro;
 
 /// <summary>
-/// Um pagamento de propina de um Aluno (aba "Pagamentos" da View 4 —
-/// Financeiro, ver SM_Flow.md).
+/// Um pagamento/cobrança de um Aluno (aba "Recebimentos" da View 4 —
+/// Financeiro, ver SM_Flow.md e FinanceiroViewModel real).
 ///
 /// Migrado de <c>PagamentoHistoricoItem</c> (classe interna de
 /// <c>DetalhesAlunoViewModel</c>). Diferenças: <c>Valor</c> era
@@ -15,10 +15,13 @@ namespace ScoolManager.Core.Entities.Financeiro;
 /// <see cref="EstadoPagamento"/>. <c>StatusTexto</c>/<c>StatusBrush</c>
 /// não sobem — ficam na UI.
 ///
-/// NOTA (pendência aberta no roteiro): <c>MetodoPagamento</c> ficou como
-/// <c>string?</c> livre porque o <c>FinanceiroViewModel</c> real (onde
-/// provavelmente já existiria um conjunto fixo de métodos) não chegou a
-/// ser enviado. Ajustar para enum quando esse ficheiro chegar.
+/// CORREÇÃO (gap identificado ao ler o FinanceiroViewModel real): esta
+/// entidade tinha sido desenhada só para propinas mensais. A view real
+/// trata qualquer cobrança da escola (matrícula, confirmação, uniforme,
+/// etc. — ver <see cref="TipoCobranca"/>) e permite anular um pagamento já
+/// registado (com motivo) — isto é ortogonal a <see cref="Estado"/>
+/// (Pago/EmAtraso, que é sobre atraso de propina): um pagamento "Pago" pode
+/// mais tarde ser "Anulado" por engano de registo.
 /// </summary>
 public class Pagamento
 {
@@ -27,8 +30,11 @@ public class Pagamento
     public int AlunoId { get; set; }
     public Aluno? Aluno { get; set; }
 
-    /// <summary>Mês a que a propina se refere (guardado como 1º dia do mês).</summary>
+    /// <summary>Mês a que a propina se refere (guardado como 1º dia do mês). Só relevante quando Tipo == Propina.</summary>
     public DateOnly MesReferencia { get; set; }
+
+    /// <summary>Categoria da cobrança (Matrícula, Propina, Confirmação, Uniforme, ...).</summary>
+    public TipoCobranca Tipo { get; set; }
 
     /// <summary>Referência/número do recibo (ex.: "#REC-4560").</summary>
     public string NumeroRecibo { get; set; } = string.Empty;
@@ -40,7 +46,10 @@ public class Pagamento
 
     public EstadoPagamento Estado { get; set; }
 
-    /// <summary>Ver nota acima — pendente confirmação do FinanceiroViewModel real.</summary>
+    /// <summary>Cancelamento de um pagamento já registado — ortogonal a Estado, ver nota da classe.</summary>
+    public bool Anulado { get; set; }
+    public string? MotivoAnulacao { get; set; }
+
     public string? MetodoPagamento { get; set; }
 
     /// <summary>Sessão de caixa em que o pagamento foi registado (ver <see cref="SessaoCaixa"/>).</summary>
