@@ -24,7 +24,16 @@ public interface IFinanceiroService
     Task<IReadOnlyList<Pagamento>> ObterPagamentosAsync(DateTime inicio, DateTime fim, CancellationToken ct = default);
 
     /// <exception cref="Exceptions.CaixaFechadoException">Não há sessão de caixa aberta.</exception>
-    Task<Pagamento> RegistarPagamentoAsync(int alunoId, decimal valor, string? metodoPagamento, CancellationToken ct = default);
+    Task<Pagamento> RegistarPagamentoAsync(int alunoId, TipoCobranca tipo, decimal valor, string? metodoPagamento, CancellationToken ct = default);
+
+    /// <summary>
+    /// CORREÇÃO (gap): faltava — "Anular Pagamento" (com motivo) é uma ação
+    /// real do FinanceiroViewModel, ortogonal a EstadoPagamento. Autorização
+    /// por perfil/permissão fica para quando ISessaoAtualService/
+    /// PerfilPermissao forem verificados aqui — não implementado ainda.
+    /// </summary>
+    /// <exception cref="Exceptions.EntidadeNaoEncontradaException">Pagamento não existe.</exception>
+    Task AnularPagamentoAsync(int pagamentoId, string motivo, CancellationToken ct = default);
 
     Task<decimal> ObterSaldoDevedorAsync(int alunoId, CancellationToken ct = default);
 
