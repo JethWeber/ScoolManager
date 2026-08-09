@@ -22,10 +22,19 @@ public class EfMovimentoCaixaRepository : IMovimentoCaixaRepository
     public async Task<IReadOnlyList<MovimentoCaixa>> ObterPorSessaoAsync(int sessaoCaixaId, CancellationToken ct = default) =>
         await _db.MovimentosCaixa.Where(m => m.SessaoCaixaId == sessaoCaixaId).ToListAsync(ct);
 
+    public async Task<MovimentoCaixa?> ObterPorIdAsync(int id, CancellationToken ct = default) =>
+        await _db.MovimentosCaixa.FindAsync([id], ct);
+
     public async Task<MovimentoCaixa> AdicionarAsync(MovimentoCaixa movimento, CancellationToken ct = default)
     {
         _db.MovimentosCaixa.Add(movimento);
         await _db.SaveChangesAsync(ct);
         return movimento;
+    }
+
+    public async Task AtualizarAsync(MovimentoCaixa movimento, CancellationToken ct = default)
+    {
+        _db.MovimentosCaixa.Update(movimento);
+        await _db.SaveChangesAsync(ct);
     }
 }

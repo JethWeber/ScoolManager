@@ -43,6 +43,8 @@ public class EscolaService : IEscolaService
     public Task<IReadOnlyList<AnoLectivo>> ObterAnosLectivosAsync(CancellationToken ct = default) => _anosLectivos.ObterTodosAsync(ct);
     public Task<AnoLectivo> CriarAnoLectivoAsync(AnoLectivo anoLectivo, CancellationToken ct = default) => _anosLectivos.AdicionarAsync(anoLectivo, ct);
 
+    public Task AtualizarAnoLectivoAsync(AnoLectivo anoLectivo, CancellationToken ct = default) => _anosLectivos.AtualizarAsync(anoLectivo, ct);
+
     public async Task EncerrarAnoLectivoAsync(int id, CancellationToken ct = default)
     {
         var ano = await _anosLectivos.ObterPorIdAsync(id, ct)

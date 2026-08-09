@@ -57,6 +57,34 @@ public class DashboardService : IDashboardService
             })
             .ToList();
 
+        // CORREÇÃO (gap 1): Top 5 Devedores — soma o valor em atraso por
+        // aluno e ordena do maior para o menor. Usa os pagamentos em atraso
+        // já filtrados do ano corrente (pagamentosDoAno); um devedor de anos
+        // anteriores que já não tenha registos "em atraso" no ano atual não
+        // aparece aqui — é uma limitação aceitável para o Dashboard (visão
+        // do ano corrente), não para os Relatórios (que cobrem qualquer período).
+        var topDevedores = pagamentosDoAno
+            .Where(p => p.Estado == EstadoPagamento.EmAtraso)
+            .GroupBy(p => p.AlunoId)
+            .Select(g => new
+            {
+                AlunoId = g.Key,
+                Total = g.Sum(p => p.Valor)
+            })
+            .OrderByDescending(g => g.Total)
+            .Take(5)
+            .Select(g =>
+            {
+                var aluno = alunos.FirstOrDefault(a => a.Id == g.AlunoId);
+                return new DevedorDto
+                {
+                    Nome = aluno?.Nome ?? string.Empty,
+                    Turma = aluno?.Turma?.Nome ?? string.Empty,
+                    ValorEmDivida = g.Total
+                };
+            })
+            .ToList();
+
         return new ResumoDashboardDto
         {
             TotalAlunos = totalAlunos,
@@ -66,7 +94,8 @@ public class DashboardService : IDashboardService
             Entradas = entradas,
             Saidas = saidas,
             SaldoCaixa = saldoCaixa,
-            UltimosPagamentos = ultimosPagamentos
+            UltimosPagamentos = ultimosPagamentos,
+            TopDevedores = topDevedores
         };
     }
 }

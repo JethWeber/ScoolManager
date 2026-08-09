@@ -19,6 +19,14 @@ public class ResumoDashboardDto
     public decimal Saidas { get; set; }
     public decimal SaldoCaixa { get; set; }
     public List<PagamentoResumoDto> UltimosPagamentos { get; set; } = new();
+
+    /// <summary>
+    /// CORREÇÃO (gap identificado por TODO em DashboardViewModel.InitializeAsync):
+    /// os 5 alunos com maior saldo em dívida, para a lista "Top 5 Devedores"
+    /// do Dashboard. Rank/Iniciais continuam a ser calculados na UI a partir
+    /// desta lista (posição + Nome), como já acontecia com DevedorModel.
+    /// </summary>
+    public List<DevedorDto> TopDevedores { get; set; } = new();
 }
 
 /// <summary>Linha resumida de um pagamento recente, para a lista "Últimos pagamentos" do Dashboard.</summary>
@@ -27,4 +35,12 @@ public class PagamentoResumoDto
     public string Aluno { get; set; } = string.Empty;
     public decimal Valor { get; set; }
     public DateTime Data { get; set; }
+}
+
+/// <summary>Um aluno com saldo em dívida, para a lista "Top 5 Devedores" do Dashboard.</summary>
+public class DevedorDto
+{
+    public string Nome { get; set; } = string.Empty;
+    public string Turma { get; set; } = string.Empty;
+    public decimal ValorEmDivida { get; set; }
 }

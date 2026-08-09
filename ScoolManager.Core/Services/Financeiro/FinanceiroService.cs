@@ -45,6 +45,12 @@ public class FinanceiroService : IFinanceiroService
         return _pagamentos.ObterPorAlunoAsync(alunoId, ct);
     }
 
+    public Task<IReadOnlyList<Pagamento>> ObterPagamentosAsync(DateTime inicio, DateTime fim, CancellationToken ct = default)
+    {
+        GarantirLicenciado();
+        return _pagamentos.ObterPorPeriodoAsync(inicio, fim, ct);
+    }
+
     public async Task<Pagamento> RegistarPagamentoAsync(int alunoId, decimal valor, string? metodoPagamento, CancellationToken ct = default)
     {
         GarantirLicenciado();
@@ -87,6 +93,25 @@ public class FinanceiroService : IFinanceiroService
     {
         GarantirLicenciado();
         return _movimentos.ObterPorPeriodoAsync(inicio, fim, tipo, ct);
+    }
+
+    public async Task<MovimentoCaixa> ObterMovimentoPorIdAsync(int id, CancellationToken ct = default)
+    {
+        GarantirLicenciado();
+        return await _movimentos.ObterPorIdAsync(id, ct)
+            ?? throw new EntidadeNaoEncontradaException(nameof(MovimentoCaixa), id);
+    }
+
+    public Task AtualizarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)
+    {
+        GarantirLicenciado();
+        // Não reabre a validação de "caixa aberta" aqui de propósito: editar
+        // um lançamento de uma sessão já FECHADA continua a ser uma correção
+        // legítima (ex.: descrição errada), desde que não se altere o Valor/
+        // Tipo de forma a desequilibrar um fecho de caixa já conferido — essa
+        // validação mais fina fica para quando houver um caso de uso real
+        // que a exija (não especificado ainda no SM_Flow.md).
+        return _movimentos.AtualizarAsync(movimento, ct);
     }
 
     public async Task<MovimentoCaixa> RegistarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)

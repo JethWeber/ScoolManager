@@ -9,14 +9,23 @@ namespace ScoolManager.Core.Services.Configuracoes;
 public class UtilizadorService : IUtilizadorService
 {
     private readonly IUtilizadorRepository _utilizadores;
-    public UtilizadorService(IUtilizadorRepository utilizadores) => _utilizadores = utilizadores;
+    private readonly IPerfilPermissaoRepository _perfis;
+
+    public UtilizadorService(IUtilizadorRepository utilizadores, IPerfilPermissaoRepository perfis)
+    {
+        _utilizadores = utilizadores;
+        _perfis = perfis;
+    }
 
     public Task<IReadOnlyList<Utilizador>> ObterTodosAsync(CancellationToken ct = default) => _utilizadores.ObterTodosAsync(ct);
 
-    public async Task<Utilizador> CriarAsync(string nome, string cargo, string telefone, string password, CancellationToken ct = default)
+    public async Task<Utilizador> CriarAsync(string nome, string cargo, string telefone, string password, int? perfilPermissaoId, CancellationToken ct = default)
     {
         if (await _utilizadores.ObterPorTelefoneAsync(telefone, ct) is not null)
             throw new InvalidOperationException($"Já existe um utilizador com o telefone '{telefone}'.");
+
+        if (perfilPermissaoId is not null && await _perfis.ObterPorIdAsync(perfilPermissaoId.Value, ct) is null)
+            throw new EntidadeNaoEncontradaException(nameof(PerfilPermissao), perfilPermissaoId.Value);
 
         var utilizador = new Utilizador
         {
@@ -24,6 +33,7 @@ public class UtilizadorService : IUtilizadorService
             Cargo = cargo,
             Telefone = telefone,
             PasswordHash = PasswordHasher.Hash(password),
+            PerfilPermissaoId = perfilPermissaoId,
             Ativo = true
         };
 
@@ -31,6 +41,18 @@ public class UtilizadorService : IUtilizadorService
     }
 
     public Task AtualizarAsync(Utilizador utilizador, CancellationToken ct = default) => _utilizadores.AtualizarAsync(utilizador, ct);
+
+    public async Task AtribuirPerfilAsync(int utilizadorId, int perfilPermissaoId, CancellationToken ct = default)
+    {
+        var utilizador = await _utilizadores.ObterPorIdAsync(utilizadorId, ct)
+            ?? throw new EntidadeNaoEncontradaException(nameof(Utilizador), utilizadorId);
+
+        if (await _perfis.ObterPorIdAsync(perfilPermissaoId, ct) is null)
+            throw new EntidadeNaoEncontradaException(nameof(PerfilPermissao), perfilPermissaoId);
+
+        utilizador.PerfilPermissaoId = perfilPermissaoId;
+        await _utilizadores.AtualizarAsync(utilizador, ct);
+    }
 
     public async Task DesativarAsync(int id, CancellationToken ct = default)
     {

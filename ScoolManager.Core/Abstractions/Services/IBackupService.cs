@@ -11,4 +11,8 @@ public interface IBackupService
     Task<BackupRegistro> CriarBackupAsync(CancellationToken ct = default);
 
     Task RestaurarAsync(int backupId, CancellationToken ct = default);
+
+    /// <summary>CORREÇÃO (gap 7): faltava onde persistir os 3 toggles (BackupDiarioAutomatico, SincronizacaoNuvem, NotificarFalhasEmail).</summary>
+    Task<ConfiguracaoBackup> ObterConfiguracaoAsync(CancellationToken ct = default);
+    Task AtualizarConfiguracaoAsync(ConfiguracaoBackup configuracao, CancellationToken ct = default);
 }

@@ -9,6 +9,14 @@ namespace ScoolManager.Core.Entities.Identidade;
 /// (é o que o <c>LoginViewModel</c> valida hoje como "Phone") e
 /// <see cref="PasswordHash"/> — nunca a password em claro.
 /// <c>Iniciais</c>/<c>EstadoLabel</c> (apresentação) não sobem.
+///
+/// CORREÇÃO (gap identificado ao cruzar com ConfiguracoesViewModel/
+/// PermissaoPerfilModel): faltava a ligação entre um Utilizador e o seu
+/// perfil de permissões — sem isto, "que módulos este utilizador vê" não
+/// era uma pergunta que o Core conseguisse responder de forma fiável.
+/// <see cref="Cargo"/> continua a existir como o texto livre já usado hoje
+/// (ex.: "Diretor Geral", "Tesoureira") para exibição — é
+/// <see cref="PerfilPermissaoId"/> que carrega o vínculo real de acesso.
 /// </summary>
 public class Utilizador
 {
@@ -24,4 +32,13 @@ public class Utilizador
 
     public DateTime? UltimoAcesso { get; set; }
     public bool Ativo { get; set; } = true;
+
+    /// <summary>
+    /// FK para o perfil de permissões deste utilizador. Nullable porque um
+    /// utilizador pode, em teoria, ainda não ter perfil atribuído (ex.:
+    /// criado antes de decidir o cargo) — nesse caso, deve ser tratado como
+    /// "sem nenhum acesso", nunca como "acesso total".
+    /// </summary>
+    public int? PerfilPermissaoId { get; set; }
+    public PerfilPermissao? PerfilPermissao { get; set; }
 }

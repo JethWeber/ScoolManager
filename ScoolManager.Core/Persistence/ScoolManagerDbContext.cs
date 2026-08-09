@@ -49,6 +49,7 @@ public class ScoolManagerDbContext : DbContext
     // Configurações
     public DbSet<DadosInstituicao> DadosInstituicao => Set<DadosInstituicao>();
     public DbSet<BackupRegistro> Backups => Set<BackupRegistro>();
+    public DbSet<ConfiguracaoBackup> ConfiguracoesBackup => Set<ConfiguracaoBackup>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

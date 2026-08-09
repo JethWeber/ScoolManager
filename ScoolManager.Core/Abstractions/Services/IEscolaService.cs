@@ -25,6 +25,10 @@ public interface IEscolaService
 
     Task<IReadOnlyList<AnoLectivo>> ObterAnosLectivosAsync(CancellationToken ct = default);
     Task<AnoLectivo> CriarAnoLectivoAsync(AnoLectivo anoLectivo, CancellationToken ct = default);
+
+    /// <summary>CORREÇÃO (gap): faltava — SM_Flow.md lista 3 modais na aba Anos Lectivos (Novo/Editar/Encerrar), só os outros dois estavam cobertos.</summary>
+    Task AtualizarAnoLectivoAsync(AnoLectivo anoLectivo, CancellationToken ct = default);
+
     Task EncerrarAnoLectivoAsync(int id, CancellationToken ct = default);
 
     Task<IReadOnlyList<Turma>> ObterTurmasAsync(CancellationToken ct = default);

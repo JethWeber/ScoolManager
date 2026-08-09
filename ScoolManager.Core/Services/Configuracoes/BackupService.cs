@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ScoolManager.Core.Abstractions.Repositories;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Configuracoes;
@@ -15,13 +16,18 @@ namespace ScoolManager.Core.Services.Configuracoes;
 public class BackupService : IBackupService
 {
     private readonly IBackupRepository _backups;
+    private readonly IConfiguracaoBackupRepository _configuracao;
     private readonly ScoolManagerDbContext _db;
 
-    public BackupService(IBackupRepository backups, ScoolManagerDbContext db)
+    public BackupService(IBackupRepository backups, IConfiguracaoBackupRepository configuracao, ScoolManagerDbContext db)
     {
         _backups = backups;
+        _configuracao = configuracao;
         _db = db;
     }
+
+    public Task<ConfiguracaoBackup> ObterConfiguracaoAsync(CancellationToken ct = default) => _configuracao.ObterAsync(ct);
+    public Task AtualizarConfiguracaoAsync(ConfiguracaoBackup configuracao, CancellationToken ct = default) => _configuracao.AtualizarAsync(configuracao, ct);
 
     public Task<IReadOnlyList<BackupRegistro>> ObterTodosAsync(CancellationToken ct = default) => _backups.ObterTodosAsync(ct);
 
