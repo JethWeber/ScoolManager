@@ -1,21 +1,21 @@
 using Microsoft.EntityFrameworkCore;
+using ScoolManager.Core.Entities.Escola;
 using ScoolManager.Core.Entities.Identidade;
+using ScoolManager.Core.Enums;
 using ScoolManager.Core.Services.Auth;
 
 namespace ScoolManager.Core.Persistence;
 
 /// <summary>
-/// Seed inicial de dados indispensáveis para a app arrancar utilizável —
-/// hoje só o utilizador administrador padrão, para não ficar impossível
-/// fazer login numa base de dados nova. Chamado pelo composition root
-/// (Desktop) logo a seguir a <c>Database.Migrate()</c>.
+/// Seed inicial de dados indispensáveis para a app arrancar utilizável.
 ///
-/// Vive no Core (não no Desktop) porque precisa de <c>PasswordHasher</c>,
-/// que é <c>internal</c> ao Core — só código na mesma assembly o consegue
-/// chamar.
+/// Este seeder cria:
+/// - as 13 classes do catálogo escolar;
+/// - um perfil de permissões de Administrador com acesso total;
+/// - o utilizador administrador padrão, vinculado ao perfil acima.
 ///
-/// ⚠️ Credenciais padrão — TROCAR a password no primeiro acesso, assim que
-/// existir a funcionalidade de alterar password (aba "Utilizadores").
+/// O processo é idempotente: ao correr novamente, só atualiza/complete os
+/// registos que ainda não existam ou que precisem de ser corrigidos.
 /// </summary>
 public static class DatabaseSeeder
 {
@@ -24,18 +24,90 @@ public static class DatabaseSeeder
 
     public static async Task SeedAsync(ScoolManagerDbContext db, CancellationToken ct = default)
     {
-        if (await db.Utilizadores.AnyAsync(ct))
-            return; // já existe pelo menos um utilizador — não semear de novo
-
-        db.Utilizadores.Add(new Utilizador
-        {
-            Nome = "Administrador",
-            Cargo = "Administrador",
-            Telefone = TelefoneAdminPadrao,
-            PasswordHash = PasswordHasher.Hash(PasswordAdminPadrao),
-            Ativo = true
-        });
+        await SeedClassesAsync(db, ct);
+        var perfilAdministrador = await EnsureAdministradorPerfilAsync(db, ct);
+        await EnsureAdministradorUsuarioAsync(db, perfilAdministrador, ct);
 
         await db.SaveChangesAsync(ct);
+    }
+
+    private static async Task SeedClassesAsync(ScoolManagerDbContext db, CancellationToken ct)
+    {
+        for (var numero = 1; numero <= 13; numero++)
+        {
+            var existe = await db.Classes.AnyAsync(c => c.Numero == numero, ct);
+            if (existe)
+                continue;
+
+            db.Classes.Add(new Classe
+            {
+                Numero = numero,
+                Nivel = numero <= 6 ? NivelEnsino.Primario
+                    : numero <= 9 ? NivelEnsino.Secundario
+                    : NivelEnsino.Medio
+            });
+        }
+    }
+
+    private static async Task<PerfilPermissao> EnsureAdministradorPerfilAsync(ScoolManagerDbContext db, CancellationToken ct)
+    {
+        var perfil = await db.PerfisPermissao.FirstOrDefaultAsync(p => p.Perfil == "Administrador", ct);
+
+        if (perfil is null)
+        {
+            perfil = new PerfilPermissao
+            {
+                Perfil = "Administrador",
+                Bloqueado = true,
+                VerAlunos = true,
+                EditarAlunos = true,
+                Financeiro = true,
+                Relatorios = true,
+                Configuracoes = true
+            };
+
+            db.PerfisPermissao.Add(perfil);
+        }
+        else
+        {
+            perfil.Bloqueado = true;
+            perfil.VerAlunos = true;
+            perfil.EditarAlunos = true;
+            perfil.Financeiro = true;
+            perfil.Relatorios = true;
+            perfil.Configuracoes = true;
+        }
+
+        return perfil;
+    }
+
+    private static async Task EnsureAdministradorUsuarioAsync(ScoolManagerDbContext db, PerfilPermissao perfil, CancellationToken ct)
+    {
+        var administrador = await db.Utilizadores.FirstOrDefaultAsync(
+            u => u.Telefone == TelefoneAdminPadrao || u.Nome == "Administrador",
+            ct);
+
+        if (administrador is null)
+        {
+            administrador = new Utilizador
+            {
+                Nome = "Administrador",
+                Cargo = "Administrador",
+                Telefone = TelefoneAdminPadrao,
+                PasswordHash = PasswordHasher.Hash(PasswordAdminPadrao),
+                Ativo = true
+            };
+
+            db.Utilizadores.Add(administrador);
+        }
+
+        administrador.Nome = "Administrador";
+        administrador.Cargo = "Administrador";
+        administrador.Telefone = TelefoneAdminPadrao;
+        administrador.Ativo = true;
+        administrador.PasswordHash = string.IsNullOrWhiteSpace(administrador.PasswordHash)
+            ? PasswordHasher.Hash(PasswordAdminPadrao)
+            : administrador.PasswordHash;
+        administrador.PerfilPermissao = perfil;
     }
 }
