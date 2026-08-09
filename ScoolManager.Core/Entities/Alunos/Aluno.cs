@@ -24,11 +24,26 @@ public class Aluno
     public DateTime? DataNascimento { get; set; }
     public string? Genero { get; set; }
     public string? Nacionalidade { get; set; }
+
+    /// <summary>Local de nascimento — decisão: 3 campos separados (Naturalidade/Província/País), não um único texto livre.</summary>
+    public string? Naturalidade { get; set; }
+    public string? Provincia { get; set; }
+    public string? Pais { get; set; }
+
     public string? NumeroBiCedula { get; set; }
     public string? Endereco { get; set; }
     public string Telefone { get; set; } = string.Empty;
     public string? Email { get; set; }
     public string? FotografiaCaminho { get; set; }
+
+    /// <summary>
+    /// Saúde — decisão: 2 campos (bool + descrição), em vez de um único
+    /// texto livre, para permitir filtrar/alertar sem depender de parsing
+    /// de string ("SofreDoencaSim"/"SofreDoencaNao"/"QualDoenca" no wizard
+    /// "Novo Aluno" do Desktop).
+    /// </summary>
+    public bool TemCondicaoMedica { get; set; }
+    public string? DescricaoCondicaoMedica { get; set; }
 
     public bool Ativo { get; set; } = true;
 
