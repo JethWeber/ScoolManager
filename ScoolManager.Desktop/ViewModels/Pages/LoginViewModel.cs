@@ -1,3 +1,4 @@
+using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Exceptions;
 
@@ -6,6 +7,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages;
 public partial class LoginViewModel : ViewModelBase
 {
     private readonly IAuthService _authService;
+    private readonly ISessaoAtualService _sessaoAtualService;
 
     [ObservableProperty]
     private string phone = string.Empty;
@@ -24,9 +26,10 @@ public partial class LoginViewModel : ViewModelBase
 
     public event EventHandler? LoginSucceeded;
 
-    public LoginViewModel(IAuthService authService)
+    public LoginViewModel(IAuthService authService, ISessaoAtualService sessaoAtualService)
     {
         _authService = authService;
+        _sessaoAtualService = sessaoAtualService;
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteLogin))]
@@ -51,10 +54,8 @@ public partial class LoginViewModel : ViewModelBase
 
         try
         {
-            // TODO: guardar o Utilizador devolvido (ex.: numa sessão/serviço
-            // partilhado) assim que MainWindowViewModel precisar de
-            // UserName/UserRole reais em vez dos placeholders atuais.
-            await _authService.AutenticarAsync(Phone.Trim(), Password);
+            var utilizador = await _authService.AutenticarAsync(Phone.Trim(), Password);
+            _sessaoAtualService.IniciarSessao(utilizador);
 
             LoginSucceeded?.Invoke(this, EventArgs.Empty);
         }
