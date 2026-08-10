@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Desktop.Models;
 
 namespace ScoolManager.Desktop.ViewModels.Pages
@@ -19,8 +21,10 @@ namespace ScoolManager.Desktop.ViewModels.Pages
 /// Os dados são locais/mock, assim como em AlunosViewModel. Quando o Core
 /// tiver as entidades reais, trocar estes campos por bindings ao serviço.
 /// </summary>
-public partial class DetalhesAlunoViewModel : ViewModelBase
+public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
 {
+    private readonly IAlunoService _alunoService;
+    private readonly int? _alunoId;
     public enum Aba
     {
         DadosPessoais,
@@ -200,8 +204,11 @@ public partial class DetalhesAlunoViewModel : ViewModelBase
     /// Os campos que a lista não tem (data de nascimento, documentos, histórico
     /// de pagamentos, etc.) ficam com dados mock até existir um serviço real.
     /// </summary>
-    public DetalhesAlunoViewModel(AlunoListItemModel aluno)
+    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService)
     {
+        _alunoService = alunoService;
+        _alunoId = null;
+
         NomeCompleto = aluno.Nome;
         CodigoMatricula = aluno.Codigo;
         Classe = aluno.Classe;
@@ -216,9 +223,62 @@ public partial class DetalhesAlunoViewModel : ViewModelBase
         PreencherDadosMock();
     }
 
-    /// <summary>Usado pelo designer (Design.DataContext) e como fallback.</summary>
-    public DetalhesAlunoViewModel() : this(CriarAlunoMock())
+    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService)
     {
+        _alunoService = alunoService;
+        _alunoId = alunoId;
+    }
+
+    /// <summary>Usado pelo designer (Design.DataContext) e como fallback.</summary>
+    public DetalhesAlunoViewModel() : this(CriarAlunoMock(), null!)
+    {
+    }
+
+    public async Task InitializeAsync()
+    {
+        if (_alunoId is null)
+            return;
+
+        try
+        {
+            var aluno = await _alunoService.ObterDetalhesAsync(_alunoId.Value);
+            NomeCompleto = aluno.Nome;
+            CodigoMatricula = aluno.Codigo;
+            Classe = aluno.Turma?.Nome ?? string.Empty;
+            Turma = aluno.Turma?.Sala?.Nome ?? string.Empty;
+            Curso = aluno.Turma?.Curso?.Nome ?? string.Empty;
+            Ativo = aluno.Ativo;
+            Telefone = aluno.Telefone;
+            DataNascimento = aluno.DataNascimento;
+            Genero = aluno.Genero ?? string.Empty;
+            Nacionalidade = aluno.Nacionalidade ?? string.Empty;
+            NumeroBiCedula = aluno.NumeroBiCedula ?? string.Empty;
+            Endereco = aluno.Endereco ?? string.Empty;
+            Email = aluno.Email;
+            FotografiaCaminho = aluno.FotografiaCaminho;
+            AnoLectivo = aluno.AnoLectivo?.Nome ?? string.Empty;
+            DataMatricula = aluno.DataMatricula;
+
+            var encarregadoPai = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Pai);
+            var encarregadoMae = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Mae);
+            NomePai = encarregadoPai?.Nome ?? string.Empty;
+            ContactoPai = encarregadoPai?.Contacto ?? string.Empty;
+            NomeMae = encarregadoMae?.Nome ?? string.Empty;
+            ContactoMae = encarregadoMae?.Contacto ?? string.Empty;
+
+            Documentos.Clear();
+            foreach (var documento in aluno.Documentos)
+            {
+                Documentos.Add(new DocumentoAlunoItem(
+                    documento.Tipo.ToString(),
+                    documento.NomeArquivo,
+                    documento.DataUpload));
+            }
+        }
+        catch (Exception)
+        {
+            PreencherDadosMock();
+        }
     }
 
     private void PreencherDadosMock()

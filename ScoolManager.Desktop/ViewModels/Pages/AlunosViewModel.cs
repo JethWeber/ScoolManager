@@ -1,4 +1,11 @@
 
+using System.Threading.Tasks;
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Dtos.Alunos;
+using ScoolManager.Core.Entities.Alunos;
+using ScoolManager.Core.Entities.Escola;
+using ScoolManager.Core.Enums;
+
 namespace ScoolManager.Desktop.ViewModels.Pages
 {
 
@@ -14,11 +21,11 @@ namespace ScoolManager.Desktop.ViewModels.Pages
 /// Os restantes dados (encarregado, telefone, documentos, etc.) ficam
 /// disponíveis no modelo para a futura view de Detalhes do Aluno.
 /// </summary>
-public partial class AlunosViewModel : ViewModelBase
+public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 {
-    // Fonte completa dos dados (mock). A pesquisa/filtros trabalham sobre esta lista
-    // e só o resultado é publicado em "Alunos". TODO: substituir por um IAlunoService real.
-    private readonly List<AlunoListItemModel> _todosAlunos;
+    private readonly IAlunoService _alunoService;
+    private readonly IEscolaService _escolaService;
+    private readonly List<AlunoListItemModel> _todosAlunos = new();
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -139,9 +146,10 @@ public partial class AlunosViewModel : ViewModelBase
         _ => true
     };
 
-    public AlunosViewModel()
+    public AlunosViewModel(IAlunoService alunoService, IEscolaService escolaService)
     {
-        _todosAlunos = CriarDadosMock();
+        _alunoService = alunoService;
+        _escolaService = escolaService;
 
         Classes = new ObservableCollection<string>
         {
@@ -158,8 +166,45 @@ public partial class AlunosViewModel : ViewModelBase
         _classeSelecionada = Classes[0];
         _statusSelecionado = StatusOptions[0];
         _anoLetivoSelecionado = AnosLetivos[0];
+    }
 
-        AplicarFiltros();
+    public async Task InitializeAsync()
+    {
+        try
+        {
+            var filtro = new FiltroAlunoDto
+            {
+                TextoBusca = SearchText,
+                Situacao = StatusSelecionado == StatusOptions[0] ? null : StatusSelecionado,
+                Classe = ClasseSelecionada == Classes[0] ? null : ClasseSelecionada,
+                ApenasAtivos = StatusSelecionado == "Ativos"
+            };
+
+            var alunos = await _alunoService.ObterListaAsync(filtro);
+            _todosAlunos.Clear();
+
+            foreach (var aluno in alunos)
+            {
+                var turmaNome = aluno.Turma?.Nome ?? "Sem turma";
+                var primeiroEncarregado = aluno.Encarregados.FirstOrDefault();
+                _todosAlunos.Add(new AlunoListItemModel(
+                    Codigo: aluno.Codigo,
+                    Nome: aluno.Nome,
+                    Classe: turmaNome,
+                    Curso: aluno.Turma?.Curso?.Nome ?? string.Empty,
+                    Sala: aluno.Turma?.Sala?.Nome ?? string.Empty,
+                    Encarregado: primeiroEncarregado?.Nome ?? string.Empty,
+                    Telefone: primeiroEncarregado?.Contacto ?? aluno.Telefone,
+                    Ativo: aluno.Ativo));
+            }
+
+            AplicarFiltros();
+        }
+        catch (Exception)
+        {
+            _todosAlunos.Clear();
+            AplicarFiltros();
+        }
     }
 
     partial void OnSearchTextChanged(string value) => AplicarFiltros();
@@ -247,7 +292,7 @@ public partial class AlunosViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void AvancarOuConcluir()
+    private async Task AvancarOuConcluir()
     {
         if (!PodeAvancar) return;
 
@@ -257,24 +302,99 @@ public partial class AlunosViewModel : ViewModelBase
             return;
         }
 
-        ConcluirNovoAluno();
+        await ConcluirNovoAluno();
     }
 
-    private void ConcluirNovoAluno()
+    private async Task ConcluirNovoAluno()
     {
-        var novoAluno = new AlunoListItemModel(
-            Codigo: GerarNovoCodigo(),
-            Nome: NomeCompleto,
-            Classe: ClasseMatricula ?? string.Empty,
-            Curso: CursoMatricula,
-            Sala: SalaMatricula,
-            Encarregado: !string.IsNullOrWhiteSpace(NomePai) ? NomePai : NomeMae,
-            Telefone: !string.IsNullOrWhiteSpace(ContactoPai) ? ContactoPai : ContactoMae,
-            Ativo: true);
+        try
+        {
+            var turma = await ResolverTurmaDestinoAsync();
+            var aluno = new Aluno
+            {
+                Codigo = GerarNovoCodigo(),
+                Nome = NomeCompleto.Trim(),
+                DataNascimento = DataNascimento?.DateTime,
+                Genero = Sexo,
+                Naturalidade = Naturalidade,
+                Provincia = Provincia,
+                Pais = Pais,
+                NumeroBiCedula = NumeroBiCedulaAluno,
+                Endereco = Morada,
+                Telefone = !string.IsNullOrWhiteSpace(ContactoPai) ? ContactoPai : ContactoMae,
+                Email = null,
+                Ativo = true,
+                TurmaId = turma.Id,
+                AnoLectivoId = turma.AnoLectivoId,
+                DataMatricula = DateTime.Today,
+                TemCondicaoMedica = SofreDoencaSim,
+                DescricaoCondicaoMedica = QualDoenca,
+                Encarregados = new List<Encarregado>(),
+                Documentos = new List<DocumentoAluno>()
+            };
 
-        _todosAlunos.Insert(0, novoAluno);
-        AplicarFiltros();
-        FecharModal();
+            if (!string.IsNullOrWhiteSpace(NomePai))
+                aluno.Encarregados.Add(new Encarregado { Tipo = TipoEncarregado.Pai, Nome = NomePai, Contacto = ContactoPai, Profissao = ProfissaoPai });
+
+            if (!string.IsNullOrWhiteSpace(NomeMae))
+                aluno.Encarregados.Add(new Encarregado { Tipo = TipoEncarregado.Mae, Nome = NomeMae, Contacto = ContactoMae, Profissao = ProfissaoMae });
+
+            if (BiCedulaDocumento.TemArquivo)
+                aluno.Documentos.Add(new DocumentoAluno { Tipo = TipoDocumentoAluno.BiCedula, NomeArquivo = BiCedulaDocumento.NomeArquivo, DataUpload = DateTime.Now });
+
+            await _alunoService.CriarAsync(aluno, aluno.Encarregados);
+
+            LimparFormularioNovoAluno();
+            await InitializeAsync();
+            FecharModal();
+        }
+        catch (Exception)
+        {
+            FecharModal();
+        }
+    }
+
+    private async Task<ScoolManager.Core.Entities.Escola.Turma> ResolverTurmaDestinoAsync()
+    {
+        var turmas = (await _escolaService.ObterTurmasAsync()).ToList();
+        if (turmas.Count == 0)
+            throw new InvalidOperationException("Não existe nenhuma turma criada para associar o aluno.");
+
+        var numeroClasse = ExtrairNumeroClasse(ClasseMatricula);
+        var letraTurma = ExtrairUltimaLetra(ClasseMatricula);
+
+        var turmaMatch = turmas.FirstOrDefault(t =>
+            t.Classe?.Numero == numeroClasse &&
+            (!letraTurma.HasValue || t.Letra == letraTurma.Value) &&
+            (string.IsNullOrWhiteSpace(CursoMatricula) ||
+                t.Curso is null ||
+                t.Curso.Nome.Contains(CursoMatricula, StringComparison.OrdinalIgnoreCase) ||
+                t.Curso.Sigla.Contains(CursoMatricula, StringComparison.OrdinalIgnoreCase)));
+
+        if (turmaMatch is not null) return turmaMatch;
+
+        return turmas.FirstOrDefault(t => t.Classe?.Numero == numeroClasse) ?? turmas.First();
+    }
+
+    private static int? ExtrairNumeroClasse(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return null;
+
+        var digits = new string(texto.Where(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var numero) ? numero : null;
+    }
+
+    private static char? ExtrairUltimaLetra(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return null;
+
+        for (var i = texto.Length - 1; i >= 0; i--)
+        {
+            if (char.IsLetter(texto[i]))
+                return char.ToUpperInvariant(texto[i]);
+        }
+
+        return null;
     }
 
     private string GerarNovoCodigo()
@@ -338,14 +458,6 @@ public partial class AlunosViewModel : ViewModelBase
     [RelayCommand] private void ConfirmarExportarExcel() => FecharModal();
     [RelayCommand] private void ConfirmarFiltrosAvancados() => FecharModal();
 
-    private static List<AlunoListItemModel> CriarDadosMock() => new()
-    {
-        new("2026/0842", "João Pedro da Silva",   "10ª Classe A", "Ciências",  "Sala 12", "Ricardo da Silva", "+244 923 000 111", true),
-        new("2026/1205", "Maria Luísa Alberto",    "9ª Classe B",  "Geral",     "Sala 04", "Isabel Alberto",   "+244 931 444 222", true),
-        new("2026/0591", "Manuel Francisco",       "7ª Classe A",  "Geral",     "Sala 07", "Ana Francisco",    "+244 944 888 777", false),
-        new("2026/0998", "Ana Paula Domingos",     "10ª Classe A", "Letras",    "Sala 12", "José Domingos",    "+244 923 111 222", true),
-        new("2026/1423", "Carlos Manuel",          "6ª Classe B",  "Geral",     "Sala 02", "Isabel Manuel",    "+244 928 555 333", true),
-    };
 }
 
 /// <summary>
