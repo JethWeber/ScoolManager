@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
+using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Desktop.Models;
 using ScoolManager.Desktop.ViewModels.Pages;
 
@@ -66,12 +67,8 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private void AbrirDetalhesAluno(AlunoListItemModel aluno)
     {
-        // DetalhesAlunoViewModel não está no container de DI: depende do
-        // `aluno` clicado, um parâmetro de runtime, por isso continua `new`.
-        var detalhes = new DetalhesAlunoViewModel(aluno);
+        var detalhes = new DetalhesAlunoViewModel(aluno, App.Services.GetRequiredService<IAlunoService>());
 
-        // "Voltar para Alunos" e "Excluir Aluno" (dentro de Detalhes) levam
-        // os dois de volta para uma lista de Alunos "fresca".
         detalhes.VoltarParaAlunosSolicitado += (_, _) => CurrentPage = CriarPaginaAlunos();
         detalhes.ExclusaoConfirmada += (_, _) => CurrentPage = CriarPaginaAlunos();
 
