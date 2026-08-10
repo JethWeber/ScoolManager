@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using ScoolManager.Desktop.Models;
+using ScoolManager.Desktop.ViewModels;
 using ScoolManager.Desktop.ViewModels.Pages;
 
 namespace ScoolManager.Desktop.Views.Pages;
@@ -36,6 +38,9 @@ public partial class AlunosView : UserControl
             {
                 vm.DetalhesAlunoSolicitado -= OnDetalhesAlunoSolicitado;
                 vm.DetalhesAlunoSolicitado += OnDetalhesAlunoSolicitado;
+
+                if (vm is IAsyncInitializable initializable)
+                    _ = initializable.InitializeAsync();
             }
         };
 
