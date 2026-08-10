@@ -39,4 +39,25 @@ public class DatabaseSeederTests
         Assert.NotNull(administrador.PerfilPermissao);
         Assert.Equal(perfil.Id, administrador.PerfilPermissao!.Id);
     }
+
+    [Fact]
+    public async Task SeedAsync_CreatesSampleStudentsAndTurmas()
+    {
+        var options = new DbContextOptionsBuilder<ScoolManagerDbContext>()
+            .UseSqlite("Data Source=:memory:")
+            .Options;
+
+        await using var db = new ScoolManagerDbContext(options);
+        await db.Database.OpenConnectionAsync();
+        await db.Database.EnsureCreatedAsync();
+
+        await DatabaseSeeder.SeedAsync(db);
+
+        var turmas = await db.Turmas.ToListAsync();
+        Assert.NotEmpty(turmas);
+
+        var alunos = await db.Alunos.ToListAsync();
+        Assert.NotEmpty(alunos);
+        Assert.Contains(alunos, a => a.Nome.Contains("João", StringComparison.OrdinalIgnoreCase));
+    }
 }
