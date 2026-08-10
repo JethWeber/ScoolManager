@@ -1,11 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Entities.Escola;
 using ScoolManager.Desktop.Models;
-using ScoolManager.Desktop.Services;
+using CoreEnums = ScoolManager.Core.Enums;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
 
@@ -48,8 +51,11 @@ public class TurnoOpcao
 /// Por agora só a aba "Turmas" está pronta; as restantes mostram apenas um
 /// estado "em desenvolvimento" (ver <see cref="TituloAbaEmDesenvolvimento"/>).
 /// </summary>
-public partial class EscolaViewModel : ViewModelBase
+public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
 {
+    private readonly IEscolaService? _escolaService;
+    private readonly List<TurmaModel> _turmasFonte = new();
+
     // =================================================================
     // Faixa de abas (comum a todas)
     // =================================================================
@@ -80,13 +86,71 @@ public partial class EscolaViewModel : ViewModelBase
         OnPropertyChanged(nameof(AbaAnosLectivosAtiva));
     }
 
-    public EscolaViewModel()
+    public EscolaViewModel() : this(null) { }
+
+    public EscolaViewModel(IEscolaService? escolaService)
     {
+        _escolaService = escolaService;
         _abaItemSelecionada = Abas[0]; // Turmas
-        AtualizarListagemTurmas();
-        AtualizarListagemSalas();
-        AtualizarListagemCursos();
-        AtualizarListagemAnosLectivos();
+
+        if (escolaService is null)
+        {
+            AtualizarListagemTurmas();
+            AtualizarListagemSalas();
+            AtualizarListagemCursos();
+            AtualizarListagemAnosLectivos();
+            return;
+        }
+
+        _ = InitializeAsync();
+    }
+
+    public async Task InitializeAsync()
+    {
+        if (_escolaService is null)
+            return;
+
+        try
+        {
+            var classes = await _escolaService.ObterClassesAsync();
+            var cursos = await _escolaService.ObterCursosAsync();
+            var salas = await _escolaService.ObterSalasAsync();
+            var anosLectivos = await _escolaService.ObterAnosLectivosAsync();
+            var turmas = await _escolaService.ObterTurmasAsync();
+
+            ClassesOpcoes.Clear();
+            foreach (var classe in classes.OrderBy(c => c.Numero))
+                ClassesOpcoes.Add(Mapear(classe));
+
+            CursosOpcoes.Clear();
+            foreach (var curso in cursos.OrderBy(c => c.Nome))
+                CursosOpcoes.Add(Mapear(curso));
+
+            SalasOpcoes.Clear();
+            foreach (var sala in salas.OrderBy(s => s.Nome))
+                SalasOpcoes.Add(Mapear(sala));
+
+            AnosLectivosOpcoes.Clear();
+            foreach (var ano in anosLectivos.OrderByDescending(a => a.DataInicio))
+                AnosLectivosOpcoes.Add(Mapear(ano));
+
+            _turmasFonte.Clear();
+            foreach (var turma in turmas.OrderBy(t => t.Classe?.Numero ?? 0).ThenBy(t => t.Curso?.Nome).ThenBy(t => t.Letra))
+                _turmasFonte.Add(Mapear(turma));
+
+            TurmasListadas.Clear();
+            foreach (var turma in _turmasFonte)
+                TurmasListadas.Add(turma);
+
+            AtualizarListagemTurmas();
+            AtualizarListagemSalas();
+            AtualizarListagemCursos();
+            AtualizarListagemAnosLectivos();
+        }
+        catch
+        {
+            // Mantém o estado atual em caso de falha de leitura.
+        }
     }
 
     // =================================================================
@@ -113,9 +177,7 @@ public partial class EscolaViewModel : ViewModelBase
 
     private void AtualizarListagemTurmas()
     {
-        TurmasListadas.Clear();
-
-        var turmas = EscolaRepository.Turmas.AsEnumerable();
+        var turmas = _turmasFonte.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(TermoPesquisaTurmas))
         {
@@ -126,19 +188,20 @@ public partial class EscolaViewModel : ViewModelBase
                 (t.Curso != null && t.Curso.Nome.Contains(termo, StringComparison.OrdinalIgnoreCase)));
         }
 
+        TurmasListadas.Clear();
         foreach (var turma in turmas.OrderBy(t => t.Classe.Numero).ThenBy(t => t.Curso?.Sigla).ThenBy(t => t.Letra))
             TurmasListadas.Add(turma);
 
         SemResultadosTurmas = TurmasListadas.Count == 0;
 
-        var totalAlunos = EscolaRepository.Turmas.Sum(t => t.Matriculados);
-        var capacidadeTotal = EscolaRepository.Turmas.Sum(t => t.Capacidade);
+        var totalAlunos = _turmasFonte.Sum(t => t.Matriculados);
+        var capacidadeTotal = _turmasFonte.Sum(t => t.Capacidade);
 
         TotalAlunosTurmasTexto = totalAlunos.ToString();
         CapacidadeTotalTurmasTexto = capacidadeTotal.ToString();
         VagasDisponiveisTurmasTexto = (capacidadeTotal - totalAlunos).ToString();
 
-        var turmasComVaga = EscolaRepository.Turmas.Count(t => !t.EstaCheia);
+        var turmasComVaga = _turmasFonte.Count(t => !t.EstaCheia);
         VagasEmTurmasLabel = $"Em {turmasComVaga} turma(s)";
     }
 
@@ -146,10 +209,10 @@ public partial class EscolaViewModel : ViewModelBase
     // Opções para os ComboBox do modal
     // -----------------------------------------------------------------
 
-    public ObservableCollection<AnoLectivoModel> AnosLectivosOpcoes => EscolaRepository.AnosLectivos;
-    public ObservableCollection<ClasseModel> ClassesOpcoes => EscolaRepository.Classes;
-    public ObservableCollection<CursoModel> CursosOpcoes => EscolaRepository.Cursos;
-    public ObservableCollection<SalaModel> SalasOpcoes => EscolaRepository.Salas;
+    public ObservableCollection<AnoLectivoModel> AnosLectivosOpcoes { get; } = new();
+    public ObservableCollection<ClasseModel> ClassesOpcoes { get; } = new();
+    public ObservableCollection<CursoModel> CursosOpcoes { get; } = new();
+    public ObservableCollection<SalaModel> SalasOpcoes { get; } = new();
 
     public ObservableCollection<TurnoOpcao> TurnoOpcoes { get; } = new()
     {
@@ -407,7 +470,7 @@ public partial class EscolaViewModel : ViewModelBase
     {
         SalasListadas.Clear();
 
-        var salas = EscolaRepository.Salas.AsEnumerable();
+        var salas = SalasOpcoes.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(TermoPesquisaSalas))
         {
@@ -422,8 +485,8 @@ public partial class EscolaViewModel : ViewModelBase
 
         SemResultadosSalas = SalasListadas.Count == 0;
 
-        TotalSalasTexto = EscolaRepository.Salas.Count.ToString();
-        CapacidadeTotalSalasTexto = EscolaRepository.Salas.Sum(s => s.Capacidade).ToString();
+        TotalSalasTexto = SalasOpcoes.Count.ToString();
+        CapacidadeTotalSalasTexto = SalasOpcoes.Sum(s => s.Capacidade).ToString();
     }
 
     // -----------------------------------------------------------------
@@ -581,7 +644,7 @@ public partial class EscolaViewModel : ViewModelBase
     {
         CursosListados.Clear();
 
-        var cursos = EscolaRepository.Cursos.AsEnumerable();
+        var cursos = CursosOpcoes.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(TermoPesquisaCursos))
         {
@@ -595,7 +658,7 @@ public partial class EscolaViewModel : ViewModelBase
             CursosListados.Add(curso);
 
         SemResultadosCursos = CursosListados.Count == 0;
-        TotalCursosTexto = EscolaRepository.Cursos.Count.ToString();
+        TotalCursosTexto = CursosOpcoes.Count.ToString();
     }
 
     // -----------------------------------------------------------------
@@ -745,7 +808,7 @@ public partial class EscolaViewModel : ViewModelBase
     {
         AnosLectivosListados.Clear();
 
-        var anos = EscolaRepository.AnosLectivos.AsEnumerable();
+        var anos = AnosLectivosOpcoes.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(TermoPesquisaAnosLectivos))
         {
