@@ -63,6 +63,10 @@ School_Manager_Fluxo_Navegacao.txt
 Doc/*
 Doc/
 
+# BUGS
+./Bug/
+Bug/*
+Bug/
 
 # Local configuration / temp files
 local.settings.json
