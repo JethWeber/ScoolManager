@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,16 +94,10 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         _escolaService = escolaService;
         _abaItemSelecionada = Abas[0]; // Turmas
 
-        if (escolaService is null)
-        {
-            AtualizarListagemTurmas();
-            AtualizarListagemSalas();
-            AtualizarListagemCursos();
-            AtualizarListagemAnosLectivos();
-            return;
-        }
-
-        _ = InitializeAsync();
+        // Sem serviço, a ViewModel permanece vazia. Não existem dados Mock
+        // no módulo Escola: os dados reais vêm sempre do ScoolManager.Core.
+        if (escolaService is not null)
+            _ = InitializeAsync();
     }
 
     public async Task InitializeAsync()
@@ -264,31 +259,53 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
 
     private void AtualizarPreviewNomeTurma()
     {
+        _ = AtualizarPreviewNomeTurmaAsync();
+    }
+
+    private async Task AtualizarPreviewNomeTurmaAsync()
+    {
         ModalTurmaErro = string.Empty;
 
-        if (_modalTurmaModoEdicao && _turmaEmEdicao is not null)
+        if (ModalTurmaModoEdicao && _turmaEmEdicao is not null)
         {
             FormNomePreview = _turmaEmEdicao.Nome;
             return;
         }
 
-        if (FormAnoLectivoSelecionado is null || FormClasseSelecionada is null)
+        if (_escolaService is null || FormAnoLectivoSelecionado is null || FormClasseSelecionada is null)
         {
             FormNomePreview = string.Empty;
             return;
         }
 
-        if (!TurmaNamingService.PodeAbrirNovaTurma(EscolaRepository.Turmas, FormAnoLectivoSelecionado, FormClasseSelecionada, FormCursoSelecionado))
+        try
+        {
+            var podeAbrir = await _escolaService.PodeAbrirNovaTurmaAsync(
+                FormAnoLectivoSelecionado.Id,
+                FormClasseSelecionada.Id,
+                FormCursoSelecionado?.Id);
+
+            if (!podeAbrir)
+            {
+                FormNomePreview = string.Empty;
+                ModalTurmaErro = "Não é possível abrir uma nova turma para esta combinação. Verifique se a turma anterior já atingiu a capacidade.";
+                return;
+            }
+
+            var letra = await _escolaService.ProximaLetraDisponivelAsync(
+                FormAnoLectivoSelecionado.Id,
+                FormClasseSelecionada.Id,
+                FormCursoSelecionado?.Id);
+
+            FormNomePreview = FormCursoSelecionado is null
+                ? $"{FormClasseSelecionada.Numero}ª {letra}"
+                : $"{FormClasseSelecionada.Numero}ª {FormCursoSelecionado.Sigla} {letra}";
+        }
+        catch (Exception ex)
         {
             FormNomePreview = string.Empty;
-            ModalTurmaErro = TurmaNamingService.MotivoBloqueio(EscolaRepository.Turmas, FormAnoLectivoSelecionado, FormClasseSelecionada, FormCursoSelecionado);
-            return;
+            ModalTurmaErro = ex.Message;
         }
-
-        var letra = TurmaNamingService.ProximaLetraDisponivel(EscolaRepository.Turmas, FormAnoLectivoSelecionado, FormClasseSelecionada, FormCursoSelecionado);
-        FormNomePreview = FormCursoSelecionado is null
-            ? $"{FormClasseSelecionada.Numero}ª {letra}"
-            : $"{FormClasseSelecionada.Numero}ª {FormCursoSelecionado.Sigla} {letra}";
     }
 
     [RelayCommand]
@@ -298,7 +315,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         ModalTurmaModoEdicao = false;
         ModalTurmaTitulo = "Nova Turma";
         ModalTurmaErro = string.Empty;
-        FormAnoLectivoSelecionado = EscolaRepository.AnosLectivos.FirstOrDefault(a => a.Estado == EstadoAnoLectivo.Aberto);
+        FormAnoLectivoSelecionado = AnosLectivosOpcoes.FirstOrDefault(a => a.Estado == EstadoAnoLectivo.Aberto);
         FormClasseSelecionada = null;
         FormCursoSelecionado = null;
         FormSalaSelecionada = null;
@@ -332,8 +349,14 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     }
 
     [RelayCommand]
-    private void SalvarTurma()
+    private async Task SalvarTurma()
     {
+        if (_escolaService is null)
+        {
+            ModalTurmaErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
         if (FormAnoLectivoSelecionado is not { } anoLectivo)
         {
             ModalTurmaErro = "Selecione o ano lectivo.";
@@ -370,41 +393,45 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        var curso = FormCursoSelecionado;
-
-        if (_turmaEmEdicao is null)
+        try
         {
-            if (!TurmaNamingService.PodeAbrirNovaTurma(EscolaRepository.Turmas, anoLectivo, classe, curso))
+            if (_turmaEmEdicao is null)
             {
-                ModalTurmaErro = TurmaNamingService.MotivoBloqueio(EscolaRepository.Turmas, anoLectivo, classe, curso);
+                var turma = await _escolaService.CriarTurmaAsync(
+                    anoLectivo.Id,
+                    classe.Id,
+                    FormCursoSelecionado?.Id,
+                    sala.Id,
+                    (CoreEnums.TurnoLetivo)turno.Valor,
+                    capacidade);
+
+                ModalTurmaVisivel = false;
+                await InitializeAsync();
                 return;
             }
 
-            var letra = TurmaNamingService.ProximaLetraDisponivel(EscolaRepository.Turmas, anoLectivo, classe, curso);
-
-            EscolaRepository.Turmas.Add(new TurmaModel
+            var turmaAtualizada = new Turma
             {
-                Id = EscolaRepository.ProximoIdTurma(),
-                AnoLectivo = anoLectivo,
-                Classe = classe,
-                Curso = curso,
-                Letra = letra,
-                Sala = sala,
-                Turno = turno.Valor,
+                Id = _turmaEmEdicao.Id,
+                AnoLectivoId = _turmaEmEdicao.AnoLectivo.Id,
+                ClasseId = _turmaEmEdicao.Classe.Id,
+                CursoId = _turmaEmEdicao.Curso?.Id,
+                Letra = _turmaEmEdicao.Letra,
+                SalaId = sala.Id,
+                Turno = (CoreEnums.TurnoLetivo)turno.Valor,
                 Capacidade = capacidade,
-                Matriculados = 0
-            });
-        }
-        else
-        {
-            // Identidade (Ano Lectivo/Classe/Curso/Letra) não muda em edição - só Sala/Turno/Capacidade.
-            _turmaEmEdicao.Sala = sala;
-            _turmaEmEdicao.Turno = turno.Valor;
-            _turmaEmEdicao.Capacidade = capacidade;
-        }
+                Matriculados = _turmaEmEdicao.Matriculados
+            };
 
-        ModalTurmaVisivel = false;
-        AtualizarListagemTurmas();
+            await _escolaService.AtualizarTurmaAsync(turmaAtualizada);
+
+            ModalTurmaVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalTurmaErro = ex.Message;
+        }
     }
 
     // -----------------------------------------------------------------
@@ -433,7 +460,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     }
 
     [RelayCommand]
-    private void ConfirmarEliminarTurma()
+    private async Task ConfirmarEliminarTurma()
     {
         if (_turmaParaEliminar is null)
         {
@@ -447,9 +474,22 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        EscolaRepository.Turmas.Remove(_turmaParaEliminar);
-        ModalEliminarTurmaVisivel = false;
-        AtualizarListagemTurmas();
+        if (_escolaService is null)
+        {
+            ModalEliminarTurmaErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
+        try
+        {
+            await _escolaService.RemoverTurmaAsync(_turmaParaEliminar.Id);
+            ModalEliminarTurmaVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalEliminarTurmaErro = ex.Message;
+        }
     }
 
     // =================================================================
@@ -534,8 +574,14 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     private void CancelarModalSala() => ModalSalaVisivel = false;
 
     [RelayCommand]
-    private void SalvarSala()
+    private async Task SalvarSala()
     {
+        if (_escolaService is null)
+        {
+            ModalSalaErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
         var nome = FormNomeSala.Trim();
         if (string.IsNullOrWhiteSpace(nome))
         {
@@ -549,39 +595,40 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        var duplicada = EscolaRepository.Salas.Any(s =>
-            s.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && s != _salaEmEdicao);
-        if (duplicada)
+        try
         {
-            ModalSalaErro = "Já existe uma sala com esse nome.";
-            return;
-        }
+            var bloco = string.IsNullOrWhiteSpace(FormBlocoSala) ? null : FormBlocoSala.Trim();
+            var observacoes = string.IsNullOrWhiteSpace(FormObservacoesSala) ? null : FormObservacoesSala.Trim();
 
-        var bloco = string.IsNullOrWhiteSpace(FormBlocoSala) ? null : FormBlocoSala.Trim();
-        var observacoes = string.IsNullOrWhiteSpace(FormObservacoesSala) ? null : FormObservacoesSala.Trim();
-
-        if (_salaEmEdicao is null)
-        {
-            EscolaRepository.Salas.Add(new SalaModel
+            if (_salaEmEdicao is null)
             {
-                Id = EscolaRepository.ProximoIdSala(),
-                Nome = nome,
-                Capacidade = capacidade,
-                Bloco = bloco,
-                Observacoes = observacoes
-            });
-        }
-        else
-        {
-            _salaEmEdicao.Nome = nome;
-            _salaEmEdicao.Capacidade = capacidade;
-            _salaEmEdicao.Bloco = bloco;
-            _salaEmEdicao.Observacoes = observacoes;
-        }
+                await _escolaService.CriarSalaAsync(new Sala
+                {
+                    Nome = nome,
+                    Capacidade = capacidade,
+                    Bloco = bloco,
+                    Observacoes = observacoes
+                });
+            }
+            else
+            {
+                await _escolaService.AtualizarSalaAsync(new Sala
+                {
+                    Id = _salaEmEdicao.Id,
+                    Nome = nome,
+                    Capacidade = capacidade,
+                    Bloco = bloco,
+                    Observacoes = observacoes
+                });
+            }
 
-        ModalSalaVisivel = false;
-        AtualizarListagemSalas();
-        AtualizarListagemTurmas(); // os cartões de Turma mostram o nome da Sala
+            ModalSalaVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalSalaErro = ex.Message;
+        }
     }
 
     // -----------------------------------------------------------------
@@ -607,7 +654,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     private void CancelarEliminarSala() => ModalEliminarSalaVisivel = false;
 
     [RelayCommand]
-    private void ConfirmarEliminarSala()
+    private async Task ConfirmarEliminarSala()
     {
         if (_salaParaEliminar is null)
         {
@@ -615,16 +662,28 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        var emUso = EscolaRepository.Turmas.Any(t => t.Sala.Id == _salaParaEliminar.Id);
-        if (emUso)
+        if (_turmasFonte.Any(t => t.Sala.Id == _salaParaEliminar.Id))
         {
             ModalEliminarSalaErro = "Não é possível eliminar: existem turmas a usar esta sala.";
             return;
         }
 
-        EscolaRepository.Salas.Remove(_salaParaEliminar);
-        ModalEliminarSalaVisivel = false;
-        AtualizarListagemSalas();
+        if (_escolaService is null)
+        {
+            ModalEliminarSalaErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
+        try
+        {
+            await _escolaService.RemoverSalaAsync(_salaParaEliminar.Id);
+            ModalEliminarSalaVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalEliminarSalaErro = ex.Message;
+        }
     }
 
     // =================================================================
@@ -700,8 +759,14 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     private void CancelarModalCurso() => ModalCursoVisivel = false;
 
     [RelayCommand]
-    private void SalvarCurso()
+    private async Task SalvarCurso()
     {
+        if (_escolaService is null)
+        {
+            ModalCursoErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
         var nome = FormNomeCurso.Trim();
         var sigla = FormSiglaCurso.Trim().ToUpperInvariant();
 
@@ -717,32 +782,33 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        var duplicado = EscolaRepository.Cursos.Any(c =>
-            c.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase) && c != _cursoEmEdicao);
-        if (duplicado)
+        try
         {
-            ModalCursoErro = "Já existe um curso com essa sigla.";
-            return;
-        }
-
-        if (_cursoEmEdicao is null)
-        {
-            EscolaRepository.Cursos.Add(new CursoModel
+            if (_cursoEmEdicao is null)
             {
-                Id = EscolaRepository.ProximoIdCurso(),
-                Nome = nome,
-                Sigla = sigla
-            });
-        }
-        else
-        {
-            _cursoEmEdicao.Nome = nome;
-            _cursoEmEdicao.Sigla = sigla;
-        }
+                await _escolaService.CriarCursoAsync(new Curso
+                {
+                    Nome = nome,
+                    Sigla = sigla
+                });
+            }
+            else
+            {
+                await _escolaService.AtualizarCursoAsync(new Curso
+                {
+                    Id = _cursoEmEdicao.Id,
+                    Nome = nome,
+                    Sigla = sigla
+                });
+            }
 
-        ModalCursoVisivel = false;
-        AtualizarListagemCursos();
-        AtualizarListagemTurmas(); // os nomes das Turmas ("10ª GRSI A") dependem da sigla do Curso
+            ModalCursoVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalCursoErro = ex.Message;
+        }
     }
 
     // -----------------------------------------------------------------
@@ -768,7 +834,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     private void CancelarEliminarCurso() => ModalEliminarCursoVisivel = false;
 
     [RelayCommand]
-    private void ConfirmarEliminarCurso()
+    private async Task ConfirmarEliminarCurso()
     {
         if (_cursoParaEliminar is null)
         {
@@ -776,16 +842,28 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        var emUso = EscolaRepository.Turmas.Any(t => t.Curso?.Id == _cursoParaEliminar.Id);
-        if (emUso)
+        if (_turmasFonte.Any(t => t.Curso?.Id == _cursoParaEliminar.Id))
         {
             ModalEliminarCursoErro = "Não é possível eliminar: existem turmas associadas a este curso.";
             return;
         }
 
-        EscolaRepository.Cursos.Remove(_cursoParaEliminar);
-        ModalEliminarCursoVisivel = false;
-        AtualizarListagemCursos();
+        if (_escolaService is null)
+        {
+            ModalEliminarCursoErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
+        try
+        {
+            await _escolaService.RemoverCursoAsync(_cursoParaEliminar.Id);
+            ModalEliminarCursoVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalEliminarCursoErro = ex.Message;
+        }
     }
 
     // =================================================================
@@ -867,8 +945,14 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     private void CancelarModalAnoLectivo() => ModalAnoLectivoVisivel = false;
 
     [RelayCommand]
-    private void SalvarAnoLectivo()
+    private async Task SalvarAnoLectivo()
     {
+        if (_escolaService is null)
+        {
+            ModalAnoLectivoErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
         var nome = FormNomeAnoLectivo.Trim();
         if (string.IsNullOrWhiteSpace(nome))
         {
@@ -888,34 +972,37 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        var duplicado = EscolaRepository.AnosLectivos.Any(a =>
-            a.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && a != _anoLectivoEmEdicao);
-        if (duplicado)
+        try
         {
-            ModalAnoLectivoErro = "Já existe um ano lectivo com essa designação.";
-            return;
-        }
-
-        if (_anoLectivoEmEdicao is null)
-        {
-            EscolaRepository.AnosLectivos.Add(new AnoLectivoModel
+            if (_anoLectivoEmEdicao is null)
             {
-                Id = EscolaRepository.ProximoIdAnoLectivo(),
-                Nome = nome,
-                DataInicio = dataInicio,
-                DataTermino = dataTermino,
-                Estado = EstadoAnoLectivo.Aberto
-            });
-        }
-        else
-        {
-            _anoLectivoEmEdicao.Nome = nome;
-            _anoLectivoEmEdicao.DataInicio = dataInicio;
-            _anoLectivoEmEdicao.DataTermino = dataTermino;
-        }
+                await _escolaService.CriarAnoLectivoAsync(new AnoLectivo
+                {
+                    Nome = nome,
+                    DataInicio = dataInicio,
+                    DataTermino = dataTermino,
+                    Estado = CoreEnums.EstadoAnoLectivo.Aberto
+                });
+            }
+            else
+            {
+                await _escolaService.AtualizarAnoLectivoAsync(new AnoLectivo
+                {
+                    Id = _anoLectivoEmEdicao.Id,
+                    Nome = nome,
+                    DataInicio = dataInicio,
+                    DataTermino = dataTermino,
+                    Estado = (CoreEnums.EstadoAnoLectivo)_anoLectivoEmEdicao.Estado
+                });
+            }
 
-        ModalAnoLectivoVisivel = false;
-        AtualizarListagemAnosLectivos();
+            ModalAnoLectivoVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalAnoLectivoErro = ex.Message;
+        }
     }
 
     // -----------------------------------------------------------------
@@ -941,7 +1028,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
     private void CancelarEncerrarAnoLectivo() => ModalEncerrarAnoLectivoVisivel = false;
 
     [RelayCommand]
-    private void ConfirmarEncerrarAnoLectivo()
+    private async Task ConfirmarEncerrarAnoLectivo()
     {
         if (_anoLectivoParaEncerrar is null)
         {
@@ -949,8 +1036,71 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             return;
         }
 
-        _anoLectivoParaEncerrar.Estado = EstadoAnoLectivo.Encerrado;
-        ModalEncerrarAnoLectivoVisivel = false;
-        AtualizarListagemAnosLectivos();
+        if (_escolaService is null)
+        {
+            ModalEncerrarAnoLectivoErro = "O serviço da Escola não está disponível.";
+            return;
+        }
+
+        try
+        {
+            await _escolaService.EncerrarAnoLectivoAsync(_anoLectivoParaEncerrar.Id);
+            ModalEncerrarAnoLectivoVisivel = false;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            ModalEncerrarAnoLectivoErro = ex.Message;
+        }
     }
+
+    // =================================================================
+    // Mapeamento Core -> Desktop Models
+    // =================================================================
+
+    private static ClasseModel Mapear(Classe classe) => new()
+    {
+        Id = classe.Id,
+        Numero = classe.Numero,
+        Nivel = (ScoolManager.Desktop.Models.NivelEnsino)classe.Nivel
+    };
+
+    private static CursoModel Mapear(Curso curso) => new()
+    {
+        Id = curso.Id,
+        Nome = curso.Nome,
+        Sigla = curso.Sigla
+    };
+
+    private static SalaModel Mapear(Sala sala) => new()
+    {
+        Id = sala.Id,
+        Nome = sala.Nome,
+        Capacidade = sala.Capacidade,
+        Bloco = sala.Bloco,
+        Observacoes = sala.Observacoes
+    };
+
+    private static AnoLectivoModel Mapear(AnoLectivo ano) => new()
+    {
+        Id = ano.Id,
+        Nome = ano.Nome,
+        DataInicio = ano.DataInicio,
+        DataTermino = ano.DataTermino,
+        Estado = (ScoolManager.Desktop.Models.EstadoAnoLectivo)ano.Estado
+    };
+
+    private static TurmaModel Mapear(Turma turma) => new()
+    {
+        Id = turma.Id,
+        AnoLectivo = Mapear(turma.AnoLectivo!),
+        Classe = Mapear(turma.Classe!),
+        Curso = turma.Curso is null ? null : Mapear(turma.Curso),
+        Letra = turma.Letra,
+        Sala = Mapear(turma.Sala!),
+        Turno = (ScoolManager.Desktop.Models.TurnoLetivo)turma.Turno,
+        Capacidade = turma.Capacidade,
+        Matriculados = turma.Matriculados
+    };
+
 }
