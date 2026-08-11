@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Dtos.Alunos;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Core.Entities.Escola;
 using ScoolManager.Core.Enums;
+using CoreTurno = ScoolManager.Core.Enums.TurnoLetivo;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
 
@@ -25,6 +19,17 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 
     /// <summary>Fonte completa (sem filtro de UI) para reaplicar pesquisa/filtros localmente.</summary>
     private readonly List<AlunoListItemModel> _todosAlunos = new();
+
+
+    // =================================================================
+    // Opções de filtro (populadas a partir do Core)
+    // =================================================================
+    public ObservableCollection<OpcaoSelecaoItem> OpcoesClasse { get; } = new();
+    public ObservableCollection<OpcaoSelecaoItem> OpcoesCurso { get; } = new();
+    public ObservableCollection<OpcaoSelecaoItem> OpcoesTurnoSelecao { get; } = new();
+    public ObservableCollection<OpcaoSelecaoItem> OpcoesPeriodoSelecao { get; } = new();
+    public ObservableCollection<OpcaoSelecaoItem> OpcoesTurma { get; } = new();
+
 
     // =================================================================
     // Filtros da listagem
@@ -203,6 +208,24 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             var salas = await _escolaService.ObterSalasAsync();
             _turmasCache = (await _escolaService.ObterTurmasAsync()).ToList();
 
+            // Opções de selecção dos botões do add alunoModal
+            OpcoesClasse.Clear();
+            foreach (var c in classes.OrderBy(c => c.Numero))
+                OpcoesClasse.Add(new OpcaoSelecaoItem { Label = $"{c.Numero}ª", Valor = c });
+
+            OpcoesCurso.Clear();
+            foreach (var c in cursos.OrderBy(c => c.Nome))
+                OpcoesCurso.Add(new OpcaoSelecaoItem { Label = c.Sigla, Valor = c });
+
+            OpcoesTurnoSelecao.Clear();
+            OpcoesTurnoSelecao.Add(new OpcaoSelecaoItem { Label = "Manhã", Valor = "Manhã" });
+            OpcoesTurnoSelecao.Add(new OpcaoSelecaoItem { Label = "Tarde", Valor = "Tarde" });
+            OpcoesTurnoSelecao.Add(new OpcaoSelecaoItem { Label = "Noite", Valor = "Noite" });
+
+            OpcoesPeriodoSelecao.Clear();
+            OpcoesPeriodoSelecao.Add(new OpcaoSelecaoItem { Label = "Integral", Valor = "Integral" });
+            OpcoesPeriodoSelecao.Add(new OpcaoSelecaoItem { Label = "Meio Período", Valor = "Meio Período" });
+
             // Filtro "Classes"
             Classes.Clear();
             Classes.Add("Todas as Classes");
@@ -329,50 +352,78 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 
     partial void OnClasseMatriculaChanged(Classe? value)
     {
-        if (value?.Nivel != ScoolManager.Core.Enums.NivelEnsino.Medio)
+        if (value is null || value.Nivel != ScoolManager.Core.Enums.NivelEnsino.Medio)
             CursoMatricula = null;
 
         OnPropertyChanged(nameof(CursoAplicavel));
-        AtualizarTurmasDisponiveis();
+        AtualizarOpcoesTurma();
         OnPropertyChanged(nameof(PodeAvancar));
     }
 
     partial void OnCursoMatriculaChanged(Curso? value)
     {
-        AtualizarTurmasDisponiveis();
+        AtualizarOpcoesTurma();
         OnPropertyChanged(nameof(PodeAvancar));
     }
 
     partial void OnTurmaMatriculaChanged(Turma? value)
     {
-        // Pré-preenche sala e turno a partir da turma escolhida
+        // Pré-preenche sala (e opcionalmente turno) a partir da turma escolhida
         SalaMatricula = value?.Sala?.Nome ?? string.Empty;
-        Turno = value?.Turno switch
+
+        if (value is not null)
         {
-            ScoolManager.Core.Enums.TurnoLetivo.Manha => "Manhã",
-            ScoolManager.Core.Enums.TurnoLetivo.Tarde => "Tarde",
-            ScoolManager.Core.Enums.TurnoLetivo.Noite => "Noite",
-            _ => null
-        };
+            Turno = value.Turno switch
+            {
+                CoreTurno.Manha => "Manhã",
+                CoreTurno.Tarde => "Tarde",
+                CoreTurno.Noite => "Noite",
+                _ => null
+            };
+
+            // Marca o turno correspondente como seleccionado nas opções
+            foreach (var o in OpcoesTurnoSelecao)
+                o.Selecionado = o.Label == Turno;
+        }
+
         OnPropertyChanged(nameof(PodeAvancar));
     }
 
-    private void AtualizarTurmasDisponiveis()
+    /// <summary>
+    /// Reconstrói a lista de turmas seleccionáveis com base na Classe
+    /// (e Curso, se aplicável) escolhidas no wizard.
+    /// </summary>
+    private void AtualizarOpcoesTurma()
     {
-        TurmasDisponiveis.Clear();
+        OpcoesTurma.Clear();
         TurmaMatricula = null;
+        SalaMatricula = string.Empty;
 
-        if (ClasseMatricula is null) return;
+        if (ClasseMatricula is null)
+            return;
 
         var query = _turmasCache.Where(t => t.ClasseId == ClasseMatricula.Id);
 
-        if (CursoAplicavel && CursoMatricula is not null)
-            query = query.Where(t => t.CursoId == CursoMatricula.Id);
-        else if (!CursoAplicavel)
-            query = query.Where(t => t.CursoId == null);
+        if (CursoAplicavel)
+        {
+            if (CursoMatricula is null)
+                return; // ainda não escolheu curso → não mostra turmas
 
-        foreach (var t in query.OrderBy(t => t.Letra))
-            TurmasDisponiveis.Add(t);
+            query = query.Where(t => t.CursoId == CursoMatricula.Id);
+        }
+        else
+        {
+            query = query.Where(t => t.CursoId == null);
+        }
+
+        foreach (var turma in query.OrderBy(t => t.Letra))
+        {
+            OpcoesTurma.Add(new OpcaoSelecaoItem
+            {
+                Label = turma.Nome, // ex.: "10ª GRSI A"
+                Valor = turma
+            });
+        }
     }
 
     // =================================================================
@@ -437,6 +488,51 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         }
 
         await ConcluirNovoAluno();
+    }
+
+    // Comandos de seleção em dados institucionais
+    [RelayCommand]
+    private void SelecionarClasse(OpcaoSelecaoItem item)
+    {
+        foreach (var o in OpcoesClasse) o.Selecionado = false;
+        item.Selecionado = true;
+        ClasseMatricula = item.Valor as Classe;
+        // actualiza turmas disponíveis…
+        AtualizarOpcoesTurma(); 
+    }
+
+    [RelayCommand]
+    private void SelecionarCurso(OpcaoSelecaoItem item)
+    {
+        foreach (var o in OpcoesCurso) o.Selecionado = false;
+        item.Selecionado = true;
+        CursoMatricula = item.Valor as Curso;
+        AtualizarOpcoesTurma();
+    }
+
+    [RelayCommand]
+    private void SelecionarTurno(OpcaoSelecaoItem item)
+    {
+        foreach (var o in OpcoesTurnoSelecao) o.Selecionado = false;
+        item.Selecionado = true;
+        Turno = item.Valor as string;
+    }
+
+    [RelayCommand]
+    private void SelecionarPeriodo(OpcaoSelecaoItem item)
+    {
+        foreach (var o in OpcoesPeriodoSelecao) o.Selecionado = false;
+        item.Selecionado = true;
+        Periodo = item.Valor as string;
+    }
+
+    [RelayCommand]
+    private void SelecionarTurma(OpcaoSelecaoItem item)
+    {
+        foreach (var o in OpcoesTurma) o.Selecionado = false;
+        item.Selecionado = true;
+        TurmaMatricula = item.Valor as Turma;
+        SalaMatricula = TurmaMatricula?.Sala?.Nome ?? string.Empty;
     }
 
     private async Task ConcluirNovoAluno()
@@ -628,4 +724,13 @@ public partial class DocumentoRequeridoItem : ObservableObject
     }
 
     partial void OnNomeArquivoChanged(string value) => OnPropertyChanged(nameof(TemArquivo));
+}
+
+/// <summary>Opção seleccionável genérica (Classe, Curso, Turno, Período).</summary>
+public partial class OpcaoSelecaoItem : ObservableObject
+{
+    public required string Label { get; init; }
+    public required object Valor { get; init; }
+
+    [ObservableProperty] private bool _selecionado;
 }
