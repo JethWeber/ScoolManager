@@ -5,9 +5,11 @@
              xmlns:materialIcons="using:Material.Icons.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="using:ScoolManager.Desktop.Converter"
              mc:Ignorable="d"
              x:Class="ScoolManager.Desktop.Views.Pages.AlunosView"
-             x:DataType="vm:AlunosViewModel">
+             x:DataType="vm:AlunosViewModel"
+             x:Name="RaizAlunosView">
 
     <Design.DataContext>
         <vm:AlunosViewModel/>
@@ -53,6 +55,9 @@
             <GradientStop Color="#4D8EFF" Offset="0.5"/>
             <GradientStop Color="#1565C0" Offset="1"/>
         </LinearGradientBrush>
+
+        <conv:SelecionadoBackgroundConverter x:Key="SelecionadoBackgroundConverter" />
+        <conv:SelecionadoBorderConverter x:Key="SelecionadoBorderConverter" />
 
     </UserControl.Resources>
 
@@ -160,6 +165,29 @@
             <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Botão de selecção (card) – estado normal -->
+        <Style Selector="Button.opcao-selecao">
+            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource OutlineVariantBrush}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="MinWidth" Value="100" />
+        </Style>
+        <Style Selector="Button.opcao-selecao:pointerover">
+            <Setter Property="Opacity" Value="0.92" />
+        </Style>
+
+        <!-- Estado seleccionado (azul, como o "Entrada") -->
+        <Style Selector="Button.opcao-selecao.selecionado">
+            <Setter Property="Background" Value="#1A4D8EFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
         </Style>
 
         <!-- ================================================================
@@ -572,25 +600,149 @@
                                 </StackPanel>
 
                                 <!-- ============== Passo 3: Enquadramento na Instituição ============== -->
-                                <StackPanel Spacing="10" IsVisible="{Binding EhPasso3}">
-                                    <TextBlock Text="MATRÍCULA" Classes="coluna-titulo"/>
-                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <ComboBox Grid.Column="0" Classes="campo" PlaceholderText="Classe a frequentar *"
-                                                  ItemsSource="{Binding ClassesDisponiveis}"
-                                                  SelectedItem="{Binding ClasseMatricula}"/>
-                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding CursoMatricula}" PlaceholderText="Curso"/>
-                                    </Grid>
+                                <StackPanel Spacing="14" IsVisible="{Binding EhPasso3}">
+                                    <!-- CLASSE -->
+                                    <TextBlock Text="CLASSE *" Classes="coluna-titulo"/>
+                                    <ItemsControl ItemsSource="{Binding OpcoesClasse}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:OpcaoSelecaoItem">
+                                                <Button Classes="opcao-selecao"
+                                                        Margin="0,0,8,8"
+                                                        Command="{Binding #RaizAlunosView.((vm:AlunosViewModel)DataContext).SelecionarClasseCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button.opcao-selecao">
+                                                            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}" />
+                                                            <Setter Property="BorderBrush" Value="{StaticResource OutlineVariantBrush}" />
+                                                            <Setter Property="BorderThickness" Value="1.5" />
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <!-- Aplicar classe "selecionado" via binding de Classes não é directo;
+                                                        usa-se um converter ou o truque abaixo com Opacity/Border -->
+                                                    <Border CornerRadius="12" Padding="14,12"
+                                                            Background="{Binding Selecionado, Converter={StaticResource SelecionadoBackgroundConverter}}"
+                                                            BorderBrush="{Binding Selecionado, Converter={StaticResource SelecionadoBorderConverter}}"
+                                                            BorderThickness="2"
+                                                            Cursor="Hand">
+                                                        <TextBlock Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
+                                                                Foreground="{StaticResource OnSurfaceBrush}"
+                                                                HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
 
-                                    <TextBlock Text="HORÁRIO E TURMA" Classes="coluna-titulo" Margin="0,6,0,0"/>
-                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <ComboBox Grid.Column="0" Classes="campo" PlaceholderText="Turno"
-                                                  ItemsSource="{Binding OpcoesTurno}" SelectedItem="{Binding Turno}"/>
-                                        <ComboBox Grid.Column="1" Classes="campo" PlaceholderText="Período"
-                                                  ItemsSource="{Binding OpcoesPeriodo}" SelectedItem="{Binding Periodo}"/>
-                                    </Grid>
-                                    <TextBox Classes="campo" Text="{Binding SalaMatricula}" PlaceholderText="Sala / Turma"/>
+                                    <!-- CURSO (só Ensino Médio) -->
+                                    <StackPanel Spacing="8" IsVisible="{Binding CursoAplicavel}">
+                                        <TextBlock Text="CURSO *" Classes="coluna-titulo"/>
+                                        <ItemsControl ItemsSource="{Binding OpcoesCurso}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:OpcaoSelecaoItem">
+                                                    <Button Classes="opcao-selecao" Margin="0,0,8,8"
+                                                            Command="{Binding #RaizAlunosView.((vm:AlunosViewModel)DataContext).SelecionarCursoCommand}"
+                                                            CommandParameter="{Binding}">
+                                                        <Border CornerRadius="12" Padding="14,12"
+                                                                Background="{Binding Selecionado, Converter={StaticResource SelecionadoBackgroundConverter}}"
+                                                                BorderBrush="{Binding Selecionado, Converter={StaticResource SelecionadoBorderConverter}}"
+                                                                BorderThickness="2">
+                                                            <TextBlock Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
+                                                                    HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <!-- TURNO -->
+                                    <TextBlock Text="TURNO" Classes="coluna-titulo"/>
+                                    <ItemsControl ItemsSource="{Binding OpcoesTurnoSelecao}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="10"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:OpcaoSelecaoItem">
+                                                <Button Classes="opcao-selecao"
+                                                        Command="{Binding #RaizAlunosView.((vm:AlunosViewModel)DataContext).SelecionarTurnoCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <Border CornerRadius="12" Padding="18,14"
+                                                            Background="{Binding Selecionado, Converter={StaticResource SelecionadoBackgroundConverter}}"
+                                                            BorderBrush="{Binding Selecionado, Converter={StaticResource SelecionadoBorderConverter}}"
+                                                            BorderThickness="2">
+                                                        <TextBlock Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
+                                                                HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- PERÍODO -->
+                                    <TextBlock Text="PERÍODO" Classes="coluna-titulo"/>
+                                    <ItemsControl ItemsSource="{Binding OpcoesPeriodoSelecao}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="10"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:OpcaoSelecaoItem">
+                                                <Button Classes="opcao-selecao"
+                                                        Command="{Binding #RaizAlunosView.((vm:AlunosViewModel)DataContext).SelecionarPeriodoCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <Border CornerRadius="12" Padding="18,14"
+                                                            Background="{Binding Selecionado, Converter={StaticResource SelecionadoBackgroundConverter}}"
+                                                            BorderBrush="{Binding Selecionado, Converter={StaticResource SelecionadoBorderConverter}}"
+                                                            BorderThickness="2">
+                                                        <TextBlock Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
+                                                                HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- TURMA (preenchida depois de escolher Classe/Curso) -->
+                                    <TextBlock Text="TURMA *" Classes="coluna-titulo" Margin="0,6,0,0"/>
+                                    <ItemsControl ItemsSource="{Binding OpcoesTurma}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:OpcaoSelecaoItem">
+                                                <Button Classes="opcao-selecao" Margin="0,0,8,8"
+                                                        Command="{Binding #RaizAlunosView.((vm:AlunosViewModel)DataContext).SelecionarTurmaCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <Border CornerRadius="12" Padding="14,12"
+                                                            Background="{Binding Selecionado, Converter={StaticResource SelecionadoBackgroundConverter}}"
+                                                            BorderBrush="{Binding Selecionado, Converter={StaticResource SelecionadoBorderConverter}}"
+                                                            BorderThickness="2">
+                                                        <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold"
+                                                                HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBox Classes="campo" Text="{Binding SalaMatricula}" IsReadOnly="True"
+                                            PlaceholderText="Sala (preenchida automaticamente pela turma)"/>
                                 </StackPanel>
-
                                 <!-- ============== Passo 4: Documentos ==============
                                      Cada cartão é uma zona de arrastar-e-soltar (drag-and-drop
                                      real, tratado no code-behind) e também aceita clique para
