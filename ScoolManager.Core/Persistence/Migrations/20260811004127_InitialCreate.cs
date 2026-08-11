@@ -61,6 +61,22 @@ namespace ScoolManager.Core.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ConfiguracoesBackup",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    BackupDiarioAutomatico = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SincronizacaoNuvem = table.Column<bool>(type: "INTEGER", nullable: false),
+                    NotificarFalhasEmail = table.Column<bool>(type: "INTEGER", nullable: false),
+                    UltimaVerificacaoIntegridade = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConfiguracoesBackup", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Cursos",
                 columns: table => new
                 {
@@ -157,11 +173,18 @@ namespace ScoolManager.Core.Persistence.Migrations
                     Telefone = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
                     PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
                     UltimoAcesso = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Ativo = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Ativo = table.Column<bool>(type: "INTEGER", nullable: false),
+                    PerfilPermissaoId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Utilizadores", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Utilizadores_PerfisPermissao_PerfilPermissaoId",
+                        column: x => x.PerfilPermissaoId,
+                        principalTable: "PerfisPermissao",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -250,11 +273,16 @@ namespace ScoolManager.Core.Persistence.Migrations
                     DataNascimento = table.Column<DateTime>(type: "TEXT", nullable: true),
                     Genero = table.Column<string>(type: "TEXT", nullable: true),
                     Nacionalidade = table.Column<string>(type: "TEXT", nullable: true),
+                    Naturalidade = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Provincia = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Pais = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     NumeroBiCedula = table.Column<string>(type: "TEXT", nullable: true),
                     Endereco = table.Column<string>(type: "TEXT", nullable: true),
                     Telefone = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
                     Email = table.Column<string>(type: "TEXT", nullable: true),
                     FotografiaCaminho = table.Column<string>(type: "TEXT", nullable: true),
+                    TemCondicaoMedica = table.Column<bool>(type: "INTEGER", nullable: false),
+                    DescricaoCondicaoMedica = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     Ativo = table.Column<bool>(type: "INTEGER", nullable: false),
                     TurmaId = table.Column<int>(type: "INTEGER", nullable: false),
                     DataMatricula = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -332,7 +360,8 @@ namespace ScoolManager.Core.Persistence.Migrations
                     AlunoId = table.Column<int>(type: "INTEGER", nullable: false),
                     Tipo = table.Column<string>(type: "TEXT", nullable: false),
                     Nome = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Contacto = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false)
+                    Contacto = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
+                    Profissao = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -353,11 +382,14 @@ namespace ScoolManager.Core.Persistence.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     AlunoId = table.Column<int>(type: "INTEGER", nullable: false),
                     MesReferencia = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Tipo = table.Column<string>(type: "TEXT", nullable: false),
                     NumeroRecibo = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
                     Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DataVencimento = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DataPagamento = table.Column<DateTime>(type: "TEXT", nullable: true),
                     Estado = table.Column<string>(type: "TEXT", nullable: false),
+                    Anulado = table.Column<bool>(type: "INTEGER", nullable: false),
+                    MotivoAnulacao = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true),
                     MetodoPagamento = table.Column<string>(type: "TEXT", nullable: true),
                     SessaoCaixaId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
@@ -402,6 +434,11 @@ namespace ScoolManager.Core.Persistence.Migrations
                     { 12, "Medio", 12 },
                     { 13, "Medio", 13 }
                 });
+
+            migrationBuilder.InsertData(
+                table: "ConfiguracoesBackup",
+                columns: new[] { "Id", "BackupDiarioAutomatico", "NotificarFalhasEmail", "SincronizacaoNuvem", "UltimaVerificacaoIntegridade" },
+                values: new object[] { 1, false, false, false, null });
 
             migrationBuilder.InsertData(
                 table: "Cursos",
@@ -519,6 +556,11 @@ namespace ScoolManager.Core.Persistence.Migrations
                 column: "SalaId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Utilizadores_PerfilPermissaoId",
+                table: "Utilizadores",
+                column: "PerfilPermissaoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Utilizadores_Telefone",
                 table: "Utilizadores",
                 column: "Telefone",
@@ -530,6 +572,9 @@ namespace ScoolManager.Core.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Backups");
+
+            migrationBuilder.DropTable(
+                name: "ConfiguracoesBackup");
 
             migrationBuilder.DropTable(
                 name: "DadosInstituicao");
@@ -548,9 +593,6 @@ namespace ScoolManager.Core.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Pagamentos");
-
-            migrationBuilder.DropTable(
-                name: "PerfisPermissao");
 
             migrationBuilder.DropTable(
                 name: "Alunos");
@@ -575,6 +617,9 @@ namespace ScoolManager.Core.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Salas");
+
+            migrationBuilder.DropTable(
+                name: "PerfisPermissao");
         }
     }
 }

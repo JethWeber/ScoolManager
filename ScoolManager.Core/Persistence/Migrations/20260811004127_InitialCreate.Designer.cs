@@ -11,8 +11,8 @@ using ScoolManager.Core.Persistence;
 namespace ScoolManager.Core.Persistence.Migrations
 {
     [DbContext(typeof(ScoolManagerDbContext))]
-    [Migration("20260809010537_AjustesGapsDesktop")]
-    partial class AjustesGapsDesktop
+    [Migration("20260811004127_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,6 +43,10 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<DateTime?>("DataNascimento")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DescricaoCondicaoMedica")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
 
@@ -58,6 +62,10 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<string>("Nacionalidade")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Naturalidade")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -66,10 +74,21 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<string>("NumeroBiCedula")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Pais")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Provincia")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Telefone")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("TemCondicaoMedica")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TurmaId")
                         .HasColumnType("INTEGER");
@@ -130,6 +149,10 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Profissao")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Tipo")
@@ -691,6 +714,9 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<int>("AlunoId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Anulado")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("DataPagamento")
                         .HasColumnType("TEXT");
 
@@ -707,6 +733,10 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<string>("MetodoPagamento")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("MotivoAnulacao")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("NumeroRecibo")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -714,6 +744,10 @@ namespace ScoolManager.Core.Persistence.Migrations
 
                     b.Property<int?>("SessaoCaixaId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Valor")
                         .HasColumnType("decimal(18,2)");
