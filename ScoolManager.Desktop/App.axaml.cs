@@ -38,7 +38,12 @@ public partial class App : Application
         // uma base de dados nova fica sem nenhum utilizador para login.
         using (var scope = Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<ScoolManagerDbContext>();
+            var factory = scope.ServiceProvider
+                .GetRequiredService<IDbContextFactory<ScoolManagerDbContext>>();
+
+            // CreateDbContext() síncrono — evita await dentro de método void
+            using var db = factory.CreateDbContext();
+
             db.Database.Migrate();
             DatabaseSeeder.SeedAsync(db).GetAwaiter().GetResult();
         }

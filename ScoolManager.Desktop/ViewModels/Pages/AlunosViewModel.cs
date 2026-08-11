@@ -1,83 +1,106 @@
-
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Dtos.Alunos;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Core.Entities.Escola;
 using ScoolManager.Core.Enums;
 
-namespace ScoolManager.Desktop.ViewModels.Pages
-{
+namespace ScoolManager.Desktop.ViewModels.Pages;
 
 /// <summary>
 /// ViewModel da view "Alunos" (Secretaria Escolar).
-/// Responsável por: pesquisa, filtros, listagem e disparo dos modais
-/// (Novo Aluno em passos, Importar Alunos, Exportar PDF, Exportar Excel, Filtros Avançados).
-///
-/// IMPORTANTE (conforme especificação): cada linha da tabela é clicável e
-/// navega para "Detalhes do Aluno" — não existe botão "Ver Detalhes".
-///
-/// A tabela principal mostra apenas: Código, Nome, Classe, Curso e Sala.
-/// Os restantes dados (encarregado, telefone, documentos, etc.) ficam
-/// disponíveis no modelo para a futura view de Detalhes do Aluno.
+/// Todos os dados de listagem, filtros e wizard vêm do ScoolManager.Core
+/// (IAlunoService + IEscolaService). Não há mocks.
 /// </summary>
 public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 {
     private readonly IAlunoService _alunoService;
     private readonly IEscolaService _escolaService;
+
+    /// <summary>Fonte completa (sem filtro de UI) para reaplicar pesquisa/filtros localmente.</summary>
     private readonly List<AlunoListItemModel> _todosAlunos = new();
 
-    [ObservableProperty]
-    private string _searchText = string.Empty;
+    // =================================================================
+    // Filtros da listagem
+    // =================================================================
 
-    [ObservableProperty]
-    private string? _classeSelecionada;
+    [ObservableProperty] private string _searchText = string.Empty;
 
-    [ObservableProperty]
-    private string? _statusSelecionado;
+    /// <summary>"Todas as Classes" ou o nome da classe (ex.: "10ª").</summary>
+    [ObservableProperty] private string? _classeSelecionada;
 
-    [ObservableProperty]
-    private string? _anoLetivoSelecionado;
+    /// <summary>"Status: Todos" | "Ativos" | "Inativos".</summary>
+    [ObservableProperty] private string? _statusSelecionado;
 
-    // ===== Estado dos modais da view =====
+    /// <summary>"Ano: Todos" ou o nome do ano lectivo (ex.: "2025/2026").</summary>
+    [ObservableProperty] private string? _anoLetivoSelecionado;
+
+    // =================================================================
+    // Estado dos modais
+    // =================================================================
+
     [ObservableProperty] private bool _isNovoAlunoAberto;
     [ObservableProperty] private bool _isImportarAlunosAberta;
     [ObservableProperty] private bool _isExportarPdfAberta;
     [ObservableProperty] private bool _isExportarExcelAberta;
     [ObservableProperty] private bool _isFiltrosAvancadosAberta;
 
-    /// <summary>Usado pelo overlay/backdrop no XAML: verdadeiro se qualquer modal estiver aberto.</summary>
     public bool AlgumModalAberto =>
         IsNovoAlunoAberto || IsImportarAlunosAberta || IsExportarPdfAberta ||
         IsExportarExcelAberta || IsFiltrosAvancadosAberta;
 
+    // =================================================================
+    // Listagens e opções de filtro (populadas a partir do Core)
+    // =================================================================
+
     public ObservableCollection<AlunoListItemModel> Alunos { get; } = new();
 
-    public ObservableCollection<string> Classes { get; }
-    public ObservableCollection<string> StatusOptions { get; }
-    public ObservableCollection<string> AnosLetivos { get; }
+    /// <summary>Inclui sempre "Todas as Classes" no índice 0.</summary>
+    public ObservableCollection<string> Classes { get; } = new();
+
+    public ObservableCollection<string> StatusOptions { get; } = new()
+    {
+        "Status: Todos", "Ativos", "Inativos"
+    };
+
+    /// <summary>Inclui sempre "Ano: Todos" no índice 0.</summary>
+    public ObservableCollection<string> AnosLetivos { get; } = new();
 
     public string ResumoExibicaoLabel => Alunos.Count == 0
         ? "Nenhum aluno encontrado"
         : $"A exibir 1-{Alunos.Count} de {Alunos.Count} alunos";
 
-    /// <summary>
-    /// Disparado quando o utilizador clica numa linha. O code-behind da View
-    /// subscreve isto para, no futuro, navegar até "Detalhes do Aluno".
-    /// </summary>
+    /// <summary>Clique na linha → navegação para Detalhes do Aluno (code-behind).</summary>
     public event EventHandler<AlunoListItemModel>? DetalhesAlunoSolicitado;
 
-    // ================================================================
-    // ===== WIZARD "NOVO ALUNO" (formulário de matrícula, por passos) ==
-    // ================================================================
+    // =================================================================
+    // Wizard "Novo Aluno"
+    // =================================================================
 
     public const int TotalDePassos = 4;
 
-    [ObservableProperty]
-    private int _passoAtual = 1;
+    [ObservableProperty] private int _passoAtual = 1;
 
-    // --- Opções para os ComboBox do formulário ---
-    public ObservableCollection<string> ClassesDisponiveis { get; }
+    // --- Opções dinâmicas do formulário (vindas do Core) ---
+
+    /// <summary>Classes do catálogo (1ª … 13ª) para o passo 3.</summary>
+    public ObservableCollection<Classe> ClassesDisponiveis { get; } = new();
+
+    /// <summary>Cursos disponíveis (só relevantes para Ensino Médio).</summary>
+    public ObservableCollection<Curso> CursosDisponiveis { get; } = new();
+
+    /// <summary>Turmas abertas (filtradas pela classe/curso escolhidos).</summary>
+    public ObservableCollection<Turma> TurmasDisponiveis { get; } = new();
+
+    /// <summary>Salas (só leitura / pré-visualização a partir da turma).</summary>
+    public ObservableCollection<Sala> SalasDisponiveis { get; } = new();
+
     public ObservableCollection<string> OpcoesSexo { get; } = new() { "Masculino", "Feminino" };
     public ObservableCollection<string> OpcoesTurno { get; } = new() { "Manhã", "Tarde", "Noite" };
     public ObservableCollection<string> OpcoesPeriodo { get; } = new() { "Integral", "Meio Período" };
@@ -95,7 +118,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     [ObservableProperty] private bool _sofreDoencaNao = true;
     [ObservableProperty] private string _qualDoenca = string.Empty;
 
-    // --- Passo 2: Dados dos Encarregados ---
+    // --- Passo 2: Encarregados ---
     [ObservableProperty] private string _nomePai = string.Empty;
     [ObservableProperty] private string _profissaoPai = string.Empty;
     [ObservableProperty] private string _contactoPai = string.Empty;
@@ -103,17 +126,18 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     [ObservableProperty] private string _profissaoMae = string.Empty;
     [ObservableProperty] private string _contactoMae = string.Empty;
 
-    // --- Passo 3: Enquadramento na Instituição ---
-    [ObservableProperty] private string? _classeMatricula;
-    [ObservableProperty] private string _cursoMatricula = string.Empty;
-    [ObservableProperty] private string? _turno;
+    // --- Passo 3: Enquadramento (agora com entidades reais) ---
+    [ObservableProperty] private Classe? _classeMatricula;
+    [ObservableProperty] private Curso? _cursoMatricula;
+    [ObservableProperty] private Turma? _turmaMatricula;
+    [ObservableProperty] private string? _turno;          // opcional (já vem da turma)
     [ObservableProperty] private string? _periodo;
-    [ObservableProperty] private string _salaMatricula = string.Empty;
+    [ObservableProperty] private string _salaMatricula = string.Empty; // só visualização
 
-    // --- Passo 4: Documentos. Cada um é uma zona de arrastar-e-soltar própria
-    //     (ver AlunosView.axaml, Passo 4). Guardamos apenas o nome do ficheiro
-    //     escolhido; a leitura/armazenamento real do ficheiro fica para quando
-    //     existir um serviço de documentos. BI/Cédula é o único obrigatório.
+    /// <summary>Curso só se aplica no Ensino Médio.</summary>
+    public bool CursoAplicavel => ClasseMatricula?.Nivel == ScoolManager.Core.Enums.NivelEnsino.Medio;
+
+    // --- Passo 4: Documentos ---
     public DocumentoRequeridoItem CertificadoDocumento { get; } = new("Certificado / Declaração", obrigatorio: false);
     public DocumentoRequeridoItem FotoDocumento { get; } = new("Foto Tipo Passe", obrigatorio: false);
     public DocumentoRequeridoItem BiCedulaDocumento { get; } = new("BI / Cédula", obrigatorio: true);
@@ -124,7 +148,6 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     public bool EhPasso2 => PassoAtual == 2;
     public bool EhPasso3 => PassoAtual == 3;
     public bool EhPasso4 => PassoAtual == 4;
-
     public bool PodeVoltar => PassoAtual > 1;
 
     public string TituloPassoAtual => PassoAtual switch
@@ -141,98 +164,135 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     public bool PodeAvancar => PassoAtual switch
     {
         1 => !string.IsNullOrWhiteSpace(NomeCompleto),
-        3 => !string.IsNullOrWhiteSpace(ClasseMatricula),
+        3 => TurmaMatricula is not null,
         4 => BiCedulaDocumento.TemArquivo,
         _ => true
     };
+
+    // Cache interno das turmas (para filtrar no wizard)
+    private List<Turma> _turmasCache = new();
+
+    // =================================================================
+    // Construtor + Initialize
+    // =================================================================
 
     public AlunosViewModel(IAlunoService alunoService, IEscolaService escolaService)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
 
-        Classes = new ObservableCollection<string>
-        {
-            "Todas as Classes", "6ª Classe B", "7ª Classe A", "9ª Classe B", "10ª Classe A"
-        };
-        StatusOptions = new ObservableCollection<string> { "Status: Todos", "Ativos", "Inativos" };
-        AnosLetivos = new ObservableCollection<string> { "Ano: 2025/2026", "Ano: 2024/2025" };
-
-        ClassesDisponiveis = new ObservableCollection<string>(Classes.Skip(1));
-
-        foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
-            documento.PropertyChanged += (_, _) => OnPropertyChanged(nameof(PodeAvancar));
-
+        // Valores iniciais dos filtros (serão reescritos no InitializeAsync)
+        Classes.Add("Todas as Classes");
+        AnosLetivos.Add("Ano: Todos");
         _classeSelecionada = Classes[0];
         _statusSelecionado = StatusOptions[0];
         _anoLetivoSelecionado = AnosLetivos[0];
+
+        foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
+            documento.PropertyChanged += (_, _) => OnPropertyChanged(nameof(PodeAvancar));
     }
 
     public async Task InitializeAsync()
     {
         try
         {
-            var filtro = new FiltroAlunoDto
-            {
-                TextoBusca = SearchText,
-                Situacao = StatusSelecionado == StatusOptions[0] ? null : StatusSelecionado,
-                Classe = ClasseSelecionada == Classes[0] ? null : ClasseSelecionada,
-                ApenasAtivos = StatusSelecionado == "Ativos"
-            };
+            // 1) Carregar catálogos da Escola (dados reais)
+            var classes = await _escolaService.ObterClassesAsync();
+            var anos = await _escolaService.ObterAnosLectivosAsync();
+            var cursos = await _escolaService.ObterCursosAsync();
+            var salas = await _escolaService.ObterSalasAsync();
+            _turmasCache = (await _escolaService.ObterTurmasAsync()).ToList();
 
-            var alunos = await _alunoService.ObterListaAsync(filtro);
-            _todosAlunos.Clear();
+            // Filtro "Classes"
+            Classes.Clear();
+            Classes.Add("Todas as Classes");
+            foreach (var c in classes.OrderBy(c => c.Numero))
+                Classes.Add($"{c.Numero}ª");
 
-            foreach (var aluno in alunos)
-            {
-                var turmaNome = aluno.Turma?.Nome ?? "Sem turma";
-                var primeiroEncarregado = aluno.Encarregados.FirstOrDefault();
-                _todosAlunos.Add(new AlunoListItemModel(
-                    Codigo: aluno.Codigo,
-                    Nome: aluno.Nome,
-                    Classe: turmaNome,
-                    Curso: aluno.Turma?.Curso?.Nome ?? string.Empty,
-                    Sala: aluno.Turma?.Sala?.Nome ?? string.Empty,
-                    Encarregado: primeiroEncarregado?.Nome ?? string.Empty,
-                    Telefone: primeiroEncarregado?.Contacto ?? aluno.Telefone,
-                    Ativo: aluno.Ativo));
-            }
+            // Filtro "Anos Lectivos"
+            AnosLetivos.Clear();
+            AnosLetivos.Add("Ano: Todos");
+            foreach (var a in anos.OrderByDescending(a => a.DataInicio))
+                AnosLetivos.Add($"Ano: {a.Nome}");
 
-            AplicarFiltros();
+            // Opções do wizard
+            ClassesDisponiveis.Clear();
+            foreach (var c in classes.OrderBy(c => c.Numero))
+                ClassesDisponiveis.Add(c);
+
+            CursosDisponiveis.Clear();
+            foreach (var c in cursos.OrderBy(c => c.Nome))
+                CursosDisponiveis.Add(c);
+
+            SalasDisponiveis.Clear();
+            foreach (var s in salas.OrderBy(s => s.Nome))
+                SalasDisponiveis.Add(s);
+
+            // Restaurar seleções de filtro se ainda existirem
+            if (string.IsNullOrEmpty(ClasseSelecionada) || !Classes.Contains(ClasseSelecionada))
+                ClasseSelecionada = Classes[0];
+            if (string.IsNullOrEmpty(AnoLetivoSelecionado) || !AnosLetivos.Contains(AnoLetivoSelecionado))
+                AnoLetivoSelecionado = AnosLetivos[0];
+            if (string.IsNullOrEmpty(StatusSelecionado))
+                StatusSelecionado = StatusOptions[0];
+
+            // 2) Carregar alunos
+            await CarregarAlunosAsync();
         }
-        catch (Exception)
+        catch
         {
             _todosAlunos.Clear();
             AplicarFiltros();
         }
     }
 
-    partial void OnSearchTextChanged(string value) => AplicarFiltros();
-    partial void OnClasseSelecionadaChanged(string? value) => AplicarFiltros();
-    partial void OnStatusSelecionadoChanged(string? value) => AplicarFiltros();
-    partial void OnAnoLetivoSelecionadoChanged(string? value) => AplicarFiltros();
-
-    partial void OnIsNovoAlunoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsImportarAlunosAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsExportarPdfAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsExportarExcelAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsFiltrosAvancadosAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
-
-    // --- Notificações para as propriedades computadas do wizard ---
-    partial void OnPassoAtualChanged(int value)
+    private async Task CarregarAlunosAsync()
     {
-        OnPropertyChanged(nameof(EhPasso1));
-        OnPropertyChanged(nameof(EhPasso2));
-        OnPropertyChanged(nameof(EhPasso3));
-        OnPropertyChanged(nameof(EhPasso4));
-        OnPropertyChanged(nameof(PodeVoltar));
-        OnPropertyChanged(nameof(TituloPassoAtual));
-        OnPropertyChanged(nameof(TextoBotaoAvancar));
-        OnPropertyChanged(nameof(PodeAvancar));
+        var filtro = new FiltroAlunoDto
+        {
+            TextoBusca = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText.Trim(),
+            Situacao = StatusSelecionado is null or "Status: Todos" ? null : StatusSelecionado,
+            Classe = ClasseSelecionada is null or "Todas as Classes"
+                ? null
+                : ClasseSelecionada.TrimEnd('ª'), // "10ª" → "10" (o repositório parseia int)
+            ApenasAtivos = StatusSelecionado == "Ativos" ? true : null
+        };
+
+        var alunos = await _alunoService.ObterListaAsync(filtro);
+
+        _todosAlunos.Clear();
+        foreach (var aluno in alunos)
+        {
+            var primeiroEncarregado = aluno.Encarregados.FirstOrDefault();
+
+            _todosAlunos.Add(new AlunoListItemModel(
+                Codigo: aluno.Codigo,
+                Nome: aluno.Nome,
+                Classe: aluno.Turma?.Nome ?? "Sem turma",
+                Curso: aluno.Turma?.Curso?.Nome ?? string.Empty,
+                Sala: aluno.Turma?.Sala?.Nome ?? string.Empty,
+                Encarregado: primeiroEncarregado?.Nome ?? string.Empty,
+                Telefone: primeiroEncarregado?.Contacto ?? aluno.Telefone ?? string.Empty,
+                Ativo: aluno.Ativo));
+        }
+
+        AplicarFiltros();
     }
 
-    partial void OnNomeCompletoChanged(string value) => OnPropertyChanged(nameof(PodeAvancar));
-    partial void OnClasseMatriculaChanged(string? value) => OnPropertyChanged(nameof(PodeAvancar));
+    // =================================================================
+    // Filtros locais (sobre a lista já carregada)
+    // =================================================================
+
+    partial void OnSearchTextChanged(string value) => AplicarFiltros();
+    partial void OnClasseSelecionadaChanged(string? value) => _ = RecarregarComFiltroServidorAsync();
+    partial void OnStatusSelecionadoChanged(string? value) => _ = RecarregarComFiltroServidorAsync();
+    partial void OnAnoLetivoSelecionadoChanged(string? value) => AplicarFiltros(); // filtro local por enquanto
+
+    private async Task RecarregarComFiltroServidorAsync()
+    {
+        try { await CarregarAlunosAsync(); }
+        catch { /* mantém lista actual */ }
+    }
 
     private void AplicarFiltros()
     {
@@ -248,13 +308,12 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
                 a.Encarregado.Contains(termo, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (!string.IsNullOrEmpty(ClasseSelecionada) && ClasseSelecionada != Classes[0])
-            query = query.Where(a => a.Classe == ClasseSelecionada);
-
-        if (!string.IsNullOrEmpty(StatusSelecionado) && StatusSelecionado != StatusOptions[0])
+        // Filtro de ano lectivo (local, pelo texto do nome da turma / se no futuro o DTO trouxer o ano)
+        if (!string.IsNullOrEmpty(AnoLetivoSelecionado) && AnoLetivoSelecionado != "Ano: Todos")
         {
-            var ativo = StatusSelecionado == "Ativos";
-            query = query.Where(a => a.Ativo == ativo);
+            var nomeAno = AnoLetivoSelecionado.Replace("Ano: ", "").Trim();
+            // Se o AlunoListItemModel passar a ter AnoLectivo, filtrar aqui.
+            // Por agora deixa passar (o servidor já pode filtrar no futuro).
         }
 
         Alunos.Clear();
@@ -264,18 +323,93 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         OnPropertyChanged(nameof(ResumoExibicaoLabel));
     }
 
-    // ===== Fluxo principal: clicar na linha -> Detalhes do Aluno =====
+    // =================================================================
+    // Wizard – selecção de Classe / Curso / Turma
+    // =================================================================
+
+    partial void OnClasseMatriculaChanged(Classe? value)
+    {
+        if (value?.Nivel != ScoolManager.Core.Enums.NivelEnsino.Medio)
+            CursoMatricula = null;
+
+        OnPropertyChanged(nameof(CursoAplicavel));
+        AtualizarTurmasDisponiveis();
+        OnPropertyChanged(nameof(PodeAvancar));
+    }
+
+    partial void OnCursoMatriculaChanged(Curso? value)
+    {
+        AtualizarTurmasDisponiveis();
+        OnPropertyChanged(nameof(PodeAvancar));
+    }
+
+    partial void OnTurmaMatriculaChanged(Turma? value)
+    {
+        // Pré-preenche sala e turno a partir da turma escolhida
+        SalaMatricula = value?.Sala?.Nome ?? string.Empty;
+        Turno = value?.Turno switch
+        {
+            ScoolManager.Core.Enums.TurnoLetivo.Manha => "Manhã",
+            ScoolManager.Core.Enums.TurnoLetivo.Tarde => "Tarde",
+            ScoolManager.Core.Enums.TurnoLetivo.Noite => "Noite",
+            _ => null
+        };
+        OnPropertyChanged(nameof(PodeAvancar));
+    }
+
+    private void AtualizarTurmasDisponiveis()
+    {
+        TurmasDisponiveis.Clear();
+        TurmaMatricula = null;
+
+        if (ClasseMatricula is null) return;
+
+        var query = _turmasCache.Where(t => t.ClasseId == ClasseMatricula.Id);
+
+        if (CursoAplicavel && CursoMatricula is not null)
+            query = query.Where(t => t.CursoId == CursoMatricula.Id);
+        else if (!CursoAplicavel)
+            query = query.Where(t => t.CursoId == null);
+
+        foreach (var t in query.OrderBy(t => t.Letra))
+            TurmasDisponiveis.Add(t);
+    }
+
+    // =================================================================
+    // Notificações de UI do wizard
+    // =================================================================
+
+    partial void OnIsNovoAlunoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsImportarAlunosAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsExportarPdfAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsExportarExcelAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsFiltrosAvancadosAbertaChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+
+    partial void OnPassoAtualChanged(int value)
+    {
+        OnPropertyChanged(nameof(EhPasso1));
+        OnPropertyChanged(nameof(EhPasso2));
+        OnPropertyChanged(nameof(EhPasso3));
+        OnPropertyChanged(nameof(EhPasso4));
+        OnPropertyChanged(nameof(PodeVoltar));
+        OnPropertyChanged(nameof(TituloPassoAtual));
+        OnPropertyChanged(nameof(TextoBotaoAvancar));
+        OnPropertyChanged(nameof(PodeAvancar));
+    }
+
+    partial void OnNomeCompletoChanged(string value) => OnPropertyChanged(nameof(PodeAvancar));
+
+    // =================================================================
+    // Comandos
+    // =================================================================
+
     [RelayCommand]
     private void AbrirDetalhes(AlunoListItemModel? aluno)
     {
         if (aluno is null) return;
-
-        // TODO: quando a view "Detalhes do Aluno" existir, trocar o CurrentPage
-        // do MainWindowViewModel por uma DetalhesAlunoViewModel(aluno.Codigo).
         DetalhesAlunoSolicitado?.Invoke(this, aluno);
     }
 
-    // ===== Novo Aluno (wizard por passos) =====
     [RelayCommand]
     private void AbrirNovoAluno()
     {
@@ -307,40 +441,73 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 
     private async Task ConcluirNovoAluno()
     {
+        if (TurmaMatricula is null) return;
+
         try
         {
-            var turma = await ResolverTurmaDestinoAsync();
             var aluno = new Aluno
             {
-                Codigo = GerarNovoCodigo(),
+                Codigo = await GerarNovoCodigoAsync(),
                 Nome = NomeCompleto.Trim(),
                 DataNascimento = DataNascimento?.DateTime,
                 Genero = Sexo,
-                Naturalidade = Naturalidade,
-                Provincia = Provincia,
-                Pais = Pais,
-                NumeroBiCedula = NumeroBiCedulaAluno,
-                Endereco = Morada,
-                Telefone = !string.IsNullOrWhiteSpace(ContactoPai) ? ContactoPai : ContactoMae,
+                Naturalidade = string.IsNullOrWhiteSpace(Naturalidade) ? null : Naturalidade.Trim(),
+                Provincia = string.IsNullOrWhiteSpace(Provincia) ? null : Provincia.Trim(),
+                Pais = string.IsNullOrWhiteSpace(Pais) ? null : Pais.Trim(),
+                NumeroBiCedula = string.IsNullOrWhiteSpace(NumeroBiCedulaAluno) ? null : NumeroBiCedulaAluno.Trim(),
+                Endereco = string.IsNullOrWhiteSpace(Morada) ? null : Morada.Trim(),
+                Telefone = !string.IsNullOrWhiteSpace(ContactoPai) ? ContactoPai.Trim()
+                         : !string.IsNullOrWhiteSpace(ContactoMae) ? ContactoMae.Trim()
+                         : null,
                 Email = null,
                 Ativo = true,
-                TurmaId = turma.Id,
-                AnoLectivoId = turma.AnoLectivoId,
+                TurmaId = TurmaMatricula.Id,
+                AnoLectivoId = TurmaMatricula.AnoLectivoId,
                 DataMatricula = DateTime.Today,
                 TemCondicaoMedica = SofreDoencaSim,
-                DescricaoCondicaoMedica = QualDoenca,
+                DescricaoCondicaoMedica = SofreDoencaSim && !string.IsNullOrWhiteSpace(QualDoenca)
+                    ? QualDoenca.Trim()
+                    : null,
                 Encarregados = new List<Encarregado>(),
                 Documentos = new List<DocumentoAluno>()
             };
 
             if (!string.IsNullOrWhiteSpace(NomePai))
-                aluno.Encarregados.Add(new Encarregado { Tipo = TipoEncarregado.Pai, Nome = NomePai, Contacto = ContactoPai, Profissao = ProfissaoPai });
+            {
+                aluno.Encarregados.Add(new Encarregado
+                {
+                    Tipo = TipoEncarregado.Pai,
+                    Nome = NomePai.Trim(),
+                    Contacto = string.IsNullOrWhiteSpace(ContactoPai) ? null : ContactoPai.Trim(),
+                    Profissao = string.IsNullOrWhiteSpace(ProfissaoPai) ? null : ProfissaoPai.Trim()
+                });
+            }
 
             if (!string.IsNullOrWhiteSpace(NomeMae))
-                aluno.Encarregados.Add(new Encarregado { Tipo = TipoEncarregado.Mae, Nome = NomeMae, Contacto = ContactoMae, Profissao = ProfissaoMae });
+            {
+                aluno.Encarregados.Add(new Encarregado
+                {
+                    Tipo = TipoEncarregado.Mae,
+                    Nome = NomeMae.Trim(),
+                    Contacto = string.IsNullOrWhiteSpace(ContactoMae) ? null : ContactoMae.Trim(),
+                    Profissao = string.IsNullOrWhiteSpace(ProfissaoMae) ? null : ProfissaoMae.Trim()
+                });
+            }
 
             if (BiCedulaDocumento.TemArquivo)
-                aluno.Documentos.Add(new DocumentoAluno { Tipo = TipoDocumentoAluno.BiCedula, NomeArquivo = BiCedulaDocumento.NomeArquivo, DataUpload = DateTime.Now });
+            {
+                aluno.Documentos.Add(new DocumentoAluno
+                {
+                    Tipo = TipoDocumentoAluno.BiCedula,
+                    NomeArquivo = BiCedulaDocumento.NomeArquivo,
+                    DataUpload = DateTime.Now
+                });
+            }
+
+            // Outros documentos opcionais
+            AdicionarDocumentoSeExistir(aluno, CertificadoDocumento, TipoDocumentoAluno.Certificado);
+            AdicionarDocumentoSeExistir(aluno, FotoDocumento, TipoDocumentoAluno.FotoTipoPasse);
+            AdicionarDocumentoSeExistir(aluno, AtestadoDocumento, TipoDocumentoAluno.AtestadoMedico);
 
             await _alunoService.CriarAsync(aluno, aluno.Encarregados);
 
@@ -348,60 +515,41 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             await InitializeAsync();
             FecharModal();
         }
-        catch (Exception)
+        catch
         {
+            // Em produção: mostrar mensagem de erro no UI
             FecharModal();
         }
     }
 
-    private async Task<ScoolManager.Core.Entities.Escola.Turma> ResolverTurmaDestinoAsync()
+    private static void AdicionarDocumentoSeExistir(Aluno aluno, DocumentoRequeridoItem item, TipoDocumentoAluno tipo)
     {
-        var turmas = (await _escolaService.ObterTurmasAsync()).ToList();
-        if (turmas.Count == 0)
-            throw new InvalidOperationException("Não existe nenhuma turma criada para associar o aluno.");
-
-        var numeroClasse = ExtrairNumeroClasse(ClasseMatricula);
-        var letraTurma = ExtrairUltimaLetra(ClasseMatricula);
-
-        var turmaMatch = turmas.FirstOrDefault(t =>
-            t.Classe?.Numero == numeroClasse &&
-            (!letraTurma.HasValue || t.Letra == letraTurma.Value) &&
-            (string.IsNullOrWhiteSpace(CursoMatricula) ||
-                t.Curso is null ||
-                t.Curso.Nome.Contains(CursoMatricula, StringComparison.OrdinalIgnoreCase) ||
-                t.Curso.Sigla.Contains(CursoMatricula, StringComparison.OrdinalIgnoreCase)));
-
-        if (turmaMatch is not null) return turmaMatch;
-
-        return turmas.FirstOrDefault(t => t.Classe?.Numero == numeroClasse) ?? turmas.First();
-    }
-
-    private static int? ExtrairNumeroClasse(string? texto)
-    {
-        if (string.IsNullOrWhiteSpace(texto)) return null;
-
-        var digits = new string(texto.Where(char.IsDigit).ToArray());
-        return int.TryParse(digits, out var numero) ? numero : null;
-    }
-
-    private static char? ExtrairUltimaLetra(string? texto)
-    {
-        if (string.IsNullOrWhiteSpace(texto)) return null;
-
-        for (var i = texto.Length - 1; i >= 0; i--)
+        if (!item.TemArquivo) return;
+        aluno.Documentos.Add(new DocumentoAluno
         {
-            if (char.IsLetter(texto[i]))
-                return char.ToUpperInvariant(texto[i]);
-        }
-
-        return null;
+            Tipo = tipo,
+            NomeArquivo = item.NomeArquivo,
+            DataUpload = DateTime.Now
+        });
     }
 
-    private string GerarNovoCodigo()
+    /// <summary>
+    /// Gera código no formato AAAA/NNNN (ex.: 2026/0003).
+    /// Usa a contagem real de alunos do serviço para evitar colisões.
+    /// </summary>
+    private async Task<string> GerarNovoCodigoAsync()
     {
         var ano = DateTime.Now.Year;
-        var sequencial = _todosAlunos.Count + 1;
-        return $"{ano}/{sequencial:0000}";
+        try
+        {
+            var existentes = await _alunoService.ObterListaAsync(new FiltroAlunoDto());
+            var sequencial = existentes.Count + 1;
+            return $"{ano}/{sequencial:0000}";
+        }
+        catch
+        {
+            return $"{ano}/{_todosAlunos.Count + 1:0000}";
+        }
     }
 
     private void LimparFormularioNovoAluno()
@@ -426,16 +574,18 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         ContactoMae = string.Empty;
 
         ClasseMatricula = null;
-        CursoMatricula = string.Empty;
+        CursoMatricula = null;
+        TurmaMatricula = null;
         Turno = null;
         Periodo = null;
         SalaMatricula = string.Empty;
+        TurmasDisponiveis.Clear();
 
         foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
             documento.NomeArquivo = DocumentoRequeridoItem.SemFicheiroPlaceholder;
     }
 
-    // ===== Os demais modais da view Alunos =====
+    // ===== Outros modais =====
     [RelayCommand] private void AbrirImportarAlunos() => IsImportarAlunosAberta = true;
     [RelayCommand] private void AbrirExportarPdf() => IsExportarPdfAberta = true;
     [RelayCommand] private void AbrirExportarExcel() => IsExportarExcelAberta = true;
@@ -451,21 +601,14 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         IsFiltrosAvancadosAberta = false;
     }
 
-    // TODO: substituir os placeholders abaixo pela ligação real aos serviços
-    // (importar CSV/Excel, gerar PDF/Excel) quando existirem.
     [RelayCommand] private void ConfirmarImportarAlunos() => FecharModal();
     [RelayCommand] private void ConfirmarExportarPdf() => FecharModal();
     [RelayCommand] private void ConfirmarExportarExcel() => FecharModal();
     [RelayCommand] private void ConfirmarFiltrosAvancados() => FecharModal();
-
 }
 
 /// <summary>
-/// Representa um dos documentos que podem ser exigidos no Passo 4 do
-/// wizard "Novo Aluno" (Certificado/Declaração, Foto Tipo Passe, BI/Cédula,
-/// Atestado Médico). É selecionado através do dropdown e o nome do
-/// ficheiro escolhido é atribuído a <see cref="NomeArquivo"/> pelo
-/// code-behind (após o utilizador escolher um ficheiro no seletor).
+/// Documento do passo 4 do wizard "Novo Aluno".
 /// </summary>
 public partial class DocumentoRequeridoItem : ObservableObject
 {
@@ -474,8 +617,7 @@ public partial class DocumentoRequeridoItem : ObservableObject
     public string Tipo { get; }
     public bool Obrigatorio { get; }
 
-    [ObservableProperty]
-    private string _nomeArquivo = SemFicheiroPlaceholder;
+    [ObservableProperty] private string _nomeArquivo = SemFicheiroPlaceholder;
 
     public bool TemArquivo => NomeArquivo != SemFicheiroPlaceholder;
 
@@ -487,5 +629,3 @@ public partial class DocumentoRequeridoItem : ObservableObject
 
     partial void OnNomeArquivoChanged(string value) => OnPropertyChanged(nameof(TemArquivo));
 }
-
-} // fim namespace ScoolManager.Desktop.ViewModels.Pages

@@ -1,14 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
-             xmlns:models="using:ScoolManager.Desktop.Models"
-             xmlns:materialIcons="using:Material.Icons.Avalonia"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
-             x:Class="ScoolManager.Desktop.Views.Pages.EscolaView"
-             x:DataType="vm:EscolaViewModel"
-             x:Name="RaizEscolaView">
+            xmlns:converters="using:Avalonia.Data.Converters"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
+            xmlns:models="using:ScoolManager.Desktop.Models"
+            xmlns:materialIcons="using:Material.Icons.Avalonia"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+            x:Class="ScoolManager.Desktop.Views.Pages.EscolaView"
+            x:DataType="vm:EscolaViewModel"
+            x:Name="RaizEscolaView">
 
     <Design.DataContext>
         <vm:EscolaViewModel />
@@ -372,8 +373,8 @@
                                                 <TextBlock Text="{Binding Nome}" FontSize="15" FontWeight="SemiBold"
                                                            Foreground="{StaticResource OnSurfaceBrush}" />
                                                 <TextBlock Text="{Binding Bloco}" FontSize="11" Opacity="0.6"
-                                                           IsVisible="{Binding !!Bloco}"
-                                                           Foreground="{StaticResource OnSurfaceVariantBrush}" />
+                                                            IsVisible="{Binding Bloco, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
+                                                            Foreground="{StaticResource OnSurfaceVariantBrush}" />
                                             </StackPanel>
                                             <Button Grid.Column="2" Classes="icone-cartao"
                                                     Command="{Binding #RaizEscolaView.((vm:EscolaViewModel)DataContext).EditarSalaCommand}"
@@ -396,7 +397,7 @@
                                         </Grid>
 
                                         <TextBlock Text="{Binding Observacoes}" FontSize="11" Opacity="0.55" TextWrapping="Wrap"
-                                                   IsVisible="{Binding !!Observacoes}"
+                                                   IsVisible="{Binding Observacoes, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                                    Foreground="{StaticResource OnSurfaceVariantBrush}" />
                                     </StackPanel>
                                 </Border>
@@ -665,7 +666,7 @@
                     </StackPanel>
 
                     <Border CornerRadius="10" Padding="12,10" Background="#141C2F3D"
-                            IsVisible="{Binding !!FormNomePreview}">
+                            IsVisible="{Binding FormNomePreview, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}">
                         <StackPanel Spacing="2">
                             <TextBlock Text="Nome gerado automaticamente" FontSize="11" Opacity="0.6"
                                        Foreground="{StaticResource OnSurfaceVariantBrush}" />
@@ -675,7 +676,7 @@
                     </Border>
 
                     <TextBlock Text="{Binding ModalTurmaErro}"
-                               IsVisible="{Binding !!ModalTurmaErro}"
+                               IsVisible="{Binding ModalTurmaErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -711,7 +712,7 @@
                     </TextBlock>
 
                     <TextBlock Text="{Binding ModalEliminarTurmaErro}"
-                               IsVisible="{Binding !!ModalEliminarTurmaErro}"
+                               IsVisible="{Binding ModalEliminarTurmaErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -757,7 +758,7 @@
                                  TextWrapping="Wrap" PlaceholderText="Ex.: requer marcação prévia" />
                     </StackPanel>
 
-                    <TextBlock Text="{Binding ModalSalaErro}" IsVisible="{Binding !!ModalSalaErro}"
+                    <TextBlock Text="{Binding ModalSalaErro}" IsVisible="{Binding ModalSalaErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -791,7 +792,7 @@
                         <Run Text="? Esta ação não pode ser desfeita." />
                     </TextBlock>
 
-                    <TextBlock Text="{Binding ModalEliminarSalaErro}" IsVisible="{Binding !!ModalEliminarSalaErro}"
+                    <TextBlock Text="{Binding ModalEliminarSalaErro}" IsVisible="{Binding ModalEliminarSalaErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -827,7 +828,7 @@
                         <TextBox Classes="campo-modal" Text="{Binding FormSiglaCurso}" PlaceholderText="Ex.: GRSI" />
                     </StackPanel>
 
-                    <TextBlock Text="{Binding ModalCursoErro}" IsVisible="{Binding !!ModalCursoErro}"
+                    <TextBlock Text="{Binding ModalCursoErro}" IsVisible="{Binding ModalCursoErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -861,7 +862,7 @@
                         <Run Text="? Esta ação não pode ser desfeita." />
                     </TextBlock>
 
-                    <TextBlock Text="{Binding ModalEliminarCursoErro}" IsVisible="{Binding !!ModalEliminarCursoErro}"
+                    <TextBlock Text="{Binding ModalEliminarCursoErro}" IsVisible="{Binding ModalEliminarCursoErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -901,7 +902,7 @@
                         <CalendarDatePicker SelectedDate="{Binding FormDataTerminoAnoLectivo}" HorizontalAlignment="Stretch" />
                     </StackPanel>
 
-                    <TextBlock Text="{Binding ModalAnoLectivoErro}" IsVisible="{Binding !!ModalAnoLectivoErro}"
+                    <TextBlock Text="{Binding ModalAnoLectivoErro}" IsVisible="{Binding ModalAnoLectivoErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -935,7 +936,7 @@
                         <Run Text="? Depois de encerrado deixa de poder ser editado." />
                     </TextBlock>
 
-                    <TextBlock Text="{Binding ModalEncerrarAnoLectivoErro}" IsVisible="{Binding !!ModalEncerrarAnoLectivoErro}"
+                    <TextBlock Text="{Binding ModalEncerrarAnoLectivoErro}" IsVisible="{Binding ModalEncerrarAnoLectivoErro, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                                FontSize="12" Foreground="#E0777C" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto,Auto">

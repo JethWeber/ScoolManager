@@ -48,7 +48,8 @@ public static class ServiceCollectionExtensions
     /// <summary>Sobrecarga para quem quer controlar o caminho/connection string explicitamente (ex.: testes, ambientes diferentes).</summary>
     public static IServiceCollection AddScoolManagerCore(this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<ScoolManagerDbContext>(options => options.UseSqlite(connectionString));
+        services.AddDbContextFactory<ScoolManagerDbContext>(options =>
+            options.UseSqlite(connectionString));
 
         RegistarRepositorios(services);
         RegistarServicos(services);
