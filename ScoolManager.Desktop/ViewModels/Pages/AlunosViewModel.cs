@@ -211,7 +211,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             // Opções de selecção dos botões do add alunoModal
             OpcoesClasse.Clear();
             foreach (var c in classes.OrderBy(c => c.Numero))
-                OpcoesClasse.Add(new OpcaoSelecaoItem { Label = $"{c.Numero}ª", Valor = c });
+                OpcoesClasse.Add(new OpcaoSelecaoItem { Label = $"{c.Numero}ª Classe", Valor = c });
 
             OpcoesCurso.Clear();
             foreach (var c in cursos.OrderBy(c => c.Nome))
@@ -230,7 +230,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             Classes.Clear();
             Classes.Add("Todas as Classes");
             foreach (var c in classes.OrderBy(c => c.Numero))
-                Classes.Add($"{c.Numero}ª");
+                Classes.Add($"{c.Numero}ª Classe");
 
             // Filtro "Anos Lectivos"
             AnosLetivos.Clear();
@@ -276,8 +276,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             TextoBusca = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText.Trim(),
             Situacao = StatusSelecionado is null or "Status: Todos" ? null : StatusSelecionado,
             Classe = ClasseSelecionada is null or "Todas as Classes"
-                ? null
-                : ClasseSelecionada.TrimEnd('ª'), // "10ª" → "10" (o repositório parseia int)
+            ? null : new string(ClasseSelecionada.Where(char.IsDigit).ToArray()), // "10ª Classe" → "10",
             ApenasAtivos = StatusSelecionado == "Ativos" ? true : null
         };
 
