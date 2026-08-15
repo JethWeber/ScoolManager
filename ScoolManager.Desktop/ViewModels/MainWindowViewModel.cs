@@ -65,14 +65,20 @@ public partial class MainWindowViewModel : ViewModelBase
     /// a mostrar "Alunos" como ativo enquanto o utilizador vê os detalhes,
     /// já que Detalhes do Aluno é uma sub-página de Alunos.
     /// </summary>
-    private void AbrirDetalhesAluno(AlunoListItemModel aluno)
+    private async void AbrirDetalhesAluno(AlunoListItemModel aluno)
     {
-        var detalhes = new DetalhesAlunoViewModel(aluno, App.Services.GetRequiredService<IAlunoService>());
+        var detalhes = new DetalhesAlunoViewModel(
+            aluno,
+            App.Services.GetRequiredService<IAlunoService>());
 
         detalhes.VoltarParaAlunosSolicitado += (_, _) => CurrentPage = CriarPaginaAlunos();
         detalhes.ExclusaoConfirmada += (_, _) => CurrentPage = CriarPaginaAlunos();
 
         CurrentPage = detalhes;
+
+        // Carrega dados completos do Core
+        if (detalhes is IAsyncInitializable init)
+            await init.InitializeAsync();
     }
 
     partial void OnSelectedNavigationItemChanged(NavigationItemViewModel? value)
