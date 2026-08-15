@@ -182,11 +182,20 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     public event EventHandler? ExclusaoConfirmada;
 
     [RelayCommand]
-    private void ConfirmarExclusao()
+    private async Task ConfirmarExclusao()
     {
-        // TODO: remover o aluno de facto quando existir um serviço/persistência real.
-        FecharModal();
-        ExclusaoConfirmada?.Invoke(this, EventArgs.Empty);
+        if (_alunoId is null or <= 0) return;
+
+        try
+        {
+            await _alunoService.RemoverAsync(_alunoId.Value);
+            FecharModal();
+            ExclusaoConfirmada?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            FecharModal();
+        }
     }
 
     /// <summary>Disparado pelo botão discreto "Voltar para Alunos" do cabeçalho.</summary>
