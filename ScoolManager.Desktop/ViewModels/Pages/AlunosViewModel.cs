@@ -288,6 +288,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             var primeiroEncarregado = aluno.Encarregados.FirstOrDefault();
 
             _todosAlunos.Add(new AlunoListItemModel(
+                Id: aluno.Id,
                 Codigo: aluno.Codigo,
                 Nome: aluno.Nome,
                 Classe: aluno.Turma?.Nome ?? "Sem turma",
