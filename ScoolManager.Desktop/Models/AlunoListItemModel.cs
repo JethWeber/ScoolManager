@@ -10,6 +10,7 @@ namespace ScoolManager.Desktop.Models;
 /// exibidos como colunas na tabela principal.
 /// </summary>
 public record AlunoListItemModel(
+    int Id,              
     string Codigo,
     string Nome,
     string Classe,
