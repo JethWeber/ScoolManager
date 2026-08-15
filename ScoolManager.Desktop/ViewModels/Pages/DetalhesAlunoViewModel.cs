@@ -198,17 +198,12 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     // ================================================================
     // Construtores
     // ================================================================
-
-    /// <summary>
-    /// Constrói os detalhes a partir de uma linha da lista de Alunos.
-    /// Os campos que a lista não tem (data de nascimento, documentos, histórico
-    /// de pagamentos, etc.) ficam com dados mock até existir um serviço real.
-    /// </summary>
     public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService)
     {
         _alunoService = alunoService;
-        _alunoId = null;
+        _alunoId = aluno.Id;
 
+        // Pré-preenche o cabeçalho (evita ecrã vazio enquanto carrega)
         NomeCompleto = aluno.Nome;
         CodigoMatricula = aluno.Codigo;
         Classe = aluno.Classe;
@@ -216,11 +211,9 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         Curso = aluno.Curso;
         Ativo = aluno.Ativo;
         Telefone = aluno.Telefone;
-
         NomePai = aluno.Encarregado;
         ContactoPai = aluno.Telefone;
-
-        PreencherDadosMock();
+        // NÃO chamar PreencherDadosMock()
     }
 
     public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService)
@@ -229,96 +222,69 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         _alunoId = alunoId;
     }
 
-    /// <summary>Usado pelo designer (Design.DataContext) e como fallback.</summary>
-    public DetalhesAlunoViewModel() : this(CriarAlunoMock(), null!)
+    public DetalhesAlunoViewModel() : this(
+        new AlunoListItemModel(0, "2026/0000", "Aluno Exemplo", "", "", "", "", "", true),
+        null!)
     {
     }
 
     public async Task InitializeAsync()
     {
-        if (_alunoId is null)
+        if (_alunoId is null or <= 0 || _alunoService is null)
             return;
 
         try
         {
             var aluno = await _alunoService.ObterDetalhesAsync(_alunoId.Value);
-            NomeCompleto = aluno.Nome;
-            CodigoMatricula = aluno.Codigo;
-            Classe = aluno.Turma?.Nome ?? string.Empty;
-            Turma = aluno.Turma?.Sala?.Nome ?? string.Empty;
-            Curso = aluno.Turma?.Curso?.Nome ?? string.Empty;
-            Ativo = aluno.Ativo;
-            Telefone = aluno.Telefone;
-            DataNascimento = aluno.DataNascimento;
-            Genero = aluno.Genero ?? string.Empty;
-            Nacionalidade = aluno.Nacionalidade ?? string.Empty;
-            NumeroBiCedula = aluno.NumeroBiCedula ?? string.Empty;
-            Endereco = aluno.Endereco ?? string.Empty;
-            Email = aluno.Email;
-            FotografiaCaminho = aluno.FotografiaCaminho;
-            AnoLectivo = aluno.AnoLectivo?.Nome ?? string.Empty;
-            DataMatricula = aluno.DataMatricula;
 
-            var encarregadoPai = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Pai);
-            var encarregadoMae = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Mae);
-            NomePai = encarregadoPai?.Nome ?? string.Empty;
-            ContactoPai = encarregadoPai?.Contacto ?? string.Empty;
-            NomeMae = encarregadoMae?.Nome ?? string.Empty;
-            ContactoMae = encarregadoMae?.Contacto ?? string.Empty;
+            NomeCompleto      = aluno.Nome;
+            CodigoMatricula   = aluno.Codigo;
+            Classe            = aluno.Turma?.Nome ?? string.Empty;
+            Turma             = aluno.Turma?.Sala?.Nome ?? string.Empty;
+            Curso             = aluno.Turma?.Curso?.Nome ?? string.Empty;
+            Ativo             = aluno.Ativo;
+            Telefone          = aluno.Telefone ?? string.Empty;
+            DataNascimento    = aluno.DataNascimento;
+            Genero            = aluno.Genero ?? string.Empty;
+            Nacionalidade     = aluno.Nacionalidade ?? string.Empty;
+            NumeroBiCedula    = aluno.NumeroBiCedula ?? string.Empty;
+            Endereco          = aluno.Endereco ?? string.Empty;
+            Email             = aluno.Email;
+            FotografiaCaminho = aluno.FotografiaCaminho;
+            AnoLectivo        = aluno.AnoLectivo?.Nome ?? string.Empty;
+            DataMatricula     = aluno.DataMatricula;
+
+            var pai = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Pai);
+            var mae = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Mae);
+
+            NomePai     = pai?.Nome ?? string.Empty;
+            ContactoPai = pai?.Contacto ?? string.Empty;
+            NomeMae     = mae?.Nome ?? string.Empty;
+            ContactoMae = mae?.Contacto ?? string.Empty;
 
             Documentos.Clear();
-            foreach (var documento in aluno.Documentos)
+            foreach (var doc in aluno.Documentos)
             {
                 Documentos.Add(new DocumentoAlunoItem(
-                    documento.Tipo.ToString(),
-                    documento.NomeArquivo,
-                    documento.DataUpload));
+                    TipoDocumentoLabel(doc.Tipo),
+                    doc.NomeArquivo,
+                    doc.DataUpload));
             }
         }
-        catch (Exception)
+        catch
         {
-            PreencherDadosMock();
+            // Mantém o que veio da lista; sem mock
         }
     }
 
-    private void PreencherDadosMock()
+    private static string TipoDocumentoLabel(ScoolManager.Core.Enums.TipoDocumentoAluno tipo) => tipo switch
     {
-        DataNascimento = new DateTimeOffset(2009, 5, 12, 0, 0, 0, TimeSpan.Zero);
-        Genero = "Masculino";
-        Nacionalidade = "Angolana";
-        NumeroBiCedula = "007654321LA045";
-        Endereco = "Bairro Talatona, Rua 12, Vivenda 45A, Luanda";
-        Email = $"{NomeCompleto.Split(' ')[0].ToLowerInvariant()}@estudante.com";
-
-        AnoLectivo = "2025/2026";
-        DataMatricula = new DateTimeOffset(2025, 1, 15, 0, 0, 0, TimeSpan.Zero);
-
-        PropinasPagas = 4;
-        PropinasTotais = 10;
-        SaldoDevedorLabel = "0,00 Kz";
-
-        Documentos.Clear();
-        Documentos.Add(new DocumentoAlunoItem("Certificado / Declaração", "certificado_9classe.pdf", DateTime.Now.AddMonths(-6)));
-        Documentos.Add(new DocumentoAlunoItem("Foto Tipo Passe", "foto_perfil.jpg", DateTime.Now.AddMonths(-6)));
-        Documentos.Add(new DocumentoAlunoItem("BI / Cédula", "bi_cedula.pdf", DateTime.Now.AddMonths(-6)));
-        Documentos.Add(new DocumentoAlunoItem("Atestado Médico", null, null));
-
-        HistoricoPagamentos.Clear();
-        HistoricoPagamentos.Add(new PagamentoHistoricoItem("Abril 2026", "#REC-4560", "25.000 Kz", "02/04/2026", true));
-        HistoricoPagamentos.Add(new PagamentoHistoricoItem("Março 2026", "#REC-4412", "25.000 Kz", "05/03/2026", true));
-        HistoricoPagamentos.Add(new PagamentoHistoricoItem("Fevereiro 2026", "#REC-4288", "25.000 Kz", "01/02/2026", true));
-        HistoricoPagamentos.Add(new PagamentoHistoricoItem("Janeiro 2026", "#REC-4133", "25.000 Kz", "—", false));
-    }
-
-    private static AlunoListItemModel CriarAlunoMock() => new(
-        Codigo: "2026/0842",
-        Nome: "João Pedro da Silva",
-        Classe: "10ª Classe A",
-        Curso: "Ciências",
-        Sala: "Sala 12",
-        Encarregado: "Ricardo da Silva",
-        Telefone: "+244 923 000 111",
-        Ativo: true);
+        ScoolManager.Core.Enums.TipoDocumentoAluno.BiCedula       => "BI / Cédula",
+        ScoolManager.Core.Enums.TipoDocumentoAluno.Certificado    => "Certificado / Declaração",
+        ScoolManager.Core.Enums.TipoDocumentoAluno.FotoTipoPasse  => "Foto Tipo Passe",
+        ScoolManager.Core.Enums.TipoDocumentoAluno.AtestadoMedico => "Atestado Médico",
+        _ => tipo.ToString()
+    };
 }
 
 /// <summary>Item exibido na aba "Documentação". Somente leitura nesta view.</summary>
