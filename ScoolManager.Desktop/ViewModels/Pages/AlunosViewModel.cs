@@ -120,6 +120,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     [ObservableProperty] private string _pais = string.Empty;
     [ObservableProperty] private string _numeroBiCedulaAluno = string.Empty;
     [ObservableProperty] private string _morada = string.Empty;
+    [ObservableProperty] private string _contactoAluno = string.Empty;
     [ObservableProperty] private bool _sofreDoencaSim;
     [ObservableProperty] private bool _sofreDoencaNao = true;
     [ObservableProperty] private string _qualDoenca = string.Empty;
@@ -169,12 +170,25 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 
     public bool PodeAvancar => PassoAtual switch
     {
-        1 => !string.IsNullOrWhiteSpace(NomeCompleto),
+        1 => !string.IsNullOrWhiteSpace(NomeCompleto)
+            && DataNascimento is not null
+            && !string.IsNullOrWhiteSpace(Sexo)
+            && !string.IsNullOrWhiteSpace(Naturalidade)
+            && !string.IsNullOrWhiteSpace(Provincia)
+            && !string.IsNullOrWhiteSpace(Pais)
+            && !string.IsNullOrWhiteSpace(NumeroBiCedulaAluno)
+            && !string.IsNullOrWhiteSpace(Morada)
+            && (!SofreDoencaSim || !string.IsNullOrWhiteSpace(QualDoenca)),
+
+        2 => !string.IsNullOrWhiteSpace(NomePai) || !string.IsNullOrWhiteSpace(NomeMae),
+
         3 => TurmaMatricula is not null,
+
         4 => BiCedulaDocumento.TemArquivo,
+
         _ => true
     };
-
+    
     // Cache interno das turmas (para filtrar no wizard)
     private List<Turma> _turmasCache = new();
 
@@ -553,9 +567,11 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
                 Pais = string.IsNullOrWhiteSpace(Pais) ? null : Pais.Trim(),
                 NumeroBiCedula = string.IsNullOrWhiteSpace(NumeroBiCedulaAluno) ? null : NumeroBiCedulaAluno.Trim(),
                 Endereco = string.IsNullOrWhiteSpace(Morada) ? null : Morada.Trim(),
-                Telefone = !string.IsNullOrWhiteSpace(ContactoPai) ? ContactoPai.Trim()
-                         : !string.IsNullOrWhiteSpace(ContactoMae) ? ContactoMae.Trim()
-                         : null,
+                Telefone = string.IsNullOrWhiteSpace(ContactoAluno)
+                    ? (!string.IsNullOrWhiteSpace(ContactoPai) ? ContactoPai.Trim()
+                    : !string.IsNullOrWhiteSpace(ContactoMae) ? ContactoMae.Trim()
+                    : null)
+                    : ContactoAluno.Trim(),
                 Email = null,
                 Ativo = true,
                 TurmaId = TurmaMatricula.Id,
