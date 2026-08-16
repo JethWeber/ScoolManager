@@ -57,3 +57,4 @@ public class Aluno
     public List<Encarregado> Encarregados { get; set; } = new();
     public List<DocumentoAluno> Documentos { get; set; } = new();
 }
+
