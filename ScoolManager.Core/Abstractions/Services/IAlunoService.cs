@@ -14,7 +14,7 @@ public interface IAlunoService
 
     Task AtualizarAsync(Aluno aluno, CancellationToken ct = default);
     Task RemoverAsync(int id, CancellationToken ct = default);
-
+    void ValidarCampos(Aluno aluno);
     Task RenovarMatriculaAsync(int alunoId, int novoAnoLectivoId, int novaTurmaId, CancellationToken ct = default);
     Task AdicionarDocumentoAsync(int alunoId, DocumentoAluno documento, CancellationToken ct = default);
 
