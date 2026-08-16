@@ -111,27 +111,54 @@ public class AlunoService : IAlunoService
 
     public void ValidarCampos(Aluno aluno)
     {
-        if (aluno.Codigo == null) throw new Exception("O campo Codigo esta vindo nulo.");
-        Console.WriteLine("O campo Codigo esta vindo nulo.");
-        
-        if (aluno.Nome == null) throw new Exception("O campo Nome esta vindo nulo.");
-        
-        if (aluno.DataNascimento == null) throw new Exception("O campo Data De Nascimento esta vindo nulo."); 
+        if (string.IsNullOrWhiteSpace(aluno.Codigo))
+            throw new InvalidOperationException("O código do aluno é obrigatório.");
 
-        if (aluno.Genero == null) throw new Exception("O campo Genero esta vindo nulo.");
+        if (string.IsNullOrWhiteSpace(aluno.Nome))
+            throw new InvalidOperationException("O nome do aluno é obrigatório.");
 
-        if (aluno.Nacionalidade == null) throw new Exception("O campo Nacionalidade esta vindo nulo.");
+        if (aluno.DataNascimento is null)
+            throw new InvalidOperationException("A data de nascimento é obrigatória.");
 
-        if (aluno.Naturalidade == null) throw new Exception("O campo Naturalidade esta vindo nulo.");
+        if (string.IsNullOrWhiteSpace(aluno.Genero))
+            throw new InvalidOperationException("O género é obrigatório.");
 
-        if (aluno.Provincia == null) throw new Exception("O campo Provincia esta vindo nulo.");
+        if (string.IsNullOrWhiteSpace(aluno.Naturalidade))
+            throw new InvalidOperationException("A naturalidade é obrigatória.");
 
-        if (aluno.Pais == null) throw new Exception("O campo Pais esta vindo nulo.");
+        if (string.IsNullOrWhiteSpace(aluno.Provincia))
+            throw new InvalidOperationException("A província é obrigatória.");
 
-        if (aluno.NumeroBiCedula == null) throw new Exception("O campo NumeroBiCedula esta vindo nulo.");
+        if (string.IsNullOrWhiteSpace(aluno.Pais))
+            throw new InvalidOperationException("O país é obrigatório.");
 
-        if (aluno.Turma.Classe.Numero <= 0) throw new Exception("O campo Turma esta vindo nulo.");
-        
+        if (string.IsNullOrWhiteSpace(aluno.NumeroBiCedula))
+            throw new InvalidOperationException("O número do BI/Cédula é obrigatório.");
+
+        if (string.IsNullOrWhiteSpace(aluno.Endereco))
+            throw new InvalidOperationException("A morada é obrigatória.");
+
+        if (aluno.TurmaId <= 0)
+            throw new InvalidOperationException("A turma é obrigatória.");
+
+        // Nacionalidade: se a entidade exigir, usa País como fallback
+        if (string.IsNullOrWhiteSpace(aluno.Nacionalidade))
+            aluno.Nacionalidade = aluno.Pais;
+
+        // Doença: só valida descrição se TemCondicaoMedica == true
+        if (aluno.TemCondicaoMedica && string.IsNullOrWhiteSpace(aluno.DescricaoCondicaoMedica))
+            throw new InvalidOperationException("Indique qual a doença/condição médica.");
+
+        // Pelo menos um encarregado
+        if (aluno.Encarregados is null || aluno.Encarregados.Count == 0)
+            throw new InvalidOperationException("Indique pelo menos o nome do pai ou da mãe.");
+
+        // BI/Cédula obrigatório nos documentos
+        var temBi = aluno.Documentos?.Any(d => d.Tipo == ScoolManager.Core.Enums.TipoDocumentoAluno.BiCedula
+            && !string.IsNullOrWhiteSpace(d.NomeArquivo)) == true;
+
+        if (!temBi)
+            throw new InvalidOperationException("O documento BI/Cédula é obrigatório.");
     } 
 }
 /// 
