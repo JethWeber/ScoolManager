@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Dtos.Alunos;
 using ScoolManager.Core.Entities.Alunos;
@@ -113,7 +114,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     // --- Passo 1: Dados do Aluno ---
     [ObservableProperty] private string _nomeCompleto = string.Empty;
     [ObservableProperty] private DateTimeOffset? _dataNascimento;
-    [ObservableProperty] private string? _sexo;
+    [ObservableProperty]  private string? _sexo;
     [ObservableProperty] private string _naturalidade = string.Empty;
     [ObservableProperty] private string _provincia = string.Empty;
     [ObservableProperty] private string _pais = string.Empty;
@@ -605,6 +606,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             AdicionarDocumentoSeExistir(aluno, FotoDocumento, TipoDocumentoAluno.FotoTipoPasse);
             AdicionarDocumentoSeExistir(aluno, AtestadoDocumento, TipoDocumentoAluno.AtestadoMedico);
 
+            _alunoService.ValidarCampos(aluno);
             await _alunoService.CriarAsync(aluno, aluno.Encarregados);
 
             LimparFormularioNovoAluno();
