@@ -73,7 +73,10 @@ public class EfAlunoRepository : IAlunoRepository
     {
         var aluno = await _db.Alunos.FindAsync([id], ct);
         if (aluno is null) return;
-        _db.Alunos.Remove(aluno);
+
+        // Ao inves de eliminar de tudo o aluno, vou apenas desativar ele
+        aluno.Ativo = false;
+        _db.Alunos.Update(aluno);
         await _db.SaveChangesAsync(ct);
     }
 }
