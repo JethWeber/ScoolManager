@@ -45,6 +45,7 @@ public class AlunoService : IAlunoService
             throw new InvalidOperationException($"A turma {turma.Nome} está cheia — não é possível matricular mais alunos.");
 
         aluno.Encarregados = encarregados.ToList();
+        ValidarCampos(aluno);
         var criado = await _alunos.AdicionarAsync(aluno, ct);
 
         turma.Matriculados++;
@@ -107,4 +108,33 @@ public class AlunoService : IAlunoService
         // a leitura real quando o formato for confirmado.
         return Task.FromResult(new ImportacaoAlunosResultadoDto());
     }
+
+    public void ValidarCampos(Aluno aluno)
+    {
+        if (aluno.Codigo == null) throw new Exception("O campo Codigo esta vindo nulo.");
+        Console.WriteLine("O campo Codigo esta vindo nulo.");
+        
+        if (aluno.Nome == null) throw new Exception("O campo Nome esta vindo nulo.");
+        
+        if (aluno.DataNascimento == null) throw new Exception("O campo Data De Nascimento esta vindo nulo."); 
+
+        if (aluno.Genero == null) throw new Exception("O campo Genero esta vindo nulo.");
+
+        if (aluno.Nacionalidade == null) throw new Exception("O campo Nacionalidade esta vindo nulo.");
+
+        if (aluno.Naturalidade == null) throw new Exception("O campo Naturalidade esta vindo nulo.");
+
+        if (aluno.Provincia == null) throw new Exception("O campo Provincia esta vindo nulo.");
+
+        if (aluno.Pais == null) throw new Exception("O campo Pais esta vindo nulo.");
+
+        if (aluno.NumeroBiCedula == null) throw new Exception("O campo NumeroBiCedula esta vindo nulo.");
+
+        if (aluno.Turma.Classe.Numero <= 0) throw new Exception("O campo Turma esta vindo nulo.");
+        
+    } 
 }
+/// 
+/// Mapeando todos os campos da entidade aluno
+/// 
+/// Id, Codigo, Nome, DataNascimento, Genero, Nacionalidade, Naturalidade, Provincia, Pais, NumeroBiCedula, 
