@@ -515,94 +515,110 @@
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     IsVisible="{Binding IsNovoAlunoAberto}">
                 <Panel>
-
-                    <!-- Faixa de acento no topo (mesma linguagem do LoginWindow) -->
-                    <Border VerticalAlignment="Top" Height="4" Background="{StaticResource AcentoTopoBrush}"/>
+                    <!-- Faixa de acento no topo -->
+                    <Border VerticalAlignment="Top" Height="4"
+                            Background="{StaticResource AcentoTopoBrush}"/>
 
                     <Grid Margin="24,22,24,18" RowDefinitions="Auto,*,Auto" RowSpacing="12">
 
-                        <!-- Cabeçalho do wizard + indicador de progresso -->
+                        <!-- Cabeçalho + progresso -->
                         <StackPanel Grid.Row="0" Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" Spacing="2">
                                     <TextBlock Text="Nova matrícula" FontSize="18" FontWeight="Bold"
-                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            Foreground="{StaticResource OnSurfaceBrush}"/>
                                     <TextBlock Text="{Binding TituloPassoAtual}" FontSize="12.5" FontWeight="SemiBold"
-                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                            Foreground="{StaticResource PrimaryBrush}"/>
                                 </StackPanel>
                                 <TextBlock Grid.Column="1" VerticalAlignment="Center"
-                                           FontSize="11.5" Opacity="0.6"
-                                           Foreground="{StaticResource OnSurfaceVariantBrush}">
+                                        FontSize="11.5" Opacity="0.6"
+                                        Foreground="{StaticResource OnSurfaceVariantBrush}">
                                     <Run Text="Passo "/><Run Text="{Binding PassoAtual}"/><Run Text=" de 4"/>
                                 </TextBlock>
                             </Grid>
                             <ProgressBar Minimum="1" Maximum="4" Value="{Binding PassoAtual}" Height="4"
-                                         CornerRadius="2"
-                                         Foreground="{StaticResource PrimaryContainerBrush}"
-                                         Background="#14FFFFFF"/>
+                                        CornerRadius="2"
+                                        Foreground="{StaticResource PrimaryContainerBrush}"
+                                        Background="#14FFFFFF"/>
                         </StackPanel>
 
-                        <!-- Área de conteúdo: ocupa sempre o mesmo espaço (linha "*"),
-                             por isso o tamanho do modal nunca muda entre os passos. -->
+                        <!-- Conteúdo dos passos -->
                         <ScrollViewer Grid.Row="1">
                             <StackPanel Spacing="12">
 
-                                <!-- ============== Passo 1: Dados do Aluno ============== -->
+                                <!-- Passo 1 -->
                                 <StackPanel Spacing="10" IsVisible="{Binding EhPasso1}">
-
                                     <TextBlock Text="IDENTIFICAÇÃO" Classes="coluna-titulo"/>
-                                    <TextBox Classes="campo" Text="{Binding NomeCompleto}" PlaceholderText="Nome completo do aluno *"/>
+                                    <TextBox Classes="campo" Text="{Binding NomeCompleto}"
+                                            PlaceholderText="Nome completo do aluno *"/>
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <DatePicker Grid.Column="0" Classes="campo" SelectedDate="{Binding DataNascimento}"/>
-                                        <ComboBox Grid.Column="1" Classes="campo" PlaceholderText="Sexo"
-                                                  ItemsSource="{Binding OpcoesSexo}" SelectedItem="{Binding Sexo}"/>
+                                        <DatePicker Grid.Column="0" Classes="campo"
+                                                    SelectedDate="{Binding DataNascimento}"/>
+                                        <ComboBox Grid.Column="1" Classes="campo" PlaceholderText="Sexo *"
+                                                ItemsSource="{Binding OpcoesSexo}"
+                                                SelectedItem="{Binding Sexo}"/>
                                     </Grid>
-                                    <TextBox Classes="campo" Text="{Binding NumeroBiCedulaAluno}" PlaceholderText="Nº do BI ou Cédula"/>
+                                    <TextBox Classes="campo" Text="{Binding NumeroBiCedulaAluno}"
+                                            PlaceholderText="Nº do BI ou Cédula *"/>
+                                    <TextBox Classes="campo" Text="{Binding ContactoAluno}"
+                                            PlaceholderText="Contacto do aluno (opcional)"/>
 
                                     <TextBlock Text="NATURALIDADE E MORADA" Classes="coluna-titulo" Margin="0,4,0,0"/>
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding Naturalidade}" PlaceholderText="Naturalidade"/>
-                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding Provincia}" PlaceholderText="Província"/>
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding Naturalidade}"
+                                                PlaceholderText="Naturalidade *"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding Provincia}"
+                                                PlaceholderText="Província *"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding Pais}" PlaceholderText="País"/>
-                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding Morada}" PlaceholderText="Morada"/>
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding Pais}"
+                                                PlaceholderText="País *"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding Morada}"
+                                                PlaceholderText="Morada *"/>
                                     </Grid>
 
                                     <TextBlock Text="SAÚDE" Classes="coluna-titulo" Margin="0,4,0,0"/>
                                     <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="20">
                                         <TextBlock Grid.Column="0" Text="Sofre de alguma doença?" FontSize="13"
-                                                   VerticalAlignment="Center"
-                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                                            <RadioButton Content="Não" GroupName="Doenca" IsChecked="{Binding SofreDoencaNao}"/>
-                                            <RadioButton Content="Sim" GroupName="Doenca" IsChecked="{Binding SofreDoencaSim}"/>
+                                                VerticalAlignment="Center"
+                                                Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16"
+                                                    VerticalAlignment="Center">
+                                            <RadioButton Content="Não" GroupName="Doenca"
+                                                        IsChecked="{Binding SofreDoencaNao}"/>
+                                            <RadioButton Content="Sim" GroupName="Doenca"
+                                                        IsChecked="{Binding SofreDoencaSim}"/>
                                         </StackPanel>
                                     </Grid>
                                     <TextBox Classes="campo" Text="{Binding QualDoenca}" PlaceholderText="Qual?"
-                                             IsEnabled="{Binding SofreDoencaSim}"/>
+                                            IsEnabled="{Binding SofreDoencaSim}"/>
                                 </StackPanel>
 
-                                <!-- ============== Passo 2: Dados dos Encarregados ============== -->
+                                <!-- Passo 2 -->
                                 <StackPanel Spacing="10" IsVisible="{Binding EhPasso2}">
                                     <TextBlock Text="PAI" Classes="coluna-titulo"/>
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding NomePai}" PlaceholderText="Nome do pai"/>
-                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding ProfissaoPai}" PlaceholderText="Profissão do pai"/>
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding NomePai}"
+                                                PlaceholderText="Nome do pai"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding ProfissaoPai}"
+                                                PlaceholderText="Profissão (opcional)"/>
                                     </Grid>
-                                    <TextBox Classes="campo" Text="{Binding ContactoPai}" PlaceholderText="Contacto do pai"/>
+                                    <TextBox Classes="campo" Text="{Binding ContactoPai}"
+                                            PlaceholderText="Contacto do pai (opcional)"/>
 
                                     <TextBlock Text="MÃE" Classes="coluna-titulo" Margin="0,6,0,0"/>
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding NomeMae}" PlaceholderText="Nome da mãe"/>
-                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding ProfissaoMae}" PlaceholderText="Profissão da mãe"/>
+                                        <TextBox Grid.Column="0" Classes="campo" Text="{Binding NomeMae}"
+                                                PlaceholderText="Nome da mãe"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding ProfissaoMae}"
+                                                PlaceholderText="Profissão (opcional)"/>
                                     </Grid>
-                                    <TextBox Classes="campo" Text="{Binding ContactoMae}" PlaceholderText="Contacto da mãe"/>
+                                    <TextBox Classes="campo" Text="{Binding ContactoMae}"
+                                            PlaceholderText="Contacto da mãe (opcional)"/>
                                 </StackPanel>
 
-                                <!-- ============== Passo 3: Enquadramento na Instituição ============== -->
+                                <!-- Passo 3 -->
                                 <StackPanel Spacing="14" IsVisible="{Binding EhPasso3}">
-                                    <!-- CLASSE -->
                                     <TextBlock Text="CLASSE *" Classes="coluna-titulo"/>
                                     <ItemsControl ItemsSource="{Binding OpcoesClasse}">
                                         <ItemsControl.ItemsPanel>
@@ -612,24 +628,13 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="vm:OpcaoSelecaoItem">
-                                                <Button Classes="opcao-selecao"
-                                                        Margin="0,0,8,8"
+                                                <Button Classes="opcao-selecao" Margin="0,0,8,8"
                                                         Command="{Binding #RaizAlunosView.((vm:AlunosViewModel)DataContext).SelecionarClasseCommand}"
                                                         CommandParameter="{Binding}">
-                                                    <Button.Styles>
-                                                        <Style Selector="Button.opcao-selecao">
-                                                            <Setter Property="Background" Value="{StaticResource SurfaceContainerHighBrush}" />
-                                                            <Setter Property="BorderBrush" Value="{StaticResource OutlineVariantBrush}" />
-                                                            <Setter Property="BorderThickness" Value="1.5" />
-                                                        </Style>
-                                                    </Button.Styles>
-                                                    <!-- Aplicar classe "selecionado" via binding de Classes não é directo;
-                                                        usa-se um converter ou o truque abaixo com Opacity/Border -->
                                                     <Border CornerRadius="12" Padding="14,12"
                                                             Background="{Binding Selecionado, Converter={StaticResource SelecionadoBackgroundConverter}}"
                                                             BorderBrush="{Binding Selecionado, Converter={StaticResource SelecionadoBorderConverter}}"
-                                                            BorderThickness="2"
-                                                            Cursor="Hand">
+                                                            BorderThickness="2" Cursor="Hand">
                                                         <TextBlock Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
                                                                 Foreground="{StaticResource OnSurfaceBrush}"
                                                                 HorizontalAlignment="Center"/>
@@ -639,7 +644,6 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <!-- CURSO (só Ensino Médio) -->
                                     <StackPanel Spacing="8" IsVisible="{Binding CursoAplicavel}">
                                         <TextBlock Text="CURSO *" Classes="coluna-titulo"/>
                                         <ItemsControl ItemsSource="{Binding OpcoesCurso}">
@@ -666,7 +670,6 @@
                                         </ItemsControl>
                                     </StackPanel>
 
-                                    <!-- TURNO -->
                                     <TextBlock Text="TURNO" Classes="coluna-titulo"/>
                                     <ItemsControl ItemsSource="{Binding OpcoesTurnoSelecao}">
                                         <ItemsControl.ItemsPanel>
@@ -691,7 +694,6 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <!-- PERÍODO -->
                                     <TextBlock Text="PERÍODO" Classes="coluna-titulo"/>
                                     <ItemsControl ItemsSource="{Binding OpcoesPeriodoSelecao}">
                                         <ItemsControl.ItemsPanel>
@@ -716,7 +718,6 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <!-- TURMA (preenchida depois de escolher Classe/Curso) -->
                                     <TextBlock Text="TURMA *" Classes="coluna-titulo" Margin="0,6,0,0"/>
                                     <ItemsControl ItemsSource="{Binding OpcoesTurma}">
                                         <ItemsControl.ItemsPanel>
@@ -744,16 +745,14 @@
                                     <TextBox Classes="campo" Text="{Binding SalaMatricula}" IsReadOnly="True"
                                             PlaceholderText="Sala (preenchida automaticamente pela turma)"/>
                                 </StackPanel>
-                                <!-- ============== Passo 4: Documentos ==============
-                                     Cada cartão é uma zona de arrastar-e-soltar (drag-and-drop
-                                     real, tratado no code-behind) e também aceita clique para
-                                     abrir o seletor de ficheiros. -->
+
+                                <!-- Passo 4 -->
                                 <StackPanel Spacing="10" IsVisible="{Binding EhPasso4}">
                                     <TextBlock Text="Arraste o ficheiro para a área correspondente ou clique para selecionar."
-                                               FontSize="11.5" Opacity="0.7" TextWrapping="Wrap"
-                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-
-                                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                                            FontSize="11.5" Opacity="0.7" TextWrapping="Wrap"
+                                            Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                                        ColumnSpacing="10" RowSpacing="10">
 
                                         <Button Grid.Row="0" Grid.Column="0" x:Name="ZonaCertificado" Classes="zona-upload"
                                                 DragDrop.AllowDrop="True" Click="OnZonaUploadClick"
@@ -761,18 +760,18 @@
                                             <StackPanel Spacing="4" HorizontalAlignment="Center">
                                                 <Panel Width="22" Height="22" HorizontalAlignment="Center">
                                                     <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
-                                                                                 Foreground="{StaticResource EmeraldBrush}"
-                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                                                Foreground="{StaticResource EmeraldBrush}"
+                                                                                IsVisible="{Binding TemArquivo}"/>
                                                     <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
-                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                                                Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                IsVisible="{Binding !TemArquivo}"/>
                                                 </Panel>
                                                 <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceBrush}"/>
                                                 <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceVariantBrush}"/>
                                             </StackPanel>
                                         </Button>
 
@@ -782,18 +781,18 @@
                                             <StackPanel Spacing="4" HorizontalAlignment="Center">
                                                 <Panel Width="22" Height="22" HorizontalAlignment="Center">
                                                     <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
-                                                                                 Foreground="{StaticResource EmeraldBrush}"
-                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                                                Foreground="{StaticResource EmeraldBrush}"
+                                                                                IsVisible="{Binding TemArquivo}"/>
                                                     <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
-                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                                                Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                IsVisible="{Binding !TemArquivo}"/>
                                                 </Panel>
                                                 <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceBrush}"/>
                                                 <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceVariantBrush}"/>
                                             </StackPanel>
                                         </Button>
 
@@ -803,22 +802,22 @@
                                             <StackPanel Spacing="4" HorizontalAlignment="Center">
                                                 <Panel Width="22" Height="22" HorizontalAlignment="Center">
                                                     <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
-                                                                                 Foreground="{StaticResource EmeraldBrush}"
-                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                                                Foreground="{StaticResource EmeraldBrush}"
+                                                                                IsVisible="{Binding TemArquivo}"/>
                                                     <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
-                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                                                Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                IsVisible="{Binding !TemArquivo}"/>
                                                 </Panel>
                                                 <StackPanel Orientation="Horizontal" Spacing="3" HorizontalAlignment="Center">
                                                     <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
-                                                               TextAlignment="Center" TextWrapping="Wrap"
-                                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                            TextAlignment="Center" TextWrapping="Wrap"
+                                                            Foreground="{StaticResource OnSurfaceBrush}"/>
                                                     <TextBlock Text="*" FontSize="12" FontWeight="Bold"
-                                                               Foreground="{StaticResource ErrorBrush}"/>
+                                                            Foreground="{StaticResource ErrorBrush}"/>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceVariantBrush}"/>
                                             </StackPanel>
                                         </Button>
 
@@ -828,38 +827,47 @@
                                             <StackPanel Spacing="4" HorizontalAlignment="Center">
                                                 <Panel Width="22" Height="22" HorizontalAlignment="Center">
                                                     <materialIcons:MaterialIcon Kind="CheckCircle" Width="20" Height="20"
-                                                                                 Foreground="{StaticResource EmeraldBrush}"
-                                                                                 IsVisible="{Binding TemArquivo}"/>
+                                                                                Foreground="{StaticResource EmeraldBrush}"
+                                                                                IsVisible="{Binding TemArquivo}"/>
                                                     <materialIcons:MaterialIcon Kind="TrayArrowUp" Width="20" Height="20" Opacity="0.5"
-                                                                                 Foreground="{StaticResource OnSurfaceVariantBrush}"
-                                                                                 IsVisible="{Binding !TemArquivo}"/>
+                                                                                Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                                                                IsVisible="{Binding !TemArquivo}"/>
                                                 </Panel>
                                                 <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceBrush}"/>
                                                 <TextBlock Text="{Binding NomeArquivo}" FontSize="10" Opacity="0.6"
-                                                           TextAlignment="Center" TextWrapping="Wrap"
-                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                                        TextAlignment="Center" TextWrapping="Wrap"
+                                                        Foreground="{StaticResource OnSurfaceVariantBrush}"/>
                                             </StackPanel>
                                         </Button>
-
                                     </Grid>
                                 </StackPanel>
 
                             </StackPanel>
                         </ScrollViewer>
 
-                        <!-- Navegação do wizard -->
-                        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
-                            <Button Grid.Column="0" Classes="link" Content="Cancelar"
-                                    Command="{Binding FecharModalCommand}"/>
-                            <Button Grid.Column="2" Classes="secundario" Content="Voltar"
-                                    Command="{Binding PassoAnteriorCommand}"
-                                    IsVisible="{Binding PodeVoltar}"/>
-                            <Button Grid.Column="3" Classes="primario"
-                                    Content="{Binding TextoBotaoAvancar}"
-                                    Command="{Binding AvancarOuConcluirCommand}"
-                                    IsEnabled="{Binding PodeAvancar}"/>
+                        <!-- Rodapé: erro + botões -->
+                        <Grid Grid.Row="2" RowDefinitions="Auto,Auto" RowSpacing="8">
+
+                            <TextBlock Grid.Row="0"
+                                    Text="{Binding ErroMatricula}"
+                                    IsVisible="{Binding ErroMatricula, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    FontSize="12"
+                                    Foreground="{StaticResource ErrorBrush}"
+                                    TextWrapping="Wrap"/>
+
+                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                                <Button Grid.Column="0" Classes="link" Content="Cancelar"
+                                        Command="{Binding FecharModalCommand}"/>
+                                <Button Grid.Column="2" Classes="secundario" Content="Voltar"
+                                        Command="{Binding PassoAnteriorCommand}"
+                                        IsVisible="{Binding PodeVoltar}"/>
+                                <Button Grid.Column="3" Classes="primario"
+                                        Content="{Binding TextoBotaoAvancar}"
+                                        Command="{Binding AvancarOuConcluirCommand}"
+                                        IsEnabled="{Binding PodeAvancar}"/>
+                            </Grid>
                         </Grid>
 
                     </Grid>

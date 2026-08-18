@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages"
              xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:pagamentos="using:ScoolManager.Desktop.Views.Pages.Pagamentos"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
@@ -583,8 +584,9 @@
         </ScrollViewer>
 
         <!-- ================================================================
-             OVERLAY DOS 4 MODAIS: Editar Aluno, Efetuar Pagamento,
-             Renovar Matrícula, Confirmar Exclusão.
+             OVERLAY DOS 3 MODAIS RESTANTES: Editar Aluno, Renovar Matrícula,
+             Confirmar Exclusão. O fluxo "Efetuar Pagamento" foi extraído para
+             AlunoPagamentosView (ver abaixo), por isso não aparece aqui.
              ================================================================ -->
         <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
             <Border Classes="neo-card" MaxWidth="480" Padding="24"
@@ -608,29 +610,6 @@
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
                             <Button Grid.Column="2" Classes="primario" Content="Guardar" Command="{Binding ConfirmarEditarPerfilCommand}"/>
-                        </Grid>
-                    </StackPanel>
-
-                    <!-- Efetuar Pagamento -->
-                    <StackPanel Spacing="14" IsVisible="{Binding IsEfetuarPagamentoAberto}">
-                        <TextBlock Text="Efetuar pagamento" FontSize="18" FontWeight="SemiBold"
-                                   Foreground="{StaticResource OnSurfaceBrush}"/>
-                        <TextBlock Foreground="{StaticResource OnSurfaceVariantBrush}" FontSize="13" TextWrapping="Wrap">
-                            <Run Text="Aluno: "/><Run Text="{Binding NomeCompleto}" FontWeight="SemiBold"/>
-                        </TextBlock>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <TextBox Classes="campo" Grid.Column="0" PlaceholderText="Mês de referência"/>
-                            <TextBox Classes="campo" Grid.Column="1" PlaceholderText="Valor (Kz)"/>
-                        </Grid>
-                        <ComboBox Classes="campo" HorizontalAlignment="Stretch" PlaceholderText="Método de pagamento">
-                            <ComboBoxItem Content="Dinheiro"/>
-                            <ComboBoxItem Content="Transferência Bancária"/>
-                            <ComboBoxItem Content="TPA / Multicaixa"/>
-                        </ComboBox>
-                        <Grid ColumnDefinitions="*,Auto,Auto">
-                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
-                            <Button Grid.Column="2" Classes="primario" Content="Confirmar Pagamento"
-                                    Command="{Binding ConfirmarEfetuarPagamentoCommand}"/>
                         </Grid>
                     </StackPanel>
 
@@ -672,6 +651,13 @@
                 </StackPanel>
             </Border>
         </Border>
+
+        <!-- ================================================================
+             Fluxo "Efetuar Pagamento" (Legenda -> formulário), totalmente
+             isolado em AlunoPagamentosViewModel/View. Gere a sua própria
+             visibilidade (IsAberto) e overlay/ZIndex internamente.
+             ================================================================ -->
+        <pagamentos:AlunoPagamentosView DataContext="{Binding PagamentosViewModel}"/>
 
     </Panel>
 

@@ -188,9 +188,12 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 
         _ => true
     };
-    
+
     // Cache interno das turmas (para filtrar no wizard)
     private List<Turma> _turmasCache = new();
+
+    // Erros vindo do core
+    [ObservableProperty] private string _erroMatricula = string.Empty;
 
     // =================================================================
     // Construtor + Initialize
@@ -480,6 +483,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     private void AbrirNovoAluno()
     {
         LimparFormularioNovoAluno();
+        ErroMatricula = string.Empty;
         PassoAtual = 1;
         IsNovoAlunoAberto = true;
     }
@@ -495,6 +499,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     private async Task AvancarOuConcluir()
     {
         if (!PodeAvancar) return;
+        ErroMatricula = string.Empty;
 
         if (PassoAtual < TotalDePassos)
         {
@@ -629,10 +634,9 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             await InitializeAsync();
             FecharModal();
         }
-        catch
+        catch(Exception ex)
         {
-            // Em produção: mostrar mensagem de erro no UI
-            FecharModal();
+            ErroMatricula = ex.Message;
         }
     }
 
@@ -679,6 +683,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         SofreDoencaNao = true;
         SofreDoencaSim = false;
         QualDoenca = string.Empty;
+        ContactoAluno = string.Empty;
 
         NomePai = string.Empty;
         ProfissaoPai = string.Empty;

@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Desktop.Models;
+using ScoolManager.Desktop.ViewModels.Pages.Pagamentos;
 
 namespace ScoolManager.Desktop.ViewModels.Pages
 {
@@ -16,6 +17,11 @@ namespace ScoolManager.Desktop.ViewModels.Pages
 /// Centraliza as informações do aluno em 3 abas (Dados Pessoais, Documentação,
 /// Histórico Financeiro) e expõe as 3 ações do cabeçalho (Editar Perfil,
 /// Efetuar Pagamento, Renovar Matrícula) + Excluir Aluno via menu "⋮".
+///
+/// O fluxo de "Efetuar Pagamento" (legenda de categorias + 5 formulários) vive
+/// inteiramente em <see cref="AlunoPagamentosViewModel"/> / AlunoPagamentosView,
+/// para não poluir esta classe. Esta ViewModel apenas abre esse fluxo e escuta
+/// o evento PagamentoConfirmado para atualizar o histórico/saldo.
 ///
 /// IMPORTANTE: esta view não depende do ScoolManager.Core (ainda vazio).
 /// Os dados são locais/mock, assim como em AlunosViewModel. Quando o Core
@@ -31,6 +37,9 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         Documentacao,
         HistoricoFinanceiro
     }
+
+    // ===== Fluxo "Efetuar Pagamento" (separado, ver AlunoPagamentosViewModel) =====
+    public AlunoPagamentosViewModel PagamentosViewModel { get; } = new();
 
     // ===== Cabeçalho =====
     [ObservableProperty] private string _nomeCompleto = string.Empty;
@@ -68,7 +77,13 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         OnPropertyChanged(nameof(SituacaoFundoBrush));
     }
 
-    partial void OnNomeCompletoChanged(string value) => OnPropertyChanged(nameof(Iniciais));
+    partial void OnNomeCompletoChanged(string value)
+    {
+        OnPropertyChanged(nameof(Iniciais));
+        PagamentosViewModel.SetAluno(value, CodigoMatricula);
+    }
+
+    partial void OnCodigoMatriculaChanged(string value) => PagamentosViewModel.SetAluno(NomeCompleto, value);
 
     // ===== Abas =====
     [ObservableProperty] private Aba _abaSelecionada = Aba.DadosPessoais;
@@ -129,53 +144,53 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         OnPropertyChanged(nameof(ProgressoPropinasLabel));
     }
 
-    // ===== Os 4 modais da spec (Editar Aluno, Efetuar Pagamento, Renovar Matrícula, Confirmar Exclusão) =====
+    // ===== Os 3 modais restantes (Editar Aluno, Renovar Matrícula, Confirmar Exclusão).
+    //       "Efetuar Pagamento" passou a viver em PagamentosViewModel. =====
     [ObservableProperty] private bool _isEditarPerfilAberto;
-    [ObservableProperty] private bool _isEfetuarPagamentoAberto;
     [ObservableProperty] private bool _isRenovarMatriculaAberto;
     [ObservableProperty] private bool _isConfirmarExclusaoAberto;
 
     public bool AlgumModalAberto =>
-        IsEditarPerfilAberto || IsEfetuarPagamentoAberto || IsRenovarMatriculaAberto || IsConfirmarExclusaoAberto;
+        IsEditarPerfilAberto || IsRenovarMatriculaAberto || IsConfirmarExclusaoAberto;
 
     partial void OnIsEditarPerfilAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsEfetuarPagamentoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
     partial void OnIsRenovarMatriculaAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
     partial void OnIsConfirmarExclusaoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
 
     [RelayCommand] private void AbrirEditarPerfil() => IsEditarPerfilAberto = true;
-    [RelayCommand] private void AbrirEfetuarPagamento() => IsEfetuarPagamentoAberto = true;
     [RelayCommand] private void AbrirRenovarMatricula() => IsRenovarMatriculaAberto = true;
     [RelayCommand] private void AbrirConfirmarExclusao() => IsConfirmarExclusaoAberto = true;
+
+    /// <summary>Abre o fluxo "Efetuar Pagamento" (Legenda -> formulário), agora isolado em PagamentosViewModel.</summary>
+    [RelayCommand] private void AbrirEfetuarPagamento() => PagamentosViewModel.AbrirCommand.Execute(null);
 
     [RelayCommand]
     private void FecharModal()
     {
         IsEditarPerfilAberto = false;
-        IsEfetuarPagamentoAberto = false;
         IsRenovarMatriculaAberto = false;
         IsConfirmarExclusaoAberto = false;
     }
 
-    // TODO: ligar aos serviços reais quando existirem (persistência, geração de recibo, etc.)
+    // TODO: ligar aos serviços reais quando existirem (persistência, etc.)
     [RelayCommand] private void ConfirmarEditarPerfil() => FecharModal();
     [RelayCommand] private void ConfirmarRenovarMatricula() => FecharModal();
 
-    [RelayCommand]
-    private void ConfirmarEfetuarPagamento()
+    /// <summary>Atualiza histórico/saldo quando PagamentosViewModel confirma um pagamento (qualquer categoria).</summary>
+    private void OnPagamentoConfirmado(object? sender, PagamentoRealizadoEventArgs e)
     {
         // TODO: substituir por chamada real ao módulo Financeiro.
         HistoricoPagamentos.Insert(0, new PagamentoHistoricoItem(
-            mesReferencia: DateTime.Now.ToString("MMMM yyyy"),
-            numeroRecibo: $"#REC-{Random.Shared.Next(1000, 9999)}",
-            valor: "25.000 Kz",
-            data: DateTime.Now.ToString("dd/MM/yyyy"),
+            mesReferencia: e.Descricao,
+            numeroRecibo: e.NumeroRecibo,
+            valor: e.Valor.ToString("N2") + " Kz",
+            data: e.Data.ToString("dd/MM/yyyy"),
             pago: true));
 
-        if (PropinasPagas < PropinasTotais)
-            PropinasPagas++;
-
-        FecharModal();
+        if (e.Categoria == CategoriaPagamento.Propina)
+        {
+            PropinasPagas = Math.Min(PropinasTotais, PropinasPagas + e.QuantidadeReferencias);
+        }
     }
 
     /// <summary>Disparado ao confirmar a exclusão — a View decide como voltar para Alunos.</summary>
@@ -212,6 +227,8 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         _alunoService = alunoService;
         _alunoId = aluno.Id;
 
+        PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
+
         // Pré-preenche o cabeçalho (evita ecrã vazio enquanto carrega)
         NomeCompleto = aluno.Nome;
         CodigoMatricula = aluno.Codigo;
@@ -229,6 +246,8 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     {
         _alunoService = alunoService;
         _alunoId = alunoId;
+
+        PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
     }
 
     public DetalhesAlunoViewModel() : this(

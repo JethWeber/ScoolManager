@@ -1,0 +1,519 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ScoolManager.Desktop.ViewModels.Pages.Pagamentos"
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Class="ScoolManager.Desktop.Views.Pages.Pagamentos.AlunoPagamentosView"
+             x:DataType="vm:AlunoPagamentosViewModel">
+
+    <Design.DataContext>
+        <vm:AlunoPagamentosViewModel/>
+    </Design.DataContext>
+
+    <!-- ================================================================
+         Mesma paleta / linguagem visual de DetalhesAlunoView.axaml.
+         Esta view é 100% autónoma (não depende dos estilos do "pai")
+         para poder ser reutilizada noutras páginas (ex.: Financeiro).
+         ================================================================ -->
+    <UserControl.Resources>
+
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0B1326"/>
+        <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#222A3D"/>
+        <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#2D3449"/>
+        <SolidColorBrush x:Key="OnSurfaceBrush" Color="#DAE2FD"/>
+        <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#C2C6D6"/>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#ADC6FF"/>
+        <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4D8EFF"/>
+        <SolidColorBrush x:Key="OutlineVariantBrush" Color="#424754"/>
+        <SolidColorBrush x:Key="EmeraldBrush" Color="#34D399"/>
+
+        <LinearGradientBrush x:Key="NeoCardGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#171F33" Offset="0"/>
+            <GradientStop Color="#111B2E" Offset="1"/>
+        </LinearGradientBrush>
+
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+
+        <Style Selector="Border.neo-card">
+            <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
+            <Setter Property="BorderBrush" Value="#1A8C909F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BoxShadow" Value="inset 1 1 0 0 #0DFFFFFF, 8 8 16 0 #66000000"/>
+        </Style>
+
+        <Style Selector="Border.neo-card-inner">
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BoxShadow" Value="inset 2 2 5 0 #80000000, inset -1 -1 2 0 #0DFFFFFF"/>
+        </Style>
+
+        <Style Selector="Button.primario">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.primario:pointerover"><Setter Property="Opacity" Value="0.9"/></Style>
+        <Style Selector="Button.primario:disabled"><Setter Property="Opacity" Value="0.4"/></Style>
+
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.link:pointerover"><Setter Property="Opacity" Value="0.8"/></Style>
+
+        <!-- Botão "X" de fechar, canto superior direito dos modais -->
+        <Style Selector="Button.fechar">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.fechar:pointerover"><Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/></Style>
+
+        <!-- Campos "glass", mesma linguagem dos outros modais.
+             NOTA: TextBox e ComboBox têm de ficar em Styles separados - um Selector
+             combinado por vírgula (ex.: "TextBox.campo, ComboBox.campo") faz o Avalonia
+             resolver o tipo-alvo comum como TemplatedControl, que não tem
+             VerticalContentAlignment/HorizontalContentAlignment (AVLN2000/AVLN2200). -->
+        <Style Selector="TextBox.campo">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="TextBox.campo:focus"><Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/></Style>
+        <Style Selector="TextBox.campo:disabled"><Setter Property="Opacity" Value="0.6"/></Style>
+
+        <Style Selector="ComboBox.campo">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+
+        <Style Selector="TextBlock.rotulo">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style Selector="TextBlock.secao-titulo">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceBrush}"/>
+        </Style>
+
+        <!-- Chip de mês (categoria Propina) -->
+        <Style Selector="ToggleButton.chip-mes">
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#22FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ToggleButton.chip-mes:checked">
+            <Setter Property="Background" Value="{StaticResource PrimaryContainerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+
+        <!-- Cartão clicável da legenda -->
+        <Style Selector="Button.categoria-card">
+            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OutlineVariantBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="Button.categoria-card:pointerover">
+            <Setter Property="Background" Value="{StaticResource SurfaceVariantBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryContainerBrush}"/>
+        </Style>
+
+        <!-- Etiqueta colorida (PROPINA / CARTÃO / ...) no topo de cada formulário -->
+        <Style Selector="Border.tag">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="Border.tag TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- Overlay: só ocupa espaço/bloqueia cliques quando o fluxo está aberto -->
+    <Border Background="#99000000" IsVisible="{Binding IsAberto}" ZIndex="600">
+        <Border Classes="neo-card" MaxWidth="920" MaxHeight="640" Padding="0"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid>
+
+                <!-- ==========================================================
+                     PASSO 1 — Legenda dos Tipos de Pagamento
+                     ========================================================== -->
+                <ScrollViewer IsVisible="{Binding IsLegendaAberta}">
+                    <StackPanel Margin="28" Spacing="18">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Efetuar Novo Pagamento" FontSize="18" FontWeight="SemiBold"
+                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                <TextBlock Text="Selecione a categoria do pagamento para continuar."
+                                           FontSize="13" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="fechar" Command="{Binding FecharCommand}">
+                                <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18"/>
+                            </Button>
+                        </Grid>
+
+                        <TextBlock Text="LEGENDA DOS TIPOS DE PAGAMENTO" Classes="secao-titulo" Opacity="0.7"/>
+
+                        <UniformGrid Columns="5" Rows="1">
+                            <Button Classes="categoria-card" Margin="0,0,8,0"
+                                    Command="{Binding SelecionarCategoriaCommand}"
+                                    CommandParameter="{x:Static vm:CategoriaPagamento.Propina}">
+                                <StackPanel Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="SchoolOutline" Width="26" Height="26"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Propina" FontWeight="SemiBold" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Pagamento de mensalidades." FontSize="11" TextWrapping="Wrap"
+                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="categoria-card" Margin="4,0" Command="{Binding SelecionarCategoriaCommand}"
+                                    CommandParameter="{x:Static vm:CategoriaPagamento.Cartao}">
+                                <StackPanel Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="CardAccountDetailsOutline" Width="26" Height="26"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Cartão" FontWeight="SemiBold" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Emissão ou renovação de cartão de estudante." FontSize="11"
+                                                   TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="categoria-card" Margin="4,0" Command="{Binding SelecionarCategoriaCommand}"
+                                    CommandParameter="{x:Static vm:CategoriaPagamento.Prova}">
+                                <StackPanel Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="26" Height="26"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Prova" FontWeight="SemiBold" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Taxas de exames e provas especiais." FontSize="11"
+                                                   TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="categoria-card" Margin="4,0" Command="{Binding SelecionarCategoriaCommand}"
+                                    CommandParameter="{x:Static vm:CategoriaPagamento.Uniforme}">
+                                <StackPanel Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="TshirtCrewOutline" Width="26" Height="26"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Uniforme" FontWeight="SemiBold" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Compra de uniformes escolares." FontSize="11"
+                                                   TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="categoria-card" Margin="8,0,0,0" Command="{Binding SelecionarCategoriaCommand}"
+                                    CommandParameter="{x:Static vm:CategoriaPagamento.Outro}">
+                                <StackPanel Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="DotsHorizontalCircleOutline" Width="26" Height="26"
+                                                                 Foreground="{StaticResource PrimaryBrush}"/>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Outro" FontWeight="SemiBold" FontSize="13"
+                                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        <TextBlock Text="Outros pagamentos não listados acima." FontSize="11"
+                                                   TextWrapping="Wrap" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+
+                        <Border Classes="neo-card-inner" Padding="14">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="InformationOutline" Width="18" Height="18"
+                                                             Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource OnSurfaceVariantBrush}"
+                                           Text="Os valores apresentados são calculados automaticamente com base na categoria escolhida. Podem ser aplicadas multas/juros ou descontos antes de confirmar."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ==========================================================
+                     PASSO 2 — Formulário da categoria escolhida
+                     Layout comum: cabeçalho (tag + título + X) / 2 colunas
+                     (Detalhes da Transação | Método + Resumo) / rodapé com total e ações.
+                     ========================================================== -->
+                <Grid RowDefinitions="Auto,*,Auto" Margin="28" IsVisible="{Binding IsFormularioAberto}">
+
+                    <!-- Cabeçalho -->
+                    <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="6">
+                                <Border Classes="tag" Background="#4D8EFF" IsVisible="{Binding IsPropinaAberta}">
+                                    <TextBlock Text="PROPINA"/>
+                                </Border>
+                                <Border Classes="tag" Background="#8B5CF6" IsVisible="{Binding IsCartaoAberto}">
+                                    <TextBlock Text="CARTÃO"/>
+                                </Border>
+                                <Border Classes="tag" Background="#F59E0B" IsVisible="{Binding IsProvaAberta}">
+                                    <TextBlock Text="PROVA"/>
+                                </Border>
+                                <Border Classes="tag" Background="#2DD4BF" IsVisible="{Binding IsUniformeAberto}">
+                                    <TextBlock Text="UNIFORME"/>
+                                </Border>
+                                <Border Classes="tag" Background="#94A3B8" IsVisible="{Binding IsOutroAberto}">
+                                    <TextBlock Text="OUTRO"/>
+                                </Border>
+                                <TextBlock Text="Efetuar Novo Pagamento" FontSize="18" FontWeight="SemiBold"
+                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                <TextBlock Text="Selecione a categoria e preencha os detalhes da transação."
+                                           FontSize="12" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="fechar" VerticalAlignment="Top" Command="{Binding FecharCommand}">
+                                <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18"/>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Corpo: 2 colunas -->
+                    <ScrollViewer Grid.Row="1">
+                        <Grid ColumnDefinitions="1.4*,*" ColumnSpacing="20">
+
+                            <!-- Coluna esquerda: Detalhes da Transação (varia por categoria) -->
+                            <StackPanel Grid.Column="0" Spacing="14">
+                                <TextBlock Text="DETALHES DA TRANSAÇÃO" Classes="secao-titulo"/>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Classes="rotulo" Text="ESTUDANTE"/>
+                                    <Border Classes="neo-card-inner" Padding="12,10">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="AccountOutline" Width="16" Height="16"
+                                                                         Foreground="{StaticResource PrimaryBrush}"/>
+                                            <TextBlock FontSize="13" Foreground="{StaticResource OnSurfaceBrush}">
+                                                <Run Text="{Binding NomeEstudante}"/><Run Text=" (Nº "/><Run Text="{Binding CodigoMatricula}"/><Run Text=")"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <!--  Propina  -->
+                                <StackPanel Spacing="10" IsVisible="{Binding IsPropinaAberta}">
+                                    <TextBlock Classes="rotulo" Text="SELECIONE OS MESES"/>
+                                    <ItemsControl ItemsSource="{Binding MesesDisponiveis}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><WrapPanel ItemSpacing="8" LineSpacing="8"/></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:MesSelecionavelItem">
+                                                <ToggleButton Classes="chip-mes" Content="{Binding Nome}"
+                                                              IsChecked="{Binding Selecionado, Mode=OneWay}"
+                                                              Command="{Binding $parent[ItemsControl].((vm:AlunoPagamentosViewModel)DataContext).AlternarMesCommand}"
+                                                              CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="{Binding MesesSelecionadosLabel}" FontSize="11"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Classes="rotulo" Text="ANO LECTIVO"/>
+                                            <TextBox Classes="campo" Text="{Binding AnoLectivoPropina}" PlaceholderText="ex.: 2025/2026"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="4">
+                                            <TextBlock Classes="rotulo" Text="CLASSE"/>
+                                            <TextBox Classes="campo" Text="{Binding ClassePropina}" PlaceholderText="ex.: 10ª Classe"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--  Cartão  -->
+                                <StackPanel Spacing="10" IsVisible="{Binding IsCartaoAberto}">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="TIPO DE CARTÃO"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding TiposCartao}"
+                                                  SelectedItem="{Binding TipoCartao}" PlaceholderText="Selecione"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="MOTIVO"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding MotivosCartao}"
+                                                  SelectedItem="{Binding MotivoCartao}" PlaceholderText="Selecione"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!--  Prova  -->
+                                <StackPanel Spacing="10" IsVisible="{Binding IsProvaAberta}">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="TIPO DE PROVA"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding TiposProva}"
+                                                  SelectedItem="{Binding TipoProva}" PlaceholderText="Selecione"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="DISCIPLINA"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding Disciplinas}"
+                                                  SelectedItem="{Binding DisciplinaProva}" PlaceholderText="Selecione"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!--  Uniforme  -->
+                                <StackPanel Spacing="10" IsVisible="{Binding IsUniformeAberto}">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="TIPO DE UNIFORME"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding TiposUniforme}"
+                                                  SelectedItem="{Binding TipoUniforme}" PlaceholderText="Selecione"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="TAMANHO"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding Tamanhos}"
+                                                  SelectedItem="{Binding TamanhoUniforme}" PlaceholderText="Selecione"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!--  Outro  -->
+                                <StackPanel Spacing="10" IsVisible="{Binding IsOutroAberto}">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="TIPO DE PAGAMENTO"/>
+                                        <TextBox Classes="campo" Text="{Binding TipoOutro}" PlaceholderText="ex.: Atividade cultural"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="DESCRIÇÃO"/>
+                                        <TextBox Classes="campo" Text="{Binding DescricaoOutro}" PlaceholderText="ex.: Contribuição para atividades culturais"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="VALOR (KZ)"/>
+                                        <TextBox Classes="campo" Text="{Binding ValorOutro, StringFormat=N2}" PlaceholderText="0,00"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Classes="rotulo" Text="DESCRIÇÃO ADICIONAL (OPCIONAL)"/>
+                                    <TextBox Classes="campo" Height="60" AcceptsReturn="True" TextWrapping="Wrap"
+                                             Text="{Binding DescricaoAdicional}" PlaceholderText="Observações sobre este pagamento"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Coluna direita: Método + Resumo -->
+                            <StackPanel Grid.Column="1" Spacing="16">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="MÉTODO" Classes="secao-titulo"/>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="FORMA DE PAGAMENTO"/>
+                                        <ComboBox Classes="campo" ItemsSource="{Binding FormasPagamento}"
+                                                  SelectedItem="{Binding FormaPagamento}" PlaceholderText="Selecione"
+                                                  HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="rotulo" Text="Nº DO TALÃO / COMPROVATIVO"/>
+                                        <TextBox Classes="campo" Text="{Binding NumeroTalao}" PlaceholderText="0000 0000 0000..."/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Border Classes="neo-card-inner" Padding="16">
+                                    <StackPanel Spacing="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="ReceiptTextOutline" Width="16" Height="16"
+                                                                         Foreground="{StaticResource PrimaryBrush}"/>
+                                            <TextBlock Text="Resumo" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                        </StackPanel>
+                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal" FontSize="12"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SubtotalLabel}" FontSize="12"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Multas/Juros" FontSize="12"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MultasJurosLabel}" FontSize="12"
+                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Desconto" FontSize="12"
+                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DescontoLabel}" FontSize="12"
+                                                       Foreground="{StaticResource EmeraldBrush}"/>
+                                        </Grid>
+                                        <Border BorderThickness="0,1,0,0" BorderBrush="{StaticResource OutlineVariantBrush}" Padding="0,8,0,0">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Text="Total" FontSize="13" FontWeight="Bold"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding TotalLabel}" FontSize="13" FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                        </Grid>
+                    </ScrollViewer>
+
+                    <!-- Rodapé: total + ações -->
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,16,0,0" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Classes="rotulo" Text="TOTAL A PAGAR" Margin="0"/>
+                            <TextBlock Text="{Binding TotalLabel}" FontSize="22" FontWeight="Bold"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="link" Content="Voltar" Command="{Binding VoltarParaLegendaCommand}"/>
+                        <Button Grid.Column="2" Classes="link" Content="Cancelar" Command="{Binding FecharCommand}"/>
+                        <Button Grid.Column="3" Classes="primario" Content="Confirmar Pagamento"
+                                Command="{Binding ConfirmarPagamentoCommand}"/>
+                    </Grid>
+
+                </Grid>
+
+            </Grid>
+        </Border>
+    </Border>
+
+</UserControl>
