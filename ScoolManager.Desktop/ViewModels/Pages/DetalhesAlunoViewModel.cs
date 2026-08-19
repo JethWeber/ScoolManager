@@ -240,7 +240,9 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         Telefone = aluno.Telefone;
         NomePai = aluno.Encarregado;
         ContactoPai = aluno.Telefone;
-        // NÃO chamar PreencherDadosMock()
+        
+        Pagamentos = new AlunoPagamentosViewModel(escolaService);
+        Pagamentos.PagamentoConfirmado += OnPagamentoConfirmado;
     }
 
     public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService)
