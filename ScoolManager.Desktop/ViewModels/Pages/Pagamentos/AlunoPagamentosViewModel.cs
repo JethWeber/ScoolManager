@@ -244,10 +244,11 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         // ===== Navegação do fluxo =====
 
         /// <summary>Chamado pela view "pai" antes de abrir o modal, para identificar o aluno.</summary>
-        public void SetAluno(string nomeCompleto, string codigoMatricula)
+        public void SetAluno(string nomeCompleto, string codigoMatricula, string anoLectivo)
         {
             NomeEstudante = nomeCompleto;
             CodigoMatricula = codigoMatricula;
+            AnoLectivoPropina = anoLectivo;
         }
 
         [RelayCommand]

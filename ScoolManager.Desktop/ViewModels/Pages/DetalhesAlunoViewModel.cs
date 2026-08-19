@@ -80,10 +80,14 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     partial void OnNomeCompletoChanged(string value)
     {
         OnPropertyChanged(nameof(Iniciais));
-        PagamentosViewModel.SetAluno(value, CodigoMatricula);
+        PagamentosViewModel.SetAluno(value, CodigoMatricula, AnoLectivo);
     }
 
-    partial void OnCodigoMatriculaChanged(string value) => PagamentosViewModel.SetAluno(NomeCompleto, value);
+    partial void OnCodigoMatriculaChanged(string value) =>
+        PagamentosViewModel.SetAluno(NomeCompleto, value, AnoLectivo);
+
+    partial void OnAnoLectivoChanged(string value) =>
+        PagamentosViewModel.SetAluno(NomeCompleto, CodigoMatricula, value);
 
     // ===== Abas =====
     [ObservableProperty] private Aba _abaSelecionada = Aba.DadosPessoais;
