@@ -31,6 +31,7 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
 {
     private readonly IAlunoService _alunoService;
     private readonly int? _alunoId;
+    public AlunoPagamentosViewModel Pagamentos { get; }
     public enum Aba
     {
         DadosPessoais,
@@ -242,12 +243,13 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         // NÃO chamar PreencherDadosMock()
     }
 
-    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService)
+    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService)
     {
         _alunoService = alunoService;
         _alunoId = alunoId;
 
-        PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
+        Pagamentos = new AlunoPagamentosViewModel(escolaService);
+        Pagamentos.PagamentoConfirmado += OnPagamentoConfirmado;
     }
 
     public DetalhesAlunoViewModel() : this(
