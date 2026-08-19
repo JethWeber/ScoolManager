@@ -12,4 +12,5 @@ global using ScoolManager.Desktop.Models;
 global using Material.Icons;
 global using ScoolManager.Desktop.ViewModels.Pages;
 global using System.Threading.Tasks;
-
+global using ScoolManager.Core.Abstractions.Services;
+global using ScoolManager.Core.Entities.Escola;

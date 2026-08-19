@@ -16,6 +16,8 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         Outro
     }
 
+    
+
     /// <summary>Dados do pagamento confirmado, para quem escuta (DetalhesAlunoViewModel).</summary>
     public sealed class PagamentoRealizadoEventArgs : EventArgs
     {
@@ -67,6 +69,13 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
     /// </summary>
     public partial class AlunoPagamentosViewModel : ViewModelBase
     {
+        private readonly IEscolaService _escolaService;
+
+        public ObservableCollection<AnoLectivo> AnosLectivosOpcoes { get; } = new();
+        public ObservableCollection<Classe> ClassesOpcoes { get; } = new();
+
+        [ObservableProperty] private AnoLectivo? _anoLectivoSeleccionado;
+        [ObservableProperty] private Classe? _classeSeleccionada;
         // ===== Identificação do aluno (definida pelo "pai" antes de abrir) =====
         [ObservableProperty] private string _nomeEstudante = string.Empty;
         [ObservableProperty] private string _codigoMatricula = string.Empty;
