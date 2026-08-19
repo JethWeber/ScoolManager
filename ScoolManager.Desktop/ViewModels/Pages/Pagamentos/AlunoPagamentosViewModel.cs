@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ScoolManager.Core.Entities.Alunos;
+using ScoolManager.Core.Services.Alunos;
 
 namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 {
@@ -15,8 +17,6 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         Uniforme,
         Outro
     }
-
-    
 
     /// <summary>Dados do pagamento confirmado, para quem escuta (DetalhesAlunoViewModel).</summary>
     public sealed class PagamentoRealizadoEventArgs : EventArgs
@@ -69,14 +69,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
     /// </summary>
     public partial class AlunoPagamentosViewModel : ViewModelBase
     {
-        private readonly IEscolaService _escolaService;
-
-        public ObservableCollection<AnoLectivo> AnosLectivosOpcoes { get; } = new();
-        public ObservableCollection<Classe> ClassesOpcoes { get; } = new();
-
-        [ObservableProperty] private AnoLectivo? _anoLectivoSeleccionado;
-        [ObservableProperty] private Classe? _classeSeleccionada;
-
+        
         // ===== Identificação do aluno (definida pelo "pai" antes de abrir) =====
         [ObservableProperty] private string _nomeEstudante = string.Empty;
         [ObservableProperty] private string _codigoMatricula = string.Empty;
@@ -94,10 +87,6 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         public bool IsUniformeAberto => CategoriaSelecionada == CategoriaPagamento.Uniforme;
         public bool IsOutroAberto => CategoriaSelecionada == CategoriaPagamento.Outro;
 
-        public AlunoPagamentosViewModel(IEscolaService escolaService)
-        {
-            _escolaService = escolaService;
-        }
         partial void OnIsAbertoChanged(bool value)
         {
             OnPropertyChanged(nameof(IsLegendaAberta));
@@ -160,6 +149,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
             new[] { "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho" }
                 .Select(m => new MesSelecionavelItem(m)));
 
+         
         [ObservableProperty] private string _anoLectivoPropina = string.Empty;
         [ObservableProperty] private string? _classePropina;
 
