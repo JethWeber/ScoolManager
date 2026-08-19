@@ -76,6 +76,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 
         [ObservableProperty] private AnoLectivo? _anoLectivoSeleccionado;
         [ObservableProperty] private Classe? _classeSeleccionada;
+
         // ===== Identificação do aluno (definida pelo "pai" antes de abrir) =====
         [ObservableProperty] private string _nomeEstudante = string.Empty;
         [ObservableProperty] private string _codigoMatricula = string.Empty;
@@ -93,6 +94,10 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         public bool IsUniformeAberto => CategoriaSelecionada == CategoriaPagamento.Uniforme;
         public bool IsOutroAberto => CategoriaSelecionada == CategoriaPagamento.Outro;
 
+        public AlunoPagamentosViewModel(IEscolaService escolaService)
+        {
+            _escolaService = escolaService;
+        }
         partial void OnIsAbertoChanged(bool value)
         {
             OnPropertyChanged(nameof(IsLegendaAberta));
