@@ -2,8 +2,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Core.Services.Alunos;
 
@@ -66,10 +68,14 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
     ///
     /// DetalhesAlunoViewModel apenas subscreve PagamentoConfirmado para atualizar o
     /// histórico financeiro / saldo devedor - não conhece os detalhes de cada categoria.
+    ///
+    /// Ano Lectivo e Classe (categoria Propina) deixaram de ser texto livre: vêm do
+    /// ScoolManager.Core (IEscolaService) via CarregarOpcoesAsync, chamado pelo "pai"
+    /// (DetalhesAlunoViewModel.InitializeAsync). Nome/Código/Ano Lectivo/Classe do aluno
+    /// continuam a ser apenas exibidos - nunca editáveis pelo utilizador.
     /// </summary>
     public partial class AlunoPagamentosViewModel : ViewModelBase
     {
-        
         // ===== Identificação do aluno (definida pelo "pai" antes de abrir) =====
         [ObservableProperty] private string _nomeEstudante = string.Empty;
         [ObservableProperty] private string _codigoMatricula = string.Empty;
@@ -149,7 +155,12 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
             new[] { "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho" }
                 .Select(m => new MesSelecionavelItem(m)));
 
-         
+        /// <summary>Opções do combobox "Ano Lectivo", carregadas do Core (ver CarregarOpcoesAsync).</summary>
+        public ObservableCollection<string> AnosLectivosDisponiveis { get; } = new();
+
+        /// <summary>Opções do combobox "Classe", carregadas do Core (ver CarregarOpcoesAsync).</summary>
+        public ObservableCollection<string> ClassesDisponiveis { get; } = new();
+
         [ObservableProperty] private string _anoLectivoPropina = string.Empty;
         [ObservableProperty] private string? _classePropina;
 
@@ -243,12 +254,38 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 
         // ===== Navegação do fluxo =====
 
-        /// <summary>Chamado pela view "pai" antes de abrir o modal, para identificar o aluno.</summary>
-        public void SetAluno(string nomeCompleto, string codigoMatricula, string anoLectivo)
+        /// <summary>Chamado pela view "pai" antes de abrir o modal, para identificar o aluno (dados só de leitura).</summary>
+        public void SetAluno(string nomeCompleto, string codigoMatricula, string anoLectivo, string classe)
         {
             NomeEstudante = nomeCompleto;
             CodigoMatricula = codigoMatricula;
             AnoLectivoPropina = anoLectivo;
+            ClassePropina = classe;
+        }
+
+        /// <summary>
+        /// Carrega as opções dos comboboxes "Ano Lectivo" e "Classe" a partir do Core.
+        /// Chamado pelo "pai" (DetalhesAlunoViewModel.InitializeAsync) - esta ViewModel não
+        /// guarda referência ao IEscolaService, só usa a instância recebida aqui.
+        /// </summary>
+        public async Task CarregarOpcoesAsync(IEscolaService escolaService)
+        {
+            try
+            {
+                var anos = await escolaService.ObterAnosLectivosAsync();
+                AnosLectivosDisponiveis.Clear();
+                foreach (var ano in anos.OrderByDescending(a => a.DataInicio))
+                    AnosLectivosDisponiveis.Add(ano.Nome);
+
+                var classes = await escolaService.ObterClassesAsync();
+                ClassesDisponiveis.Clear();
+                foreach (var classe in classes.OrderBy(c => c.Numero))
+                    ClassesDisponiveis.Add($"{classe.Numero}ª Classe");
+            }
+            catch
+            {
+                // Mantém as listas como estavam (comboboxes ficam vazios/preservam seleção actual).
+            }
         }
 
         [RelayCommand]
@@ -286,7 +323,9 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 
             foreach (var mes in MesesDisponiveis) mes.Selecionado = false;
             OnPropertyChanged(nameof(MesesSelecionadosLabel));
-            ClassePropina = null;
+            // NOTA: AnoLectivoPropina/ClassePropina NÃO são limpos aqui de propósito -
+            // são dados do aluno (SetAluno), não do formulário; devem manter-se entre
+            // categorias e após Fechar/Cancelar.
 
             TipoCartao = null;
             MotivoCartao = null;

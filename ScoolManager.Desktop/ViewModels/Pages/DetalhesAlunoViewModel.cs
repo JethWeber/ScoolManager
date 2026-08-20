@@ -1,5 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,16 +22,16 @@ namespace ScoolManager.Desktop.ViewModels.Pages
 ///
 /// O fluxo de "Efetuar Pagamento" (legenda de categorias + 5 formulários) vive
 /// inteiramente em <see cref="AlunoPagamentosViewModel"/> / AlunoPagamentosView,
-/// para não poluir esta classe. Esta ViewModel apenas abre esse fluxo e escuta
-/// o evento PagamentoConfirmado para atualizar o histórico/saldo.
-///
-/// IMPORTANTE: esta view não depende do ScoolManager.Core (ainda vazio).
-/// Os dados são locais/mock, assim como em AlunosViewModel. Quando o Core
-/// tiver as entidades reais, trocar estes campos por bindings ao serviço.
+/// para não poluir esta classe. Esta ViewModel apenas abre esse fluxo, escuta
+/// o evento PagamentoConfirmado para atualizar o histórico/saldo, e é responsável
+/// por alimentar o PagamentosViewModel com os dados do aluno (nome, código, ano
+/// lectivo, classe) e com as opções de Ano Lectivo/Classe vindas do Core - nenhum
+/// desses campos é preenchido pelo utilizador dentro do fluxo de pagamento.
 /// </summary>
 public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
 {
     private readonly IAlunoService _alunoService;
+    private readonly IEscolaService _escolaService;
     private readonly int? _alunoId;
     public enum Aba
     {
@@ -80,14 +82,20 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     partial void OnNomeCompletoChanged(string value)
     {
         OnPropertyChanged(nameof(Iniciais));
-        PagamentosViewModel.SetAluno(value, CodigoMatricula, AnoLectivo);
+        PagamentosViewModel.SetAluno(value, CodigoMatricula, AnoLectivo, Classe);
     }
 
-    partial void OnCodigoMatriculaChanged(string value) =>
-        PagamentosViewModel.SetAluno(NomeCompleto, value, AnoLectivo);
+    partial void OnClasseChanged(string value) =>
+        PagamentosViewModel.SetAluno(NomeCompleto, CodigoMatricula, AnoLectivo, value);
 
-    partial void OnAnoLectivoChanged(string value) =>
-        PagamentosViewModel.SetAluno(NomeCompleto, CodigoMatricula, value);
+    partial void OnCodigoMatriculaChanged(string value) =>
+        PagamentosViewModel.SetAluno(NomeCompleto, value, AnoLectivo, Classe);
+
+    partial void OnAnoLectivoChanged(string value)
+    {
+        PagamentosViewModel.SetAluno(NomeCompleto, CodigoMatricula, value, Classe);
+        AbrirEfetuarPagamentoCommand.NotifyCanExecuteChanged();
+    }
 
     // ===== Abas =====
     [ObservableProperty] private Aba _abaSelecionada = Aba.DadosPessoais;
@@ -165,8 +173,15 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     [RelayCommand] private void AbrirRenovarMatricula() => IsRenovarMatriculaAberto = true;
     [RelayCommand] private void AbrirConfirmarExclusao() => IsConfirmarExclusaoAberto = true;
 
-    /// <summary>Abre o fluxo "Efetuar Pagamento" (Legenda -> formulário), agora isolado em PagamentosViewModel.</summary>
-    [RelayCommand] private void AbrirEfetuarPagamento() => PagamentosViewModel.AbrirCommand.Execute(null);
+    /// <summary>
+    /// Abre o fluxo "Efetuar Pagamento" (Legenda -> formulário), isolado em PagamentosViewModel.
+    /// Só fica habilitado depois de AnoLectivo ser carregado em InitializeAsync (ver PodeAbrirPagamento) -
+    /// evita abrir o formulário de pagamento sem um ano lectivo confiável associado ao aluno.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(PodeAbrirPagamento))]
+    private void AbrirEfetuarPagamento() => PagamentosViewModel.AbrirCommand.Execute(null);
+
+    private bool PodeAbrirPagamento() => !string.IsNullOrWhiteSpace(AnoLectivo);
 
     [RelayCommand]
     private void FecharModal()
@@ -226,9 +241,10 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     // ================================================================
     // Construtores
     // ================================================================
-    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService)
+    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService, IEscolaService escolaService)
     {
         _alunoService = alunoService;
+        _escolaService = escolaService;
         _alunoId = aluno.Id;
 
         PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
@@ -246,9 +262,10 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         // NÃO chamar PreencherDadosMock()
     }
 
-    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService)
+    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService)
     {
         _alunoService = alunoService;
+        _escolaService = escolaService;
         _alunoId = alunoId;
 
         PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
@@ -256,12 +273,18 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
 
     public DetalhesAlunoViewModel() : this(
         new AlunoListItemModel(0, "2026/0000", "Aluno Exemplo", "", "", "", "", "", true),
+        null!,
         null!)
     {
     }
 
     public async Task InitializeAsync()
     {
+        // Opções de Ano Lectivo/Classe do formulário de pagamento vêm sempre do Core,
+        // independentemente de o aluno já ter sido carregado (não dependem do _alunoId).
+        if (_escolaService is not null)
+            await PagamentosViewModel.CarregarOpcoesAsync(_escolaService);
+
         if (_alunoId is null or <= 0 || _alunoService is null)
             return;
 

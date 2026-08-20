@@ -69,14 +69,15 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         var detalhes = new DetalhesAlunoViewModel(
             aluno,
-            App.Services.GetRequiredService<IAlunoService>());
+            App.Services.GetRequiredService<IAlunoService>(),
+            App.Services.GetRequiredService<IEscolaService>());
 
         detalhes.VoltarParaAlunosSolicitado += (_, _) => CurrentPage = CriarPaginaAlunos();
         detalhes.ExclusaoConfirmada += (_, _) => CurrentPage = CriarPaginaAlunos();
 
         CurrentPage = detalhes;
 
-        // Carrega dados completos do Core
+        // Carrega dados completos do Core (inclui as opções de Ano Lectivo/Classe do pagamento)
         if (detalhes is IAsyncInitializable init)
             await init.InitializeAsync();
     }
