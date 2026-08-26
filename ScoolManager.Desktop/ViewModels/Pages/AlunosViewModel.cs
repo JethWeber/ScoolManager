@@ -1,9 +1,12 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Dtos.Alunos;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Core.Entities.Escola;
 using ScoolManager.Core.Enums;
+using ScoolManager.Desktop.Services;
 using CoreTurno = ScoolManager.Core.Enums.TurnoLetivo;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
@@ -17,10 +20,66 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 {
     private readonly IAlunoService _alunoService;
     private readonly IEscolaService _escolaService;
+    private readonly IArmazenamentoArquivosService _armazenamento;
+    private readonly IFilePickerService _filePicker;
 
     /// <summary>Fonte completa (sem filtro de UI) para reaplicar pesquisa/filtros localmente.</summary>
     private readonly List<AlunoListItemModel> _todosAlunos = new();
 
+    /// <summary>Cache dos anos lectivos (para resolver o Nome a partir do AnoLectivoId da turma, na hora de salvar documentos).</summary>
+    private List<AnoLectivo> _anosLectivosCache = new();
+
+    // =================================================================
+    // FIX: propriedades que, ao mudar, devem forçar o recálculo de
+    // "PodeAvancar". Antes disso, PodeAvancar (propriedade calculada, sem
+    // [ObservableProperty]) só era reavaliado nos poucos pontos onde
+    // alguém lembrava de chamar OnPropertyChanged(nameof(PodeAvancar))
+    // manualmente (ex.: só no OnNomeCompletoChanged, só no
+    // OnPassoAtualChanged). Isso causava o bug relatado: preencher todos
+    // os campos do Passo 1/2 não habilitava o botão "Avançar" até mexer
+    // de novo no campo Nome (ou ir e voltar de passo), porque nenhum dos
+    // OUTROS campos (DataNascimento, Sexo, Naturalidade, NomePai,
+    // NomeMae, etc.) disparava a notificação.
+    //
+    // Com este override central, QUALQUER propriedade listada aqui
+    // atualiza PodeAvancar automaticamente assim que muda — não é mais
+    // preciso lembrar de adicionar um "OnXxxChanged" para cada campo novo.
+    // =================================================================
+    private static readonly HashSet<string> PropriedadesQueAfetamPodeAvancar = new()
+    {
+        // Passo 1 — Dados do Aluno
+        nameof(NomeCompleto),
+        nameof(DataNascimento),
+        nameof(Sexo),
+        nameof(Naturalidade),
+        nameof(Provincia),
+        nameof(Pais),
+        nameof(NumeroBiCedulaAluno),
+        nameof(Morada),
+        nameof(SofreDoencaSim),
+        nameof(SofreDoencaNao),
+        nameof(QualDoenca),
+
+        // Passo 2 — Encarregados
+        nameof(NomePai),
+        nameof(NomeMae),
+
+        // Passo 3 — Enquadramento
+        nameof(ClasseMatricula),
+        nameof(CursoMatricula),
+        nameof(TurmaMatricula),
+
+        // Navegação do wizard (troca de passo também deve reavaliar)
+        nameof(PassoAtual)
+    };
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName is not null && PropriedadesQueAfetamPodeAvancar.Contains(e.PropertyName))
+            OnPropertyChanged(nameof(PodeAvancar));
+    }
 
     // =================================================================
     // Opções de filtro (populadas a partir do Core)
@@ -199,10 +258,16 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     // Construtor + Initialize
     // =================================================================
 
-    public AlunosViewModel(IAlunoService alunoService, IEscolaService escolaService)
+    public AlunosViewModel(
+        IAlunoService alunoService,
+        IEscolaService escolaService,
+        IArmazenamentoArquivosService armazenamento,
+        IFilePickerService filePicker)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
+        _armazenamento = armazenamento;
+        _filePicker = filePicker;
 
         // Valores iniciais dos filtros (serão reescritos no InitializeAsync)
         Classes.Add("Todas as Classes");
@@ -211,6 +276,11 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         _statusSelecionado = StatusOptions[0];
         _anoLetivoSelecionado = AnosLetivos[0];
 
+        // FIX: o item de documento notifica TemArquivo quando NomeArquivo muda
+        // (ver DocumentoRequeridoItem.OnNomeArquivoChanged). Essa notificação
+        // sobe até aqui e, como "TemArquivo" não está na whitelist central,
+        // isso é tratado à parte: forçamos o recálculo de PodeAvancar sempre
+        // que qualquer um dos 4 documentos muda.
         foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
             documento.PropertyChanged += (_, _) => OnPropertyChanged(nameof(PodeAvancar));
     }
@@ -225,6 +295,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             var cursos = await _escolaService.ObterCursosAsync();
             var salas = await _escolaService.ObterSalasAsync();
             _turmasCache = (await _escolaService.ObterTurmasAsync()).ToList();
+            _anosLectivosCache = anos.ToList();
 
             // Opções de selecção dos botões do add alunoModal
             OpcoesClasse.Clear();
@@ -555,15 +626,42 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         SalaMatricula = TurmaMatricula?.Sala?.Nome ?? string.Empty;
     }
 
+    /// <summary>Abre o diálogo nativo de seleção de arquivo para o documento do passo 4.</summary>
+    [RelayCommand]
+    private async Task SelecionarArquivoDocumento(DocumentoRequeridoItem item)
+    {
+        var caminho = await _filePicker.SelecionarArquivoAsync(
+            $"Selecionar {item.Tipo}", "png", "jpg", "jpeg", "pdf");
+
+        if (caminho is not null)
+            item.DefinirArquivoSelecionado(caminho);
+    }
+
+    [RelayCommand]
+    private void RemoverArquivoDocumento(DocumentoRequeridoItem item) => item.LimparArquivo();
+
     private async Task ConcluirNovoAluno()
     {
         if (TurmaMatricula is null) return;
+
+        var anoLectivoNome = _anosLectivosCache.FirstOrDefault(a => a.Id == TurmaMatricula.AnoLectivoId)?.Nome;
+        if (anoLectivoNome is null)
+        {
+            ErroMatricula = "Não foi possível determinar o ano lectivo da turma selecionada.";
+            return;
+        }
+
+        var codigoGerado = await GerarNovoCodigoAsync();
+
+        // Nomes dos arquivos já gravados em disco nesta tentativa — usados para
+        // rollback caso a criação do aluno falhe depois dos arquivos serem salvos.
+        var documentosSalvos = new List<string>();
 
         try
         {
             var aluno = new Aluno
             {
-                Codigo = await GerarNovoCodigoAsync(),
+                Codigo = codigoGerado,
                 Nome = NomeCompleto.Trim(),
                 DataNascimento = DataNascimento?.DateTime,
                 Genero = Sexo,
@@ -612,20 +710,23 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
                 });
             }
 
-            if (BiCedulaDocumento.TemArquivo)
+            // Salva os arquivos físicos em disco (Documents/ScoolManager/Dados/{ano}/Alunos/{codigo}/)
+            // e anexa os metadados resultantes ao aluno.
+            foreach (var (item, tipo) in new[]
             {
-                aluno.Documentos.Add(new DocumentoAluno
+                (BiCedulaDocumento, TipoDocumentoAluno.BiCedula),
+                (CertificadoDocumento, TipoDocumentoAluno.Certificado),
+                (FotoDocumento, TipoDocumentoAluno.FotoTipoPasse),
+                (AtestadoDocumento, TipoDocumentoAluno.AtestadoMedico)
+            })
+            {
+                var documento = await CriarDocumentoAsync(item, tipo, anoLectivoNome, aluno.Codigo, aluno.Nome);
+                if (documento is not null)
                 {
-                    Tipo = TipoDocumentoAluno.BiCedula,
-                    NomeArquivo = BiCedulaDocumento.NomeArquivo,
-                    DataUpload = DateTime.Now
-                });
+                    aluno.Documentos.Add(documento);
+                    documentosSalvos.Add(documento.NomeArquivo!);
+                }
             }
-
-            // Outros documentos opcionais
-            AdicionarDocumentoSeExistir(aluno, CertificadoDocumento, TipoDocumentoAluno.Certificado);
-            AdicionarDocumentoSeExistir(aluno, FotoDocumento, TipoDocumentoAluno.FotoTipoPasse);
-            AdicionarDocumentoSeExistir(aluno, AtestadoDocumento, TipoDocumentoAluno.AtestadoMedico);
 
             _alunoService.ValidarCampos(aluno);
             await _alunoService.CriarAsync(aluno, aluno.Encarregados);
@@ -634,21 +735,31 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
             await InitializeAsync();
             FecharModal();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
+            // Rollback: o registo no banco não foi criado, então remove do disco
+            // qualquer arquivo já gravado nesta tentativa, para não ficar órfão.
+            foreach (var nomeArquivo in documentosSalvos)
+                _armazenamento.RemoverDocumentoAluno(anoLectivoNome, codigoGerado, nomeArquivo);
+
             ErroMatricula = ex.Message;
         }
     }
 
-    private static void AdicionarDocumentoSeExistir(Aluno aluno, DocumentoRequeridoItem item, TipoDocumentoAluno tipo)
+    /// <summary>Copia o arquivo escolhido no diálogo para a pasta oficial do aluno e devolve o metadado a persistir.</summary>
+    private async Task<DocumentoAluno?> CriarDocumentoAsync(
+        DocumentoRequeridoItem item, TipoDocumentoAluno tipo, string anoLectivo, string codigoAluno, string nomeCompleto)
     {
-        if (!item.TemArquivo) return;
-        aluno.Documentos.Add(new DocumentoAluno
-        {
-            Tipo = tipo,
-            NomeArquivo = item.NomeArquivo,
-            DataUpload = DateTime.Now
-        });
+        if (!item.TemArquivo || item.CaminhoOrigem is null)
+            return null;
+
+        await using var stream = File.OpenRead(item.CaminhoOrigem);
+        var extensao = Path.GetExtension(item.CaminhoOrigem);
+
+        var nomeArquivoSalvo = await _armazenamento.SalvarDocumentoAlunoAsync(
+            anoLectivo, codigoAluno, nomeCompleto, tipo, extensao, stream);
+
+        return new DocumentoAluno { Tipo = tipo, NomeArquivo = nomeArquivoSalvo, DataUpload = DateTime.Now };
     }
 
     /// <summary>
@@ -701,7 +812,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         TurmasDisponiveis.Clear();
 
         foreach (var documento in new[] { CertificadoDocumento, FotoDocumento, BiCedulaDocumento, AtestadoDocumento })
-            documento.NomeArquivo = DocumentoRequeridoItem.SemFicheiroPlaceholder;
+            documento.LimparArquivo();
     }
 
     // ===== Outros modais =====
@@ -738,12 +849,27 @@ public partial class DocumentoRequeridoItem : ObservableObject
 
     [ObservableProperty] private string _nomeArquivo = SemFicheiroPlaceholder;
 
-    public bool TemArquivo => NomeArquivo != SemFicheiroPlaceholder;
+    /// <summary>Caminho real do arquivo no disco, escolhido pelo diálogo. Só existe até o cadastro ser concluído.</summary>
+    public string? CaminhoOrigem { get; private set; }
+
+    public bool TemArquivo => CaminhoOrigem is not null;
 
     public DocumentoRequeridoItem(string tipo, bool obrigatorio)
     {
         Tipo = tipo;
         Obrigatorio = obrigatorio;
+    }
+
+    public void DefinirArquivoSelecionado(string caminhoCompleto)
+    {
+        CaminhoOrigem = caminhoCompleto;
+        NomeArquivo = Path.GetFileName(caminhoCompleto); // dispara OnNomeArquivoChanged → notifica TemArquivo
+    }
+
+    public void LimparArquivo()
+    {
+        CaminhoOrigem = null;
+        NomeArquivo = SemFicheiroPlaceholder;
     }
 
     partial void OnNomeArquivoChanged(string value) => OnPropertyChanged(nameof(TemArquivo));
