@@ -8,9 +8,12 @@ using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ScoolManager.Core.Abstractions;
+using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Extensions;
 using ScoolManager.Core.Persistence;
+using ScoolManager.Core.Services.Infra;
 using ScoolManager.Desktop.Infrastructure;
+using ScoolManager.Desktop.Services;
 using ScoolManager.Desktop.ViewModels;
 using ScoolManager.Desktop.ViewModels.Pages;
 using ScoolManager.Desktop.Views;
@@ -70,6 +73,14 @@ public partial class App : Application
         // TEMPORÁRIO — trocar por WeberTechLicenseGate assim que o
         // WeberTech.Licensing estiver referenciável (ver Infrastructure/DevLicenseGate.cs).
         services.AddSingleton<ILicenseGate, DevLicenseGate>();
+
+        // TODO: mover para dentro de AddScoolManagerCore() quando essa extensão
+        // for revisitada — por ora fica registado aqui para não mexer num
+        // arquivo do Core que não está neste escopo de edição.
+        services.AddSingleton<IArmazenamentoArquivosService, ArmazenamentoArquivosService>();
+
+        // Abstração de UI (diálogo de arquivo) — implementação específica do Avalonia.
+        services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
 
         RegistarViewModels(services);
 
