@@ -77,6 +77,21 @@ public partial class AlunosView : UserControl
     // ficheiros). O DataContext de cada zona já é o DocumentoRequeridoItem
     // correspondente (ver AlunosView.axaml), por isso não é preciso mapear
     // o botão para a propriedade certa.
+    //
+    // FIX: os dois handlers (drop e click) escreviam diretamente em
+    // "documento.NomeArquivo = ficheiro.Name", o que só atualizava o nome
+    // exibido na UI e NUNCA preenchia "CaminhoOrigem" (propriedade de setter
+    // privado, só atribuída dentro de DefinirArquivoSelecionado). Isso
+    // causava dois problemas:
+    //   1) "TemArquivo" (que depende de CaminhoOrigem != null) ficava
+    //      sempre false, então o Passo 4 nunca habilitava o botão
+    //      "Concluir Matrícula" mesmo com o(s) ficheiro(s) "selecionado(s)".
+    //   2) Mesmo se habilitasse, ConcluirNovoAluno() -> CriarDocumentoAsync
+    //      chamaria File.OpenRead(item.CaminhoOrigem) com CaminhoOrigem
+    //      nulo, quebrando com NullReferenceException.
+    // A correção é sempre passar pelo caminho real em disco e chamar
+    // DefinirArquivoSelecionado(caminho), que seta CaminhoOrigem e
+    // NomeArquivo (e dispara a notificação de TemArquivo) de uma vez.
     // ================================================================
 
     private void OnZonaDragEnter(object? sender, DragEventArgs e)
@@ -107,8 +122,10 @@ public partial class AlunosView : UserControl
         if (zona.DataContext is not DocumentoRequeridoItem documento) return;
 
         var ficheiro = e.DataTransfer?.TryGetFiles()?.FirstOrDefault();
-        if (ficheiro is not null)
-            documento.NomeArquivo = ficheiro.Name;
+        var caminho = (ficheiro as IStorageFile)?.TryGetLocalPath();
+
+        if (caminho is not null)
+            documento.DefinirArquivoSelecionado(caminho);
     }
 
     private async void OnZonaUploadClick(object? sender, RoutedEventArgs e)
@@ -130,7 +147,9 @@ public partial class AlunosView : UserControl
         });
 
         var ficheiro = resultado.Count > 0 ? resultado[0] : null;
-        if (ficheiro is not null)
-            documento.NomeArquivo = ficheiro.Name;
+        var caminho = ficheiro?.TryGetLocalPath();
+
+        if (caminho is not null)
+            documento.DefinirArquivoSelecionado(caminho);
     }
 }
