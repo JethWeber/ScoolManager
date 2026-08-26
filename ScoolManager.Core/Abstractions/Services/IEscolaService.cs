@@ -5,9 +5,10 @@ namespace ScoolManager.Core.Abstractions.Services;
 
 /// <summary>
 /// Serviço do módulo Escola (View 5, ver SM_Flow.md): Turmas, Salas, Cursos,
-/// Anos Lectivos. <see cref="CriarTurmaAsync"/> chama internamente
-/// <c>TurmaNamingService</c> para calcular a letra e validar a regra de
-/// lotação — quem consome este serviço não precisa de saber essa lógica.
+/// Anos Lectivos, Serviços/Produtos. <see cref="CriarTurmaAsync"/> chama
+/// internamente <c>TurmaNamingService</c> para calcular a letra e validar a
+/// regra de lotação — quem consome este serviço não precisa de saber essa
+/// lógica.
 /// </summary>
 public interface IEscolaService
 {
@@ -46,4 +47,29 @@ public interface IEscolaService
 
     Task<char> ProximaLetraDisponivelAsync(int anoLectivoId, int classeId, int? cursoId, CancellationToken ct = default);
     Task<bool> PodeAbrirNovaTurmaAsync(int anoLectivoId, int classeId, int? cursoId, CancellationToken ct = default);
+
+    // =================================================================
+    // Serviços/Produtos (aba "Serviços" do módulo Escola) - catálogo de
+    // tudo o que a escola cobra ao aluno (propinas, cartões, provas,
+    // uniformes, outros), consumido pelo fluxo "Efetuar Pagamento".
+    // =================================================================
+
+    Task<IReadOnlyList<ServicoEscolar>> ObterServicosAsync(CancellationToken ct = default);
+    Task<ServicoEscolar> CriarServicoAsync(ServicoEscolar servico, CancellationToken ct = default);
+    Task AtualizarServicoAsync(ServicoEscolar servico, CancellationToken ct = default);
+
+    /// <summary>
+    /// Desativa (Ativo=false) ou reativa um serviço. Preferível a
+    /// <see cref="RemoverServicoAsync"/> sempre que o serviço já foi usado
+    /// nalgum pagamento, para não perder o histórico.
+    /// </summary>
+    Task DefinirAtivoServicoAsync(int id, bool ativo, CancellationToken ct = default);
+
+    /// <summary>
+    /// Elimina definitivamente um serviço. Lança
+    /// <see cref="Exceptions.ScoolManagerDomainException"/> se o serviço já
+    /// tiver sido usado nalgum pagamento — nesse caso use
+    /// <see cref="DefinirAtivoServicoAsync"/> em vez disto.
+    /// </summary>
+    Task RemoverServicoAsync(int id, CancellationToken ct = default);
 }

@@ -28,6 +28,7 @@ public class ScoolManagerDbContext : DbContext
     public DbSet<Sala> Salas => Set<Sala>();
     public DbSet<AnoLectivo> AnosLectivos => Set<AnoLectivo>();
     public DbSet<Turma> Turmas => Set<Turma>();
+    public DbSet<ServicoEscolar> ServicosEscolares => Set<ServicoEscolar>();
 
     // Alunos
     public DbSet<Aluno> Alunos => Set<Aluno>();

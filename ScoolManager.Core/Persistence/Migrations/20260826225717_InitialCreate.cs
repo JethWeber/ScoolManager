@@ -163,6 +163,23 @@ namespace ScoolManager.Core.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ServicosEscolares",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nome = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
+                    Categoria = table.Column<string>(type: "TEXT", nullable: false),
+                    Preco = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Descricao = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    Ativo = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServicosEscolares", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Utilizadores",
                 columns: table => new
                 {
@@ -593,6 +610,9 @@ namespace ScoolManager.Core.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Pagamentos");
+
+            migrationBuilder.DropTable(
+                name: "ServicosEscolares");
 
             migrationBuilder.DropTable(
                 name: "Alunos");

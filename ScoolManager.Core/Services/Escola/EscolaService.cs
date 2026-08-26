@@ -13,19 +13,22 @@ public class EscolaService : IEscolaService
     private readonly ISalaRepository _salas;
     private readonly IAnoLectivoRepository _anosLectivos;
     private readonly ITurmaRepository _turmas;
+    private readonly IServicoEscolarRepository _servicos;
 
     public EscolaService(
         IClasseRepository classes,
         ICursoRepository cursos,
         ISalaRepository salas,
         IAnoLectivoRepository anosLectivos,
-        ITurmaRepository turmas)
+        ITurmaRepository turmas,
+        IServicoEscolarRepository servicos)
     {
         _classes = classes;
         _cursos = cursos;
         _salas = salas;
         _anosLectivos = anosLectivos;
         _turmas = turmas;
+        _servicos = servicos;
     }
 
     public Task<IReadOnlyList<Classe>> ObterClassesAsync(CancellationToken ct = default) => _classes.ObterTodasAsync(ct);
@@ -119,5 +122,40 @@ public class EscolaService : IEscolaService
         }
 
         return (anoLectivo, classe, curso);
+    }
+
+    // =================================================================
+    // Serviços/Produtos
+    // =================================================================
+
+    public Task<IReadOnlyList<ServicoEscolar>> ObterServicosAsync(CancellationToken ct = default) => _servicos.ObterTodosAsync(ct);
+
+    public Task<ServicoEscolar> CriarServicoAsync(ServicoEscolar servico, CancellationToken ct = default) => _servicos.AdicionarAsync(servico, ct);
+
+    public Task AtualizarServicoAsync(ServicoEscolar servico, CancellationToken ct = default) => _servicos.AtualizarAsync(servico, ct);
+
+    public async Task DefinirAtivoServicoAsync(int id, bool ativo, CancellationToken ct = default)
+    {
+        var servico = await _servicos.ObterPorIdAsync(id, ct)
+            ?? throw new EntidadeNaoEncontradaException(nameof(ServicoEscolar), id);
+
+        servico.Ativo = ativo;
+        await _servicos.AtualizarAsync(servico, ct);
+    }
+
+    public async Task RemoverServicoAsync(int id, CancellationToken ct = default)
+    {
+        // TODO: quando o fluxo "Efetuar Pagamento" passar a persistir na
+        // ScoolManager.Core (via IPagamentoRepository) com referência a
+        // ServicoEscolarId, validar aqui se o serviço já foi usado nalgum
+        // pagamento e, nesse caso, lançar ScoolManagerDomainException a
+        // pedir para usar DefinirAtivoServicoAsync(id, false) em vez de
+        // eliminar. Por agora o fluxo de pagamento ainda não persiste no
+        // Core (ver AlunoPagamentosViewModel), por isso não há histórico
+        // a proteger ainda.
+        _ = await _servicos.ObterPorIdAsync(id, ct)
+            ?? throw new EntidadeNaoEncontradaException(nameof(ServicoEscolar), id);
+
+        await _servicos.RemoverAsync(id, ct);
     }
 }

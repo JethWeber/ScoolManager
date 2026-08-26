@@ -11,14 +11,14 @@ using ScoolManager.Core.Persistence;
 namespace ScoolManager.Core.Persistence.Migrations
 {
     [DbContext(typeof(ScoolManagerDbContext))]
-    [Migration("20260811004127_InitialCreate")]
+    [Migration("20260826225717_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
             modelBuilder.Entity("ScoolManager.Core.Entities.Alunos.Aluno", b =>
                 {
@@ -539,6 +539,36 @@ namespace ScoolManager.Core.Persistence.Migrations
                             Capacidade = 30,
                             Nome = "Oficina B"
                         });
+                });
+
+            modelBuilder.Entity("ScoolManager.Core.Entities.Escola.ServicoEscolar", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Preco")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServicosEscolares", (string)null);
                 });
 
             modelBuilder.Entity("ScoolManager.Core.Entities.Escola.Turma", b =>

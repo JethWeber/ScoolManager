@@ -27,6 +27,7 @@ public static class DatabaseSeeder
     {
         await SeedClassesAsync(db, ct);
         await SeedEscolaAsync(db, ct);
+        await SeedServicosEscolaresAsync(db, ct);
         await SeedAlunosAsync(db, ct);
         var perfilAdministrador = await EnsureAdministradorPerfilAsync(db, ct);
         await EnsureAdministradorUsuarioAsync(db, perfilAdministrador, ct);
@@ -100,6 +101,34 @@ public static class DatabaseSeeder
                 Matriculados = 1
             });
         }
+    }
+
+    /// <summary>
+    /// Catálogo inicial de Serviços/Produtos, com os mesmos valores que
+    /// estavam fixos no código do fluxo "Efetuar Pagamento"
+    /// (AlunoPagamentosViewModel: ValorMensalidade e os switch de
+    /// Motivo/Tipo) — assim a migração para o catálogo não muda os preços
+    /// que a secretaria já conhece; a partir daqui é ela quem os gere.
+    /// </summary>
+    private static async Task SeedServicosEscolaresAsync(ScoolManagerDbContext db, CancellationToken ct)
+    {
+        if (await db.ServicosEscolares.AnyAsync(ct))
+            return;
+
+        db.ServicosEscolares.AddRange(
+            new ServicoEscolar { Nome = "Propina Mensal", Categoria = CategoriaServico.Propina, Preco = 15000m },
+
+            new ServicoEscolar { Nome = "Cartão de Estudante - 1ª Via", Categoria = CategoriaServico.Cartao, Preco = 2000m },
+            new ServicoEscolar { Nome = "Cartão de Estudante - 2ª Via (Perda)", Categoria = CategoriaServico.Cartao, Preco = 2500m },
+            new ServicoEscolar { Nome = "Cartão de Estudante - 2ª Via (Dano)", Categoria = CategoriaServico.Cartao, Preco = 2500m },
+
+            new ServicoEscolar { Nome = "Exame Normal", Categoria = CategoriaServico.Prova, Preco = 1500m },
+            new ServicoEscolar { Nome = "Exame de Recuperação", Categoria = CategoriaServico.Prova, Preco = 3000m },
+            new ServicoEscolar { Nome = "Exame Especial", Categoria = CategoriaServico.Prova, Preco = 4000m },
+
+            new ServicoEscolar { Nome = "Uniforme - Educação Física", Categoria = CategoriaServico.Uniforme, Preco = 8000m },
+            new ServicoEscolar { Nome = "Uniforme Escolar Completo", Categoria = CategoriaServico.Uniforme, Preco = 12000m }
+        );
     }
 
     private static async Task SeedAlunosAsync(ScoolManagerDbContext db, CancellationToken ct)

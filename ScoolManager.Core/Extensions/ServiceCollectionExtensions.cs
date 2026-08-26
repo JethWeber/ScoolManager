@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISalaRepository, EfSalaRepository>();
         services.AddScoped<IAnoLectivoRepository, EfAnoLectivoRepository>();
         services.AddScoped<ITurmaRepository, EfTurmaRepository>();
+        services.AddScoped<IServicoEscolarRepository, EfServicoEscolarRepository>();
         services.AddScoped<IAlunoRepository, EfAlunoRepository>();
         services.AddScoped<IPagamentoRepository, EfPagamentoRepository>();
         services.AddScoped<IMovimentoCaixaRepository, EfMovimentoCaixaRepository>();
