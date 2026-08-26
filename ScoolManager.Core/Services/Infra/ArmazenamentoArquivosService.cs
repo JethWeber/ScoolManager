@@ -1,12 +1,15 @@
-using System.IO;
-using System.Text;
 using System.Globalization;
+using System.Text;
+using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Enums;
 
 namespace ScoolManager.Core.Services.Infra;
 
 public class ArmazenamentoArquivosService : IArmazenamentoArquivosService
 {
+    // Environment.SpecialFolder.MyDocuments resolve corretamente em
+    // Windows (C:\Users\<user>\Documents) e em Linux/.NET Core (~/Documents),
+    // então a mesma raiz funciona em dev (Fedora) e produção (Windows).
     private static readonly string RaizApp = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
         "ScoolManager");
@@ -69,8 +72,8 @@ public class ArmazenamentoArquivosService : IArmazenamentoArquivosService
 
     private static string ObterPastaAluno(string anoLectivo, string codigoAluno)
     {
-        var anoPasta = anoLectivo.Replace('/', '-');
-        var codigoPasta = SanitizarComponente(codigoAluno.Replace('/', '-'));
+        var anoPasta = anoLectivo.Replace('/', '-'); // "2025/2026" -> "2025-2026"
+        var codigoPasta = SanitizarComponente(codigoAluno.Replace('/', '-')); // "2026/0003" -> "2026-0003"
         return Path.Combine(PastaDados, anoPasta, "Alunos", codigoPasta);
     }
 
