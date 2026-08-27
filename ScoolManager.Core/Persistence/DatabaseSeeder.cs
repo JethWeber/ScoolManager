@@ -100,6 +100,10 @@ public static class DatabaseSeeder
                 Capacidade = 35,
                 Matriculados = 1
             });
+
+            // A propina precisa do Id da turma acabada de criar - grava já
+            // aqui para SeedServicosEscolaresAsync a conseguir ler a seguir.
+            await db.SaveChangesAsync(ct);
         }
     }
 
@@ -109,14 +113,19 @@ public static class DatabaseSeeder
     /// (AlunoPagamentosViewModel: ValorMensalidade e os switch de
     /// Motivo/Tipo) — assim a migração para o catálogo não muda os preços
     /// que a secretaria já conhece; a partir daqui é ela quem os gere.
+    ///
+    /// A Propina (ver ServicoEscolar.TurmaId) precisa de uma Turma
+    /// concreta - usa-se aqui a única turma semeada em SeedEscolaAsync.
     /// </summary>
     private static async Task SeedServicosEscolaresAsync(ScoolManagerDbContext db, CancellationToken ct)
     {
         if (await db.ServicosEscolares.AnyAsync(ct))
             return;
 
+        var turma = await db.Turmas.Include(t => t.Classe).Include(t => t.Curso).OrderBy(t => t.Id).FirstAsync(ct);
+
         db.ServicosEscolares.AddRange(
-            new ServicoEscolar { Nome = "Propina Mensal", Categoria = CategoriaServico.Propina, Preco = 15000m },
+            new ServicoEscolar { Nome = $"Propina - {turma.Nome}", Categoria = CategoriaServico.Propina, Preco = 15000m, TurmaId = turma.Id },
 
             new ServicoEscolar { Nome = "Cartão de Estudante - 1ª Via", Categoria = CategoriaServico.Cartao, Preco = 2000m },
             new ServicoEscolar { Nome = "Cartão de Estudante - 2ª Via (Perda)", Categoria = CategoriaServico.Cartao, Preco = 2500m },
