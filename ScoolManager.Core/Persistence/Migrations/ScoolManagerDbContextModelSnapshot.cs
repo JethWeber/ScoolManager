@@ -15,7 +15,7 @@ namespace ScoolManager.Core.Persistence.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
 
             modelBuilder.Entity("ScoolManager.Core.Entities.Alunos.Aluno", b =>
                 {
@@ -563,7 +563,12 @@ namespace ScoolManager.Core.Persistence.Migrations
                     b.Property<decimal>("Preco")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("TurmaId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TurmaId");
 
                     b.ToTable("ServicosEscolares", (string)null);
                 });
@@ -971,6 +976,16 @@ namespace ScoolManager.Core.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Aluno");
+                });
+
+            modelBuilder.Entity("ScoolManager.Core.Entities.Escola.ServicoEscolar", b =>
+                {
+                    b.HasOne("ScoolManager.Core.Entities.Escola.Turma", "Turma")
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Turma");
                 });
 
             modelBuilder.Entity("ScoolManager.Core.Entities.Escola.Turma", b =>

@@ -163,23 +163,6 @@ namespace ScoolManager.Core.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ServicosEscolares",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nome = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
-                    Categoria = table.Column<string>(type: "TEXT", nullable: false),
-                    Preco = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Descricao = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    Ativo = table.Column<bool>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ServicosEscolares", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Utilizadores",
                 columns: table => new
                 {
@@ -316,6 +299,30 @@ namespace ScoolManager.Core.Persistence.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Alunos_Turmas_TurmaId",
+                        column: x => x.TurmaId,
+                        principalTable: "Turmas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ServicosEscolares",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nome = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
+                    Categoria = table.Column<string>(type: "TEXT", nullable: false),
+                    Preco = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Descricao = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    Ativo = table.Column<bool>(type: "INTEGER", nullable: false),
+                    TurmaId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServicosEscolares", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServicosEscolares_Turmas_TurmaId",
                         column: x => x.TurmaId,
                         principalTable: "Turmas",
                         principalColumn: "Id",
@@ -541,6 +548,11 @@ namespace ScoolManager.Core.Persistence.Migrations
                 name: "IX_Pagamentos_SessaoCaixaId",
                 table: "Pagamentos",
                 column: "SessaoCaixaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServicosEscolares_TurmaId",
+                table: "ServicosEscolares",
+                column: "TurmaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SessoesCaixa_UtilizadorAberturaId",
