@@ -15,6 +15,16 @@ namespace ScoolManager.Core.Entities.Escola;
 /// vários <c>switch</c> de preço por Motivo/Tipo) - a partir daqui, quem
 /// gere os preços é a secretaria, através deste CRUD, e não um recompilar
 /// da aplicação.
+///
+/// CASO ESPECIAL "Propina": a propina não tem um valor único por Classe,
+/// porque a mesma Classe pode ter vários Cursos com propinas diferentes
+/// (ex.: 10ª GRSI A = 18.000 Kz, 10ª CFB A = 20.000 Kz). Por isso a propina
+/// não fixa preço por Classe nem por Curso isoladamente - fixa preço por
+/// <see cref="Turma"/> (a combinação já concreta Classe+Curso+Letra). Ver
+/// <see cref="TurmaId"/>: obrigatório quando <see cref="Categoria"/> é
+/// <see cref="CategoriaServico.Propina"/>, e ignorado (forçado a null) nas
+/// restantes categorias - validado em
+/// <c>Services.Escola.EscolaService.ValidarTurmaDoServicoAsync</c>.
 /// </summary>
 public class ServicoEscolar
 {
@@ -40,4 +50,12 @@ public class ServicoEscolar
     /// usado em nenhum pagamento.
     /// </summary>
     public bool Ativo { get; set; } = true;
+
+    /// <summary>
+    /// Turma a que esta propina se aplica. Obrigatório quando
+    /// Categoria=Propina (ver nota na classe); null em todas as outras
+    /// categorias.
+    /// </summary>
+    public int? TurmaId { get; set; }
+    public Turma? Turma { get; set; }
 }
