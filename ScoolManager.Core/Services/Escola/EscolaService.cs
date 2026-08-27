@@ -130,9 +130,39 @@ public class EscolaService : IEscolaService
 
     public Task<IReadOnlyList<ServicoEscolar>> ObterServicosAsync(CancellationToken ct = default) => _servicos.ObterTodosAsync(ct);
 
-    public Task<ServicoEscolar> CriarServicoAsync(ServicoEscolar servico, CancellationToken ct = default) => _servicos.AdicionarAsync(servico, ct);
+    public async Task<ServicoEscolar> CriarServicoAsync(ServicoEscolar servico, CancellationToken ct = default)
+    {
+        await ValidarTurmaDoServicoAsync(servico, ct);
+        return await _servicos.AdicionarAsync(servico, ct);
+    }
 
-    public Task AtualizarServicoAsync(ServicoEscolar servico, CancellationToken ct = default) => _servicos.AtualizarAsync(servico, ct);
+    public async Task AtualizarServicoAsync(ServicoEscolar servico, CancellationToken ct = default)
+    {
+        await ValidarTurmaDoServicoAsync(servico, ct);
+        await _servicos.AtualizarAsync(servico, ct);
+    }
+
+    /// <summary>
+    /// Propina (ver comentário em ServicoEscolar.TurmaId): exige uma Turma
+    /// válida - a mesma Classe pode ter Cursos diferentes com propinas
+    /// diferentes, por isso o preço fixa-se por Turma, não por Classe.
+    /// Nas restantes categorias, TurmaId é sempre ignorado/limpo aqui, para
+    /// não deixar lixo de um formulário que trocou de categoria a meio.
+    /// </summary>
+    private async Task ValidarTurmaDoServicoAsync(ServicoEscolar servico, CancellationToken ct)
+    {
+        if (servico.Categoria != CategoriaServico.Propina)
+        {
+            servico.TurmaId = null;
+            return;
+        }
+
+        if (servico.TurmaId is not { } turmaId)
+            throw new InvalidOperationException("Selecione a turma a que esta propina se aplica.");
+
+        _ = await _turmas.ObterPorIdAsync(turmaId, ct)
+            ?? throw new EntidadeNaoEncontradaException(nameof(Turma), turmaId);
+    }
 
     public async Task DefinirAtivoServicoAsync(int id, bool ativo, CancellationToken ct = default)
     {
