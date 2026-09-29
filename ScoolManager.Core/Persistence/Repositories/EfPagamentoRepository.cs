@@ -13,7 +13,7 @@ public class EfPagamentoRepository : IPagamentoRepository
         await _db.Pagamentos.Include(p => p.Aluno).Where(p => p.AlunoId == alunoId).OrderByDescending(p => p.DataVencimento).ToListAsync(ct);
 
     public async Task<IReadOnlyList<Pagamento>> ObterPorPeriodoAsync(DateTime inicio, DateTime fim, CancellationToken ct = default) =>
-        await _db.Pagamentos.Include(p => p.Aluno).Where(p => p.DataVencimento >= inicio && p.DataVencimento <= fim).ToListAsync(ct);
+        await _db.Pagamentos.Include(p => p.Aluno).Where(p => (p.DataPagamento ?? p.DataVencimento) >= inicio && (p.DataPagamento ?? p.DataVencimento) <= fim).ToListAsync(ct);
 
     public async Task<Pagamento?> ObterPorIdAsync(int id, CancellationToken ct = default) =>
         await _db.Pagamentos.FindAsync([id], ct);
