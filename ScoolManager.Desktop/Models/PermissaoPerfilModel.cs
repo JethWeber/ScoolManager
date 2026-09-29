@@ -9,6 +9,8 @@ namespace ScoolManager.Desktop.Models;
 /// </summary>
 public partial class PermissaoPerfilModel : ObservableObject
 {
+    public int Id { get; set; }
+
     public string Perfil { get; set; } = string.Empty;
 
     /// <summary>Perfis de sistema (ex.: Administrador) não podem ser editados.</summary>
