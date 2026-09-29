@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Material.Icons;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Configuracoes;
