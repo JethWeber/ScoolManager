@@ -7,6 +7,8 @@ namespace ScoolManager.Desktop.Models;
 /// </summary>
 public partial class UtilizadorItemModel : ObservableObject
 {
+    public int Id { get; set; }
+
     public string Nome { get; set; } = string.Empty;
 
     public string Iniciais { get; set; } = string.Empty;
