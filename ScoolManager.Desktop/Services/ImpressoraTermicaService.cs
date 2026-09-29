@@ -10,15 +10,34 @@ public sealed class ImpressoraTermicaService : IImpressoraTermicaService
         if (!OperatingSystem.IsLinux())
             return false;
 
+        var conteudo = MontarEscPos(texto);
         var impressora = await ObterImpressoraAsync(ct);
+
         if (string.IsNullOrWhiteSpace(impressora))
+        {
+            foreach (var dispositivo in new[] { "/dev/usb/lp0", "/dev/usb/lp1" })
+            {
+                try
+                {
+                    if (!File.Exists(dispositivo))
+                        continue;
+
+                    await File.WriteAllBytesAsync(dispositivo, conteudo, ct);
+                    return true;
+                }
+                catch
+                {
+                    // Tenta o próximo dispositivo ou CUPS.
+                }
+            }
+
             return false;
+        }
 
         var ficheiro = Path.Combine(Path.GetTempPath(), $"scoolmanager-recibo-{Guid.NewGuid():N}.txt");
 
         try
         {
-            var conteudo = MontarEscPos(texto);
             await File.WriteAllBytesAsync(ficheiro, conteudo, ct);
 
             var resultado = await ExecutarAsync(
