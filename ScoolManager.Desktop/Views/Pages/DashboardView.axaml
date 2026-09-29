@@ -5,6 +5,7 @@
              xmlns:conv="using:ScoolManager.Desktop.Converters"
              xmlns:views="using:ScoolManager.Desktop.Views.Pages"
              xmlns:materialIcons="using:Material.Icons.Avalonia"
+             xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
@@ -247,10 +248,8 @@
                  ============================================================ -->
             <Grid ColumnDefinitions="2*,1*" ColumnSpacing="24">
 
-                <!-- Receita por Trimestre (desenhado à mão: Path/SVG via Viewbox,
-                     sem dependência de bibliotecas de gráficos externas) -->
                 <Border Grid.Column="0" Classes="neo-card" Padding="24">
-                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                             <TextBlock Grid.Column="0" Text="Receita por Trimestre" FontSize="16" FontWeight="Medium"
@@ -266,46 +265,7 @@
                                       DisplayMemberBinding="{Binding Label}"/>
                         </Grid>
 
-                        <!-- Área do gráfico: viewBox lógico 800x250, escalado com Viewbox -->
-                        <Viewbox Grid.Row="1" Stretch="Fill" Height="260">
-                            <Grid Width="800" Height="250">
-                                <Path Data="{Binding ChartFillPathData}" Fill="{StaticResource ChartFillBrush}"/>
-                                <Path Data="{Binding ChartStrokePathData}"
-                                      Stroke="{StaticResource ChartLineBrush}"
-                                      StrokeThickness="3"
-                                      StrokeLineCap="Round"
-                                      StrokeJoin="Round"/>
-                                <ItemsControl ItemsSource="{Binding ChartMarkers}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="models:ChartMarkerPoint">
-                                            <Ellipse Width="8" Height="8" Fill="{StaticResource ChartLineBrush}"
-                                                     Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <Canvas/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-                            </Grid>
-                        </Viewbox>
-
-                        <!-- Rótulos dos meses do trimestre selecionado -->
-                        <ItemsControl Grid.Row="2" ItemsSource="{Binding ChartMonthLabels}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="3"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" FontSize="12" Opacity="0.6"
-                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
+                        <ScottPlot:AvaPlot Grid.Row="1" x:Name="ReceitaPlot" MinHeight="260"/>
                     </Grid>
                 </Border>
 
@@ -333,7 +293,6 @@
                                             <TextBlock Grid.Column="0" Text="{Binding Rank}" FontWeight="Bold" Opacity="0.4"
                                                        VerticalAlignment="Center" Foreground="{StaticResource OnSurfaceVariantBrush}"/>
 
-                                            <!-- Avatar com iniciais (substitui a fotografia do mock) -->
                                             <Border Grid.Column="1" Width="40" Height="40" CornerRadius="999"
                                                     Background="{StaticResource SurfaceVariantBrush}"
                                                     BorderBrush="{StaticResource OutlineVariantBrush}" BorderThickness="1">
@@ -361,7 +320,6 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-
                     </Grid>
                 </Border>
 
