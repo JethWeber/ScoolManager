@@ -1,3 +1,4 @@
+using ScoolManager.Core.Abstractions;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
