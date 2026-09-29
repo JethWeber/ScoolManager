@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace ScoolManager.Desktop.Services;
 
 public interface IImpressoraTermicaService
