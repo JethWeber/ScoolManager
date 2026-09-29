@@ -42,6 +42,45 @@
          ================================================================ -->
     <UserControl.Styles>
 
+        <Style Selector="Border.sucesso-pulse">
+            <Style.Animations>
+                <Animation Duration="0:0:1.05" IterationCount="INFINITE" PlaybackDirection="Alternate">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.45"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="0.92"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="0.92"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.06"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.06"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="materialIcons|MaterialIcon.sucesso-check">
+            <Style.Animations>
+                <Animation Duration="0:0:0.7">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="0.45"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="0.45"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="65%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.12"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.12"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
         <Style Selector="Border.neo-card">
             <Setter Property="Background" Value="{StaticResource NeoCardGradientBrush}"/>
             <Setter Property="BorderBrush" Value="#1A8C909F"/>
@@ -774,5 +813,48 @@
         </Border>
 
     </Panel>
+
+
+        <!-- FEEDBACK DE SUCESSO -->
+        <Border Background="#E60B1326"
+                IsVisible="{Binding IsSucessoAberto}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                CornerRadius="16"
+                Panel.ZIndex="100">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <Grid Width="132" Height="132">
+                    <Border Width="126" Height="126"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            CornerRadius="63"
+                            BorderBrush="#4034D399" BorderThickness="1"
+                            RenderTransformOrigin="50%,50%">
+                        <Border Classes="sucesso-pulse"
+                                Width="108" Height="108"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                CornerRadius="54"
+                                Background="#2034D399"
+                                BorderBrush="#A034D399" BorderThickness="2"
+                                RenderTransformOrigin="50%,50%">
+                            <materialIcons:MaterialIcon Classes="sucesso-check"
+                                                         Kind="CheckBold"
+                                                         Width="58" Height="58"
+                                                         HorizontalAlignment="Center"
+                                                         VerticalAlignment="Center"
+                                                         Foreground="#34D399"
+                                                         RenderTransformOrigin="50%,50%"/>
+                        </Border>
+                    </Border>
+                </Grid>
+                <TextBlock Text="{Binding SucessoMensagem}"
+                           HorizontalAlignment="Center"
+                           FontSize="18" FontWeight="Bold"
+                           Foreground="#F2FDF8"/>
+                <TextBlock Text="{Binding SucessoDetalhe}"
+                           HorizontalAlignment="Center"
+                           FontSize="12"
+                           Foreground="#A7F3D0"/>
+            </StackPanel>
+        </Border>
 
 </UserControl>
