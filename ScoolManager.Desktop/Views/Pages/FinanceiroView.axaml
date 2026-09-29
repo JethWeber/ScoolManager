@@ -539,6 +539,17 @@
         <!-- ================================================================
              OVERLAY DOS MODAIS
              ================================================================ -->
+        <Border Background="#CCFFB4AB" BorderBrush="{StaticResource ErrorBrush}" BorderThickness="1"
+                CornerRadius="10" Padding="12" Margin="0,0,0,10"
+                IsVisible="{Binding TemErroFinanceiro}">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding ErroFinanceiro}" TextWrapping="Wrap"
+                           Foreground="{StaticResource ErrorBrush}"/>
+                <Button Grid.Column="1" Classes="link" Content="Fechar"
+                        Command="{Binding FecharErroFinanceiroCommand}"/>
+            </Grid>
+        </Border>
+
         <Border Background="#99000000" IsVisible="{Binding AlgumModalAberto}" ZIndex="500">
             <Border Classes="neo-card" MaxWidth="480" Padding="24"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
