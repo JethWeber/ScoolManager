@@ -83,6 +83,8 @@ public partial class App : Application
         services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         services.AddSingleton<IExportacaoArquivoService, ExportacaoArquivoService>();
         services.AddSingleton<IAtividadeSucessoService, AtividadeSucessoService>();
+        services.AddSingleton<IImpressoraTermicaService, ImpressoraTermicaService>();
+        services.AddSingleton<IReciboPagamentoService, ReciboPagamentoService>();
 
         RegistarViewModels(services);
 
