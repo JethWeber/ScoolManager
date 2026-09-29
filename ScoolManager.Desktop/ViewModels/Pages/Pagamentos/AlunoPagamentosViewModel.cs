@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Alunos;
+using ScoolManager.Core.Enums;
 using ScoolManager.Core.Services.Alunos;
 
 namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
@@ -79,6 +80,11 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         // ===== Identificação do aluno (definida pelo "pai" antes de abrir) =====
         [ObservableProperty] private string _nomeEstudante = string.Empty;
         [ObservableProperty] private string _codigoMatricula = string.Empty;
+        private readonly IFinanceiroService? _financeiroService;
+        private readonly int _alunoId;
+        [ObservableProperty] private string? _erroConfirmacao;
+
+        public bool TemErroConfirmacao => !string.IsNullOrWhiteSpace(ErroConfirmacao);
 
         // ===== Estado do fluxo =====
         [ObservableProperty] private bool _isAberto;
@@ -132,6 +138,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         partial void OnMultasJurosChanged(decimal value) => AtualizarTotais();
         partial void OnDescontoChanged(decimal value) => AtualizarTotais();
         partial void OnFormaPagamentoChanged(string? value) => ConfirmarPagamentoCommand.NotifyCanExecuteChanged();
+        partial void OnErroConfirmacaoChanged(string? value) => OnPropertyChanged(nameof(TemErroConfirmacao));
         partial void OnDescricaoOutroChanged(string? value) => ConfirmarPagamentoCommand.NotifyCanExecuteChanged();
 
         private void AtualizarTotais()
@@ -252,12 +259,21 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
             };
         }
 
+        public AlunoPagamentosViewModel(IFinanceiroService? financeiroService, int alunoId)
+        {
+            _financeiroService = financeiroService;
+            _alunoId = alunoId;
+        }
+
+        public AlunoPagamentosViewModel() { }
+
         // ===== Navegação do fluxo =====
 
         /// <summary>Chamado pela view "pai" antes de abrir o modal, para identificar o aluno (dados só de leitura).</summary>
         public void SetAluno(string nomeCompleto, string codigoMatricula, string anoLectivo, string classe)
         {
             NomeEstudante = nomeCompleto;
+            ErroConfirmacao = null;
             CodigoMatricula = codigoMatricula;
             AnoLectivoPropina = anoLectivo;
             ClassePropina = classe;
@@ -309,6 +325,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         private void Fechar()
         {
             IsAberto = false;
+            ErroConfirmacao = null;
             CategoriaSelecionada = null;
             LimparCampos();
         }
@@ -366,9 +383,12 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         public event EventHandler<PagamentoRealizadoEventArgs>? PagamentoConfirmado;
 
         [RelayCommand(CanExecute = nameof(PodeConfirmar))]
-        private void ConfirmarPagamento()
+        private async Task ConfirmarPagamento()
         {
-            if (CategoriaSelecionada is null) return;
+            if (CategoriaSelecionada is null || _financeiroService is null || _alunoId <= 0)
+                return;
+
+            ErroConfirmacao = null;
 
             var descricao = CategoriaSelecionada switch
             {
@@ -384,16 +404,35 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
                 ? MesesDisponiveis.Count(m => m.Selecionado)
                 : 1;
 
-            var evento = new PagamentoRealizadoEventArgs(
-                categoria: CategoriaSelecionada.Value,
-                descricao: descricao,
-                numeroRecibo: $"#REC-{Random.Shared.Next(1000, 9999)}",
-                valor: Total,
-                data: DateTime.Now,
-                quantidadeReferencias: quantidadeReferencias);
+            var tipo = CategoriaSelecionada switch
+            {
+                CategoriaPagamento.Propina => TipoCobranca.Propina,
+                CategoriaPagamento.Cartao => TipoCobranca.CartaoEscolar,
+                CategoriaPagamento.Prova => TipoCobranca.Outros,
+                CategoriaPagamento.Uniforme => TipoCobranca.Uniforme,
+                CategoriaPagamento.Outro => TipoCobranca.Outros,
+                _ => TipoCobranca.Outros
+            };
 
-            PagamentoConfirmado?.Invoke(this, evento);
-            Fechar();
+            try
+            {
+                var pagamento = await _financeiroService.RegistarPagamentoAsync(
+                    _alunoId, tipo, Total, FormaPagamento);
+
+                PagamentoConfirmado?.Invoke(this, new PagamentoRealizadoEventArgs(
+                    CategoriaSelecionada.Value,
+                    descricao,
+                    pagamento.NumeroRecibo,
+                    pagamento.Valor,
+                    pagamento.DataPagamento ?? DateTime.Now,
+                    quantidadeReferencias));
+
+                Fechar();
+            }
+            catch (Exception ex)
+            {
+                ErroConfirmacao = ex.Message;
+            }
         }
     }
 }
