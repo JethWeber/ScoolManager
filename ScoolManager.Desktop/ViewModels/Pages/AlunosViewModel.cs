@@ -821,8 +821,8 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
 
     // ===== Outros modais =====
     [RelayCommand] private void AbrirImportarAlunos() => IsImportarAlunosAberta = true;
-    [RelayCommand] private void AbrirExportarPdf() => IsExportarPdfAberta = true;
-    [RelayCommand] private void AbrirExportarExcel() => IsExportarExcelAberta = true;
+    [RelayCommand] private void AbrirExportarPdf() { ErroMatricula = string.Empty; IsExportarPdfAberta = true; }
+    [RelayCommand] private void AbrirExportarExcel() { ErroMatricula = string.Empty; IsExportarExcelAberta = true; }
     [RelayCommand] private void AbrirFiltrosAvancados() => IsFiltrosAvancadosAberta = true;
 
     [RelayCommand]
