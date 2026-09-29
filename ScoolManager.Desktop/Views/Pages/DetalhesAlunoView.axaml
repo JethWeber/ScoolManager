@@ -228,27 +228,24 @@
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="24">
 
                         <!-- Fotografia -->
-                        <Panel Grid.Column="0" Width="120" Height="120">
+                        <Button Grid.Column="0" Width="120" Height="120" Padding="0"
+                                Background="Transparent" BorderThickness="0"
+                                Command="{Binding AbrirFotoCommand}"
+                                IsEnabled="{Binding TemFotografia}"
+                                ToolTip.Tip="Ver fotografia">
                             <Border CornerRadius="16" Background="{StaticResource SurfaceContainerHighBrush}"
                                     BorderBrush="{StaticResource OutlineVariantBrush}" BorderThickness="1"
                                     ClipToBounds="True">
                                 <Grid>
-                                    <!-- TODO: quando existir um serviço de imagem, trocar por um Image
-                                         com um IValueConverter que converta o caminho num IImage/Bitmap. -->
+                                    <Image Source="{Binding FotografiaPreview}" Stretch="UniformToFill"
+                                           IsVisible="{Binding TemFotografia}"/>
                                     <TextBlock Text="{Binding Iniciais}" FontSize="36" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Foreground="{StaticResource OnSurfaceBrush}"/>
+                                               Foreground="{StaticResource OnSurfaceBrush}"
+                                               IsVisible="{Binding !TemFotografia}"/>
                                 </Grid>
                             </Border>
-                            <!-- Alterar fotografia reaproveita o modal "Editar Aluno" (evita modal sobre modal) -->
-                            <Button Width="34" Height="34" Padding="0" CornerRadius="10"
-                                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                    Margin="0,0,-6,-6" Classes="primario"
-                                    Command="{Binding AbrirEditarPerfilCommand}"
-                                    ToolTip.Tip="Alterar fotografia">
-                                <materialIcons:MaterialIcon Kind="CameraOutline" Width="16" Height="16"/>
-                            </Button>
-                        </Panel>
+                        </Button>
 
                         <!-- Identidade + chips -->
                         <StackPanel Grid.Column="1" Spacing="10" VerticalAlignment="Center">
@@ -593,25 +590,147 @@
                     HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="18">
 
-                    <!-- Editar Aluno -->
-                    <StackPanel Spacing="14" IsVisible="{Binding IsEditarPerfilAberto}">
-                        <TextBlock Text="Editar aluno" FontSize="18" FontWeight="SemiBold"
-                                   Foreground="{StaticResource OnSurfaceBrush}"/>
-                        <TextBox Classes="campo" Text="{Binding NomeCompleto}" PlaceholderText="Nome completo"/>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <DatePicker Classes="campo" Grid.Column="0" SelectedDate="{Binding DataNascimento}"/>
-                            <TextBox Classes="campo" Grid.Column="1" Text="{Binding Nacionalidade}" PlaceholderText="Nacionalidade"/>
+                    <!-- Editar Aluno — mesmo fluxo de 4 passos do cadastro -->
+                    <Grid IsVisible="{Binding IsEditarPerfilAberto}" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="14">
+                        <StackPanel Grid.Row="0" Spacing="4">
+                            <TextBlock Text="Editar aluno" FontSize="18" FontWeight="SemiBold"
+                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                            <TextBlock Text="{Binding TituloPassoEdicao}" FontSize="12"
+                                       Foreground="{StaticResource PrimaryBrush}"/>
+                        </StackPanel>
+
+                        <ProgressBar Grid.Row="1" Minimum="1" Maximum="4"
+                                     Value="{Binding PassoEdicao}" Height="4"/>
+
+                        <ScrollViewer Grid.Row="2">
+                            <StackPanel Spacing="12">
+
+                                <!-- Passo 1 -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EdicaoPasso1}">
+                                    <TextBlock Classes="secao-titulo" Text="DADOS DO ALUNO"/>
+                                    <TextBox Classes="campo" Text="{Binding NomeCompleto}" PlaceholderText="Nome completo"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <DatePicker Classes="campo" Grid.Column="0" SelectedDate="{Binding DataNascimento}"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding Sexo}" PlaceholderText="Sexo"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding Naturalidade}" PlaceholderText="Naturalidade"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding Provincia}" PlaceholderText="Província"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding Pais}" PlaceholderText="País"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding Nacionalidade}" PlaceholderText="Nacionalidade"/>
+                                    </Grid>
+                                    <TextBox Classes="campo" Text="{Binding NumeroBiCedula}" PlaceholderText="Nº BI / Cédula"/>
+                                    <TextBox Classes="campo" Text="{Binding Endereco}" PlaceholderText="Morada"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding Telefone}" PlaceholderText="Contacto"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding Email}" PlaceholderText="E-mail"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <CheckBox Content="Tem condição médica" IsChecked="{Binding TemCondicaoMedica}"/>
+                                        <TextBox Grid.Column="1" Classes="campo" Text="{Binding DescricaoCondicaoMedica}"
+                                                 IsEnabled="{Binding TemCondicaoMedica}" PlaceholderText="Qual condição/doença"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Passo 2 -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EdicaoPasso2}">
+                                    <TextBlock Classes="secao-titulo" Text="DADOS DOS ENCARREGADOS"/>
+                                    <TextBlock Text="PAI" FontSize="11" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding NomePai}" PlaceholderText="Nome do pai"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding ProfissaoPai}" PlaceholderText="Profissão"/>
+                                    </Grid>
+                                    <TextBox Classes="campo" Text="{Binding ContactoPai}" PlaceholderText="Contacto do pai"/>
+                                    <TextBlock Text="MÃE" FontSize="11" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding NomeMae}" PlaceholderText="Nome da mãe"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding ProfissaoMae}" PlaceholderText="Profissão"/>
+                                    </Grid>
+                                    <TextBox Classes="campo" Text="{Binding ContactoMae}" PlaceholderText="Contacto da mãe"/>
+                                </StackPanel>
+
+                                <!-- Passo 3 -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EdicaoPasso3}">
+                                    <TextBlock Classes="secao-titulo" Text="ENQUADRAMENTO NA INSTITUIÇÃO"/>
+                                    <TextBlock Classes="rotulo" Text="TURMA"/>
+                                    <ComboBox Classes="campo" ItemsSource="{Binding TurmasEdicao}"
+                                              SelectedItem="{Binding TurmaEditada}"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding Classe}" IsReadOnly="True"
+                                                 PlaceholderText="Classe"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding CursoEditado}" IsReadOnly="True"
+                                                 PlaceholderText="Curso"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding Turma}" IsReadOnly="True"
+                                                 PlaceholderText="Turma"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding SalaEditada}" IsReadOnly="True"
+                                                 PlaceholderText="Sala"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <TextBox Classes="campo" Grid.Column="0" Text="{Binding Turno}" IsReadOnly="True"
+                                                 PlaceholderText="Turno"/>
+                                        <TextBox Classes="campo" Grid.Column="1" Text="{Binding Periodo}" PlaceholderText="Período"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Passo 4 -->
+                                <StackPanel Spacing="10" IsVisible="{Binding EdicaoPasso4}">
+                                    <TextBlock Classes="secao-titulo" Text="DOCUMENTOS"/>
+                                    <TextBlock Text="Os documentos existentes permanecem associados ao aluno. A edição de dados não os remove."
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                    <ItemsControl ItemsSource="{Binding Documentos}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Classes="neo-card-inner" Padding="10" Margin="0,0,0,6">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Tipo}" FontSize="12" FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                            <TextBlock Text="{Binding NomeArquivoOuPlaceholder}" FontSize="10"
+                                                                       Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="1" Text="{Binding DataUploadLabel}" FontSize="10"
+                                                                   Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Border Classes="neo-card-inner" Padding="12" IsVisible="{Binding TemFotografia}">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Image Source="{Binding FotografiaPreview}" Width="56" Height="70" Stretch="UniformToFill"/>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="Foto Tipo Passe" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                                                <TextBlock Text="A fotografia atual será mantida." FontSize="11"
+                                                           Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                            <Button Grid.Column="0" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
+                            <Button Grid.Column="2" Classes="link" Content="Voltar"
+                                    Command="{Binding PassoEdicaoAnteriorCommand}"
+                                    IsVisible="{Binding PodeVoltarEdicao}"/>
+                            <Button Grid.Column="3" Classes="primario" Content="Avançar"
+                                    Command="{Binding PassoEdicaoSeguinteCommand}"
+                                    IsVisible="{Binding !EdicaoPasso4}"/>
+                            <Button Grid.Column="3" Classes="primario" Content="Guardar"
+                                    Command="{Binding ConfirmarEditarPerfilCommand}"
+                                    IsVisible="{Binding EdicaoPasso4}"/>
                         </Grid>
-                        <TextBox Classes="campo" Text="{Binding Endereco}" PlaceholderText="Endereço"/>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <TextBox Classes="campo" Grid.Column="0" Text="{Binding Telefone}" PlaceholderText="Telefone"/>
-                            <TextBox Classes="campo" Grid.Column="1" Text="{Binding Email}" PlaceholderText="E-mail"/>
-                        </Grid>
-                        <Grid ColumnDefinitions="*,Auto,Auto">
-                            <Button Grid.Column="1" Classes="link" Content="Cancelar" Command="{Binding FecharModalCommand}"/>
-                            <Button Grid.Column="2" Classes="primario" Content="Guardar" Command="{Binding ConfirmarEditarPerfilCommand}"/>
-                        </Grid>
-                    </StackPanel>
+                    </Grid>
 
                     <!-- Renovar Matrícula -->
                     <StackPanel Spacing="14" IsVisible="{Binding IsRenovarMatriculaAberto}">
@@ -657,6 +776,29 @@
              isolado em AlunoPagamentosViewModel/View. Gere a sua própria
              visibilidade (IsAberto) e overlay/ZIndex internamente.
              ================================================================ -->
+        <!-- Preview ampliado da fotografia do aluno -->
+        <Border Background="#CC000000" IsVisible="{Binding IsFotoAberta}" ZIndex="800">
+            <Border Classes="neo-card" MaxWidth="720" MaxHeight="760" Padding="18"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*" RowSpacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="Fotografia do aluno" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{StaticResource OnSurfaceBrush}"/>
+                        <Button Grid.Column="1" Classes="secundario" Padding="8"
+                                Command="{Binding FecharFotoCommand}">
+                            <materialIcons:MaterialIcon Kind="Close" Width="18" Height="18"/>
+                        </Button>
+                    </Grid>
+                    <Border Grid.Row="1" CornerRadius="12" Background="#08000000"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            ClipToBounds="True">
+                        <Image Source="{Binding FotografiaPreview}" MaxWidth="650" MaxHeight="650"
+                               Stretch="Uniform"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Border>
+
         <pagamentos:AlunoPagamentosView DataContext="{Binding PagamentosViewModel}"/>
 
     </Panel>
