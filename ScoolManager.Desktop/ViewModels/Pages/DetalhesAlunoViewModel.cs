@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ScoolManager.Core.Abstractions.Services;
@@ -119,7 +120,12 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     [ObservableProperty] private DateTimeOffset? _dataNascimento;
     [ObservableProperty] private string _genero = string.Empty;
     [ObservableProperty] private string _nacionalidade = string.Empty;
+    [ObservableProperty] private string _naturalidade = string.Empty;
+    [ObservableProperty] private string _provincia = string.Empty;
+    [ObservableProperty] private string _pais = string.Empty;
     [ObservableProperty] private string _numeroBiCedula = string.Empty;
+    [ObservableProperty] private bool _temCondicaoMedica;
+    [ObservableProperty] private string _descricaoCondicaoMedica = string.Empty;
     [ObservableProperty] private string _endereco = string.Empty;
     [ObservableProperty] private string _telefone = string.Empty;
     [ObservableProperty] private string? _email;
@@ -129,13 +135,21 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     // do wizard "Novo Aluno" em AlunosViewModel).
     [ObservableProperty] private string _nomePai = string.Empty;
     [ObservableProperty] private string _contactoPai = string.Empty;
+    [ObservableProperty] private string _profissaoPai = string.Empty;
     [ObservableProperty] private string _nomeMae = string.Empty;
     [ObservableProperty] private string _contactoMae = string.Empty;
+    [ObservableProperty] private string _profissaoMae = string.Empty;
 
     // ===== Matrícula / dados académicos (usados na aba e no widget lateral) =====
     [ObservableProperty] private string _curso = string.Empty;
     [ObservableProperty] private string _anoLectivo = string.Empty;
     [ObservableProperty] private DateTimeOffset? _dataMatricula;
+    [ObservableProperty] private string? _sexo;
+    [ObservableProperty] private string? _turno;
+    [ObservableProperty] private string? _periodo;
+    [ObservableProperty] private string? _cursoEditado;
+    [ObservableProperty] private string? _turmaEditada;
+    [ObservableProperty] private string? _salaEditada;
 
     // ===== Aba "Documentação" =====
     public ObservableCollection<DocumentoAlunoItem> Documentos { get; } = new();
@@ -159,17 +173,66 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     // ===== Os 3 modais restantes (Editar Aluno, Renovar Matrícula, Confirmar Exclusão).
     //       "Efetuar Pagamento" passou a viver em PagamentosViewModel. =====
     [ObservableProperty] private bool _isEditarPerfilAberto;
+    [ObservableProperty] private int _passoEdicao = 1;
+    public const int TotalPassosEdicao = 4;
+    public bool EdicaoPasso1 => PassoEdicao == 1;
+    public bool EdicaoPasso2 => PassoEdicao == 2;
+    public bool EdicaoPasso3 => PassoEdicao == 3;
+    public bool EdicaoPasso4 => PassoEdicao == 4;
+    public bool PodeVoltarEdicao => PassoEdicao > 1;
+    public string TituloPassoEdicao => PassoEdicao switch
+    {
+        1 => "Dados do Aluno",
+        2 => "Dados dos Encarregados",
+        3 => "Enquadramento na Instituição",
+        4 => "Documentos",
+        _ => string.Empty
+    };
+    public ObservableCollection<string> ClassesEdicao { get; } = new();
+    public ObservableCollection<string> TurmasEdicao { get; } = new();
     [ObservableProperty] private bool _isRenovarMatriculaAberto;
     [ObservableProperty] private bool _isConfirmarExclusaoAberto;
 
     public bool AlgumModalAberto =>
         IsEditarPerfilAberto || IsRenovarMatriculaAberto || IsConfirmarExclusaoAberto;
 
-    partial void OnIsEditarPerfilAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsEditarPerfilAbertoChanged(bool value)
+    {
+        OnPropertyChanged(nameof(AlgumModalAberto));
+        if (value) PassoEdicao = 1;
+    }
+
+    partial void OnPassoEdicaoChanged(int value)
+    {
+        OnPropertyChanged(nameof(EdicaoPasso1));
+        OnPropertyChanged(nameof(EdicaoPasso2));
+        OnPropertyChanged(nameof(EdicaoPasso3));
+        OnPropertyChanged(nameof(EdicaoPasso4));
+        OnPropertyChanged(nameof(PodeVoltarEdicao));
+        OnPropertyChanged(nameof(TituloPassoEdicao));
+    }
     partial void OnIsRenovarMatriculaAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
     partial void OnIsConfirmarExclusaoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
 
-    [RelayCommand] private void AbrirEditarPerfil() => IsEditarPerfilAberto = true;
+    [RelayCommand]
+    private async Task AbrirEditarPerfil()
+    {
+        PassoEdicao = 1;
+        await CarregarOpcoesEdicaoAsync();
+        IsEditarPerfilAberto = true;
+    }
+
+    [RelayCommand]
+    private void PassoEdicaoAnterior()
+    {
+        if (PassoEdicao > 1) PassoEdicao--;
+    }
+
+    [RelayCommand]
+    private void PassoEdicaoSeguinte()
+    {
+        if (PassoEdicao < TotalPassosEdicao) PassoEdicao++;
+    }
     [RelayCommand] private void AbrirRenovarMatricula() => IsRenovarMatriculaAberto = true;
     [RelayCommand] private void AbrirConfirmarExclusao() => IsConfirmarExclusaoAberto = true;
 
@@ -191,8 +254,85 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         IsConfirmarExclusaoAberto = false;
     }
 
-    // TODO: ligar aos serviços reais quando existirem (persistência, etc.)
-    [RelayCommand] private void ConfirmarEditarPerfil() => FecharModal();
+    private async Task CarregarOpcoesEdicaoAsync()
+    {
+        if (_escolaService is null) return;
+        try
+        {
+            var classes = await _escolaService.ObterClassesAsync();
+            ClassesEdicao.Clear();
+            foreach (var item in classes.OrderBy(x => x.Numero))
+                ClassesEdicao.Add($"{item.Numero}ª Classe");
+
+            var turmas = await _escolaService.ObterTurmasAsync();
+            TurmasEdicao.Clear();
+            foreach (var item in turmas.OrderBy(x => x.Nome))
+                TurmasEdicao.Add(item.Nome);
+
+            if (string.IsNullOrWhiteSpace(TurmaEditada) && !string.IsNullOrWhiteSpace(Turma))
+                TurmaEditada = Turma;
+        }
+        catch { }
+    }
+
+    [RelayCommand]
+    private async Task ConfirmarEditarPerfil()
+    {
+        if (_alunoId is null or <= 0 || _alunoService is null) return;
+
+        try
+        {
+            var aluno = await _alunoService.ObterDetalhesAsync(_alunoId.Value);
+
+            aluno.Nome = NomeCompleto.Trim();
+            aluno.DataNascimento = DataNascimento?.DateTime;
+            aluno.Genero = Sexo ?? Genero;
+            aluno.Nacionalidade = Nacionalidade.Trim();
+            aluno.Naturalidade = Naturalidade.Trim();
+            aluno.Provincia = Provincia.Trim();
+            aluno.Pais = Pais.Trim();
+            aluno.NumeroBiCedula = NumeroBiCedula.Trim();
+            aluno.Endereco = Endereco.Trim();
+            aluno.Telefone = Telefone.Trim();
+            aluno.Email = Email;
+            aluno.TemCondicaoMedica = TemCondicaoMedica;
+            aluno.DescricaoCondicaoMedica = TemCondicaoMedica ? DescricaoCondicaoMedica.Trim() : null;
+
+            if (!string.IsNullOrWhiteSpace(TurmaEditada))
+            {
+                var turmas = await _escolaService.ObterTurmasAsync();
+                var novaTurma = turmas.FirstOrDefault(t => t.Nome == TurmaEditada);
+                if (novaTurma is not null)
+                {
+                    aluno.TurmaId = novaTurma.Id;
+                    aluno.AnoLectivoId = novaTurma.AnoLectivoId;
+                }
+            }
+
+            var pai = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Pai);
+            var mae = aluno.Encarregados.FirstOrDefault(e => e.Tipo == ScoolManager.Core.Enums.TipoEncarregado.Mae);
+
+            if (pai is not null)
+            {
+                pai.Nome = NomePai.Trim();
+                pai.Contacto = ContactoPai.Trim();
+                pai.Profissao = ProfissaoPai.Trim();
+            }
+
+            if (mae is not null)
+            {
+                mae.Nome = NomeMae.Trim();
+                mae.Contacto = ContactoMae.Trim();
+                mae.Profissao = ProfissaoMae.Trim();
+            }
+
+            await _alunoService.AtualizarAsync(aluno);
+            FecharModal();
+            await InitializeAsync();
+        }
+        catch { }
+    }
+
     [RelayCommand] private void ConfirmarRenovarMatricula() => FecharModal();
 
     /// <summary>Atualiza histórico/saldo quando PagamentosViewModel confirma um pagamento (qualquer categoria).</summary>
@@ -301,8 +441,14 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
             Telefone          = aluno.Telefone ?? string.Empty;
             DataNascimento    = aluno.DataNascimento;
             Genero            = aluno.Genero ?? string.Empty;
+            Sexo              = aluno.Genero;
             Nacionalidade     = aluno.Nacionalidade ?? string.Empty;
+            Naturalidade      = aluno.Naturalidade ?? string.Empty;
+            Provincia         = aluno.Provincia ?? string.Empty;
+            Pais              = aluno.Pais ?? string.Empty;
             NumeroBiCedula    = aluno.NumeroBiCedula ?? string.Empty;
+            TemCondicaoMedica = aluno.TemCondicaoMedica;
+            DescricaoCondicaoMedica = aluno.DescricaoCondicaoMedica ?? string.Empty;
             Endereco          = aluno.Endereco ?? string.Empty;
             Email             = aluno.Email;
             FotografiaCaminho = aluno.FotografiaCaminho;
@@ -314,8 +460,10 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
 
             NomePai     = pai?.Nome ?? string.Empty;
             ContactoPai = pai?.Contacto ?? string.Empty;
+            ProfissaoPai = pai?.Profissao ?? string.Empty;
             NomeMae     = mae?.Nome ?? string.Empty;
             ContactoMae = mae?.Contacto ?? string.Empty;
+            ProfissaoMae = mae?.Profissao ?? string.Empty;
 
             Documentos.Clear();
             foreach (var doc in aluno.Documentos)
