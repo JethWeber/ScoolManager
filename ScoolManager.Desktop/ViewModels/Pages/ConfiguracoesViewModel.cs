@@ -2,23 +2,16 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Entities.Configuracoes;
+using ScoolManager.Core.Entities.Identidade;
 using ScoolManager.Desktop.Models;
+using ScoolManager.Desktop.Services;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
 
-/// <summary>Identifica cada aba do módulo Configurações.</summary>
-public enum AbaConfiguracoes
-{
-    Institucional,
-    Utilizadores,
-    Permissoes,
-    Backup,
-    Licenca
-}
+public enum AbaConfiguracoes { Institucional, Utilizadores, Permissoes, Backup, Licenca }
 
-/// <summary>Item da faixa de abas (ícone + título + o valor do enum correspondente).
-/// Mesmo padrão usado em EscolaViewModel.AbaEscolaItem, para que a faixa de
-/// abas de Configurações use exatamente o mesmo visual (ListBox "pill").</summary>
 public class AbaConfiguracoesItem
 {
     public required MaterialIconKind Icon { get; init; }
@@ -26,297 +19,310 @@ public class AbaConfiguracoesItem
     public required AbaConfiguracoes Valor { get; init; }
 }
 
-/// <summary>
-/// ViewModel da View 7 - Configurações (ver SM_Flow.md).
-/// Abas: Dados da Escola, Utilizadores, Permissões, Backup &amp; Segurança, Licença.
-/// Cada aba é "poucas views, muitos modais": as ações (Editar Utilizador,
-/// Criar Backup, etc.) abrem modais - por agora marcadas como TODO, seguindo
-/// o mesmo padrão usado no resto do projeto (ex.: MainWindowViewModel).
-/// </summary>
 public partial class ConfiguracoesViewModel : ViewModelBase
 {
-    // ================================================================
-    // NAVEGAÇÃO ENTRE ABAS (faixa "pill", igual à usada em EscolaView)
-    // ================================================================
+    private readonly IConfiguracaoInstitucionalService _institucional;
+    private readonly IUtilizadorService _utilizadorService;
+    private readonly IPermissaoService _permissaoService;
+    private readonly IBackupService _backupService;
+    private readonly IFilePickerService _filePicker;
+    private readonly Dictionary<int, Utilizador> _utilizadores = new();
 
     public ObservableCollection<AbaConfiguracoesItem> Abas { get; } = new()
     {
-        new() { Icon = MaterialIconKind.School,        Titulo = "Dados da Escola",    Valor = AbaConfiguracoes.Institucional },
-        new() { Icon = MaterialIconKind.AccountCog,    Titulo = "Utilizadores",       Valor = AbaConfiguracoes.Utilizadores },
-        new() { Icon = MaterialIconKind.ShieldAccount, Titulo = "Permissões",         Valor = AbaConfiguracoes.Permissoes },
-        new() { Icon = MaterialIconKind.CloudSync,     Titulo = "Backup & Segurança", Valor = AbaConfiguracoes.Backup },
-        new() { Icon = MaterialIconKind.Key,           Titulo = "Licença",            Valor = AbaConfiguracoes.Licenca },
+        new() { Icon=MaterialIconKind.School, Titulo="Dados da Escola", Valor=AbaConfiguracoes.Institucional },
+        new() { Icon=MaterialIconKind.AccountCog, Titulo="Utilizadores", Valor=AbaConfiguracoes.Utilizadores },
+        new() { Icon=MaterialIconKind.ShieldAccount, Titulo="Permissões", Valor=AbaConfiguracoes.Permissoes },
+        new() { Icon=MaterialIconKind.CloudSync, Titulo="Backup & Segurança", Valor=AbaConfiguracoes.Backup },
+        new() { Icon=MaterialIconKind.Key, Titulo="Licença", Valor=AbaConfiguracoes.Licenca },
     };
 
-    [ObservableProperty]
-    private AbaConfiguracoesItem? _abaItemSelecionada;
-
+    [ObservableProperty] private AbaConfiguracoesItem? _abaItemSelecionada;
     public bool EhTabInstitucional => AbaItemSelecionada?.Valor == AbaConfiguracoes.Institucional;
     public bool EhTabUtilizadores => AbaItemSelecionada?.Valor == AbaConfiguracoes.Utilizadores;
     public bool EhTabPermissoes => AbaItemSelecionada?.Valor == AbaConfiguracoes.Permissoes;
     public bool EhTabBackup => AbaItemSelecionada?.Valor == AbaConfiguracoes.Backup;
     public bool EhTabLicenca => AbaItemSelecionada?.Valor == AbaConfiguracoes.Licenca;
-
     partial void OnAbaItemSelecionadaChanged(AbaConfiguracoesItem? value)
     {
-        OnPropertyChanged(nameof(EhTabInstitucional));
-        OnPropertyChanged(nameof(EhTabUtilizadores));
-        OnPropertyChanged(nameof(EhTabPermissoes));
-        OnPropertyChanged(nameof(EhTabBackup));
-        OnPropertyChanged(nameof(EhTabLicenca));
+        OnPropertyChanged(nameof(EhTabInstitucional)); OnPropertyChanged(nameof(EhTabUtilizadores));
+        OnPropertyChanged(nameof(EhTabPermissoes)); OnPropertyChanged(nameof(EhTabBackup)); OnPropertyChanged(nameof(EhTabLicenca));
     }
 
-    // ================================================================
-    // ABA 1 - DADOS DA ESCOLA
-    // ================================================================
+    [ObservableProperty] private string _nomeInstituicao = string.Empty;
+    [ObservableProperty] private string _nif = string.Empty;
+    [ObservableProperty] private string _website = string.Empty;
+    [ObservableProperty] private string _emailAdministrativo = string.Empty;
+    [ObservableProperty] private string _enderecoCompleto = string.Empty;
+    [ObservableProperty] private string _telefonePrincipal = string.Empty;
+    [ObservableProperty] private string _telefoneSecundario = string.Empty;
+    [ObservableProperty] private string? _logotipoPath;
 
-    [ObservableProperty]
-    private string _nomeInstituicao = "Complexo Escolar Politécnico de Luanda";
+    public int LicencaDiasRestantes { get; private set; } = 240;
+    public string EspacoUsadoLabel { get; private set; } = string.Empty;
+    public string EspacoTotalLabel { get; private set; } = string.Empty;
 
-    [ObservableProperty]
-    private string _nif = "5412009876";
+    [ObservableProperty] private string _erroConfiguracoes = string.Empty;
+    [ObservableProperty] private string _sucessoConfiguracoes = string.Empty;
 
-    [ObservableProperty]
-    private string _website = "www.cepl-edu.ao";
+    public ObservableCollection<UtilizadorItemModel> Utilizadores { get; } = new();
+    public ObservableCollection<PermissaoPerfilModel> PerfisPermissao { get; } = new();
+    public ObservableCollection<BackupItemModel> Backups { get; } = new();
 
-    [ObservableProperty]
-    private string _emailAdministrativo = "geral@cepl-edu.ao";
+    [ObservableProperty] private bool _backupDiarioAutomatico;
+    [ObservableProperty] private bool _sincronizacaoNuvem;
+    [ObservableProperty] private bool _notificarFalhasEmail;
+    [ObservableProperty] private string _ultimaVerificacaoLabel = "Ainda não verificada.";
 
-    [ObservableProperty]
-    private string _enderecoCompleto = "Rua Direita de Luanda, Bairro Talatona, Sector C, Luanda, Angola";
+    // Modal de utilizador
+    [ObservableProperty] private bool _modalUtilizadorVisivel;
+    [ObservableProperty] private int _utilizadorEditandoId;
+    [ObservableProperty] private string _nomeUtilizador = string.Empty;
+    [ObservableProperty] private string _cargoUtilizador = string.Empty;
+    [ObservableProperty] private string _telefoneUtilizador = string.Empty;
+    [ObservableProperty] private string _passwordUtilizador = string.Empty;
+    [ObservableProperty] private int? _perfilUtilizadorId;
+    public bool EditandoUtilizador => UtilizadorEditandoId > 0;
+    partial void OnUtilizadorEditandoIdChanged(int value) => OnPropertyChanged(nameof(EditandoUtilizador));
 
-    [ObservableProperty]
-    private string _telefonePrincipal = "+244 923 000 000";
+    // Licença — a integração WeberTech ainda não está no projeto; estes campos
+    // continuam a ser somente leitura até existir o provider de licença real.
+    [ObservableProperty] private string _licencaEstado = "Válida";
+    [ObservableProperty] private string _licencaProduto = "School Manager Desktop";
+    [ObservableProperty] private string _licencaCliente = "—";
+    [ObservableProperty] private string _licencaPlano = "—";
+    [ObservableProperty] private string _licencaTipo = "—";
+    [ObservableProperty] private string _licencaDataEmissao = "—";
+    [ObservableProperty] private string _licencaDataExpiracao = "—";
+    [ObservableProperty] private string _licencaMachineId = Environment.MachineName;
+    public ObservableCollection<string> LicencaModulos { get; } = new() { "Alunos", "Propinas", "Financeiro", "Relatórios" };
 
-    [ObservableProperty]
-    private string _telefoneSecundario = "+244 222 000 000";
+    public ConfiguracoesViewModel(
+        IConfiguracaoInstitucionalService institucional,
+        IUtilizadorService utilizadorService,
+        IPermissaoService permissaoService,
+        IBackupService backupService,
+        IFilePickerService filePicker)
+    {
+        _institucional = institucional; _utilizadorService = utilizadorService; _permissaoService = permissaoService;
+        _backupService = backupService; _filePicker = filePicker;
+        _abaItemSelecionada = Abas[0];
+        _ = InicializarAsync();
+    }
 
-    /// <summary>Caminho/URI do logotipo carregado. Nulo enquanto não houver logotipo.</summary>
-    [ObservableProperty]
-    private string? _logotipoPath;
+    private async Task InicializarAsync()
+    {
+        try
+        {
+            var dados = await _institucional.ObterAsync();
+            NomeInstituicao=dados.NomeInstituicao; Nif=dados.Nif; Website=dados.Website ?? "";
+            EmailAdministrativo=dados.EmailAdministrativo; EnderecoCompleto=dados.EnderecoCompleto;
+            TelefonePrincipal=dados.TelefonePrincipal; TelefoneSecundario=dados.TelefoneSecundario ?? "";
+            LogotipoPath=dados.LogotipoPath;
 
-    // Estado do Sistema (cartão lateral)
-    public int LicencaDiasRestantes { get; set; } = 240;
-    public string EspacoUsadoLabel { get; set; } = "45.2 GB";
-    public string EspacoTotalLabel { get; set; } = "100 GB";
+            Utilizadores.Clear(); _utilizadores.Clear();
+            foreach (var u in await _utilizadorService.ObterTodosAsync())
+            {
+                _utilizadores[u.Id]=u;
+                Utilizadores.Add(new UtilizadorItemModel
+                {
+                    Id=u.Id, Nome=u.Nome, Iniciais=Iniciais(u.Nome), Cargo=u.Cargo,
+                    UltimoAcessoLabel=u.UltimoAcesso?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca",
+                    Ativo=u.Ativo
+                });
+            }
+
+            PerfisPermissao.Clear();
+            foreach (var p in await _permissaoService.ObterTodosAsync())
+                PerfisPermissao.Add(new PermissaoPerfilModel
+                {
+                    Id=p.Id, Perfil=p.Perfil, Bloqueado=p.Bloqueado, VerAlunos=p.VerAlunos,
+                    EditarAlunos=p.EditarAlunos, Financeiro=p.Financeiro, Relatorios=p.Relatorios, Configuracoes=p.Configuracoes
+                });
+
+            var cfg=await _backupService.ObterConfiguracaoAsync();
+            BackupDiarioAutomatico=cfg.BackupDiarioAutomatico; SincronizacaoNuvem=cfg.SincronizacaoNuvem;
+            NotificarFalhasEmail=cfg.NotificarFalhasEmail;
+            UltimaVerificacaoLabel=cfg.UltimaVerificacaoIntegridade.HasValue
+                ? $"Última verificação: {cfg.UltimaVerificacaoIntegridade:dd/MM/yyyy HH:mm}. Nenhum erro registado."
+                : "Ainda não foi realizada.";
+
+            await RecarregarBackupsAsync();
+            CalcularEspaco();
+        }
+        catch(Exception ex) { ErroConfiguracoes=ex.Message; }
+    }
+
+    private async Task RecarregarBackupsAsync()
+    {
+        Backups.Clear();
+        foreach(var b in await _backupService.ObterTodosAsync())
+            Backups.Add(new BackupItemModel
+            {
+                Id=b.Id, NomeArquivo=b.NomeArquivo, Localizacao=b.Localizacao, EhNaNuvem=b.EhNaNuvem,
+                DetalheLabel=$"{b.DataCriacao:dd MMM yyyy HH:mm} | {FormatBytes(b.TamanhoBytes)} | {(b.EhNaNuvem ? "Nuvem" : "Servidor Local")}",
+                Icon=b.EhNaNuvem ? MaterialIconKind.CloudCheck : MaterialIconKind.FileDocumentOutline
+            });
+    }
+
+    private void CalcularEspaco()
+    {
+        var pasta=_filePicker is not null ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) : "";
+        try
+        {
+            var drive=new DriveInfo(Path.GetPathRoot(Path.GetFullPath(pasta)) ?? Path.DirectorySeparatorChar.ToString());
+            EspacoTotalLabel=FormatBytes(drive.TotalSize); EspacoUsadoLabel=FormatBytes(drive.TotalSize-drive.AvailableFreeSpace);
+            OnPropertyChanged(nameof(EspacoTotalLabel)); OnPropertyChanged(nameof(EspacoUsadoLabel));
+        } catch { EspacoTotalLabel="—"; EspacoUsadoLabel="—"; }
+    }
 
     [RelayCommand]
-    private void AlterarLogotipo()
+    private async Task GuardarAlteracoes()
     {
-        // TODO: abrir seletor de ficheiros (IStorageProvider) e aplicar a
-        // LogotipoPath, tal como feito em AlunosView para os documentos.
+        try
+        {
+            ErroConfiguracoes=string.Empty;
+            await _institucional.AtualizarAsync(new DadosInstituicao
+            {
+                NomeInstituicao=NomeInstituicao.Trim(), Nif=Nif.Trim(), Website=Website.Trim(),
+                EmailAdministrativo=EmailAdministrativo.Trim(), EnderecoCompleto=EnderecoCompleto.Trim(),
+                TelefonePrincipal=TelefonePrincipal.Trim(), TelefoneSecundario=TelefoneSecundario.Trim(), LogotipoPath=LogotipoPath
+            });
+
+            var cfg=await _backupService.ObterConfiguracaoAsync();
+            cfg.BackupDiarioAutomatico=BackupDiarioAutomatico; cfg.SincronizacaoNuvem=SincronizacaoNuvem;
+            cfg.NotificarFalhasEmail=NotificarFalhasEmail;
+            await _backupService.AtualizarConfiguracaoAsync(cfg);
+
+            foreach(var p in PerfisPermissao.Where(x=>x.Id>0 && !x.Bloqueado))
+                await _permissaoService.AtualizarAsync(new PerfilPermissao
+                {
+                    Id=p.Id, Perfil=p.Perfil, Bloqueado=p.Bloqueado, VerAlunos=p.VerAlunos,
+                    EditarAlunos=p.EditarAlunos, Financeiro=p.Financeiro, Relatorios=p.Relatorios, Configuracoes=p.Configuracoes
+                });
+
+            MostrarSucesso("Configurações guardadas com sucesso.");
+        }
+        catch(Exception ex) { ErroConfiguracoes=ex.Message; }
     }
 
-    // ================================================================
-    // ABA 2 - UTILIZADORES
-    // ================================================================
-
-    public ObservableCollection<UtilizadorItemModel> Utilizadores { get; }
+    [RelayCommand]
+    private async Task AlterarLogotipo()
+    {
+        var caminho=await _filePicker.SelecionarArquivoAsync("Selecionar logotipo", "png","jpg","jpeg","webp");
+        if(!string.IsNullOrWhiteSpace(caminho)) { LogotipoPath=caminho; }
+    }
 
     [RelayCommand]
     private void NovoUtilizador()
     {
-        // TODO: modal "Novo Utilizador" (ver SM_Flow.md).
+        UtilizadorEditandoId=0; NomeUtilizador=""; CargoUtilizador=""; TelefoneUtilizador=""; PasswordUtilizador=""; PerfilUtilizadorId=null;
+        ModalUtilizadorVisivel=true;
     }
 
     [RelayCommand]
     private void EditarUtilizador(UtilizadorItemModel utilizador)
     {
-        // TODO: modal "Editar Utilizador".
+        if(!_utilizadores.TryGetValue(utilizador.Id,out var u)) return;
+        UtilizadorEditandoId=u.Id; NomeUtilizador=u.Nome; CargoUtilizador=u.Cargo; TelefoneUtilizador=u.Telefone;
+        PasswordUtilizador=""; PerfilUtilizadorId=u.PerfilPermissaoId; ModalUtilizadorVisivel=true;
     }
 
     [RelayCommand]
-    private void DesativarUtilizador(UtilizadorItemModel utilizador)
+    private async Task GuardarUtilizador()
     {
-        // TODO: confirmar antes de desativar. Por agora alterna o estado.
-        utilizador.Ativo = !utilizador.Ativo;
-    }
-
-    // ================================================================
-    // ABA 3 - PERMISSÕES
-    // ================================================================
-
-    public ObservableCollection<PermissaoPerfilModel> PerfisPermissao { get; }
-
-    // ================================================================
-    // ABA 4 - BACKUP & SEGURANÇA
-    // ================================================================
-
-    public ObservableCollection<BackupItemModel> Backups { get; }
-
-    [ObservableProperty]
-    private bool _backupDiarioAutomatico = true;
-
-    [ObservableProperty]
-    private bool _sincronizacaoNuvem = true;
-
-    [ObservableProperty]
-    private bool _notificarFalhasEmail;
-
-    public string UltimaVerificacaoLabel { get; set; } =
-        "Última verificação de integridade realizada há 2 horas. Nenhum erro encontrado.";
-
-    [RelayCommand]
-    private void CriarBackup()
-    {
-        // TODO: modal "Criar Backup" + chamada ao serviço de backup real.
-    }
-
-    [RelayCommand]
-    private void RestaurarBackup(BackupItemModel backup)
-    {
-        // TODO: confirmar e restaurar a partir de `backup`.
-    }
-
-    [RelayCommand]
-    private void DescarregarBackup(BackupItemModel backup)
-    {
-        // TODO: descarregar o ficheiro de `backup` para o disco.
-    }
-
-    // ================================================================
-    // ABA 5 - LICENÇA
-    // ================================================================
-    // Campos alinhados com o payload da licença descrito em
-    // WeberTech_Licensing_Documentacao_V01.pdf (LicenseId, ProductId,
-    // MachineId, Plan, Type, Features, IssuedAt, ExpiresAt). Por agora os
-    // valores são estáticos; quando WeberTech.Licensing estiver integrado,
-    // devem vir de Licensing.GetLicenseInfo() / Licensing.CurrentStatus.
-
-    [ObservableProperty]
-    private string _licencaEstado = "Válida";
-
-    [ObservableProperty]
-    private string _licencaProduto = "School Manager Desktop";
-
-    [ObservableProperty]
-    private string _licencaCliente = "Complexo Escolar Politécnico de Luanda";
-
-    [ObservableProperty]
-    private string _licencaPlano = "Professional";
-
-    [ObservableProperty]
-    private string _licencaTipo = "Assinatura Anual";
-
-    [ObservableProperty]
-    private string _licencaDataEmissao = "30/07/2025";
-
-    [ObservableProperty]
-    private string _licencaDataExpiracao = "30/07/2026";
-
-    /// <summary>Machine ID local (ver MachineIdService no documento de licenciamento).</summary>
-    [ObservableProperty]
-    private string _licencaMachineId = "9F2C7A1E4B6D0083";
-
-    public ObservableCollection<string> LicencaModulos { get; } = new()
-    {
-        "Alunos", "Propinas", "Financeiro", "Relatórios"
-    };
-
-    [RelayCommand]
-    private void CopiarMachineId()
-    {
-        // TODO: copiar LicencaMachineId para a área de transferência
-        // (Avalonia IClipboard via TopLevel.GetTopLevel(view)).
-    }
-
-    [RelayCommand]
-    private void GerarPedidoAtivacao()
-    {
-        // TODO: gerar o pedido de ativação (ActivationRequestService) e
-        // mostrar o QR Code correspondente neste cartão, tal como descrito
-        // na secção 6-7 de WeberTech_Licensing_Documentacao_V01.pdf.
-    }
-
-    [RelayCommand]
-    private void ImportarLicenca()
-    {
-        // TODO: abrir seletor de ficheiros (IStorageProvider) filtrado por
-        // *.wta e chamar Licensing.ImportLicenseFile(caminho).
-    }
-
-    // ================================================================
-    // AÇÃO GLOBAL
-    // ================================================================
-
-    [RelayCommand]
-    private void GuardarAlteracoes()
-    {
-        // TODO: persistir os dados institucionais e as configurações de backup.
-    }
-
-    public ConfiguracoesViewModel()
-    {
-        _abaItemSelecionada = Abas[0]; // Dados da Escola
-
-        Utilizadores = new ObservableCollection<UtilizadorItemModel>
+        try
         {
-            new()
-            {
-                Nome = "Ricardo Silva",
-                Iniciais = "RS",
-                Cargo = "Diretor Geral",
-                UltimoAcessoLabel = "Hoje, 10:45",
-                Ativo = true,
-            },
-            new()
-            {
-                Nome = "Maria Antónia",
-                Iniciais = "MA",
-                Cargo = "Tesoureira",
-                UltimoAcessoLabel = "Ontem, 16:30",
-                Ativo = true,
-            },
-        };
+            if(string.IsNullOrWhiteSpace(NomeUtilizador)||string.IsNullOrWhiteSpace(TelefoneUtilizador))
+                throw new InvalidOperationException("Nome e telefone são obrigatórios.");
 
-        PerfisPermissao = new ObservableCollection<PermissaoPerfilModel>
-        {
-            new()
+            if(UtilizadorEditandoId==0)
             {
-                Perfil = "Administrador",
-                Bloqueado = true,
-                VerAlunos = true,
-                EditarAlunos = true,
-                Financeiro = true,
-                Relatorios = true,
-                Configuracoes = true,
-            },
-            new()
+                if(string.IsNullOrWhiteSpace(PasswordUtilizador)) throw new InvalidOperationException("A password é obrigatória para um novo utilizador.");
+                var u=await _utilizadorService.CriarAsync(NomeUtilizador.Trim(),CargoUtilizador.Trim(),TelefoneUtilizador.Trim(),PasswordUtilizador,PerfilUtilizadorId);
+                _utilizadores[u.Id]=u;
+            }
+            else
             {
-                Perfil = "Secretária",
-                VerAlunos = true,
-                EditarAlunos = true,
-                Financeiro = true,
-                Relatorios = true,
-                Configuracoes = false,
-            },
-            new()
-            {
-                Perfil = "Tesoureiro(a)",
-                VerAlunos = true,
-                EditarAlunos = false,
-                Financeiro = true,
-                Relatorios = true,
-                Configuracoes = false,
-            },
-        };
+                var u=_utilizadores[UtilizadorEditandoId];
+                u.Nome=NomeUtilizador.Trim(); u.Cargo=CargoUtilizador.Trim(); u.Telefone=TelefoneUtilizador.Trim(); u.PerfilPermissaoId=PerfilUtilizadorId;
+                await _utilizadorService.AtualizarAsync(u);
+            }
+            ModalUtilizadorVisivel=false; await InicializarAsync(); MostrarSucesso("Utilizador guardado com sucesso.");
+        }
+        catch(Exception ex){ErroConfiguracoes=ex.Message;}
+    }
 
-        Backups = new ObservableCollection<BackupItemModel>
+    [RelayCommand]
+    private async Task DesativarUtilizador(UtilizadorItemModel utilizador)
+    {
+        try { await _utilizadorService.DesativarAsync(utilizador.Id); await InicializarAsync(); MostrarSucesso("Estado do utilizador atualizado."); }
+        catch(Exception ex){ErroConfiguracoes=ex.Message;}
+    }
+
+    [RelayCommand]
+    private async Task CriarBackup()
+    {
+        try { await _backupService.CriarBackupAsync(); await RecarregarBackupsAsync(); MostrarSucesso("Backup criado com sucesso."); }
+        catch(Exception ex){ErroConfiguracoes=ex.Message;}
+    }
+
+    [RelayCommand]
+    private async Task RestaurarBackup(BackupItemModel backup)
+    {
+        try { await _backupService.RestaurarAsync(backup.Id); MostrarSucesso("Backup restaurado. Reinicie a aplicação para recarregar a base de dados."); }
+        catch(Exception ex){ErroConfiguracoes=ex.Message;}
+    }
+
+    [RelayCommand]
+    private async Task DescarregarBackup(BackupItemModel backup)
+    {
+        try
         {
-            new()
+            if(!File.Exists(backup.Localizacao)) throw new FileNotFoundException("O ficheiro de backup não existe.",backup.Localizacao);
+            var destino=await _filePicker.SelecionarDestinoAsync("Guardar cópia do backup",backup.NomeArquivo,"db");
+            if(string.IsNullOrWhiteSpace(destino)) return;
+            File.Copy(backup.Localizacao,destino,true); MostrarSucesso("Backup exportado com sucesso.");
+        }
+        catch(Exception ex){ErroConfiguracoes=ex.Message;}
+    }
+
+    [RelayCommand]
+    private async Task GuardarPermissao(PermissaoPerfilModel perfil)
+    {
+        try
+        {
+            if(perfil.Bloqueado) return;
+            await _permissaoService.AtualizarAsync(new PerfilPermissao
             {
-                NomeArquivo = "backup_escolar_full_20231024.sql",
-                DetalheLabel = "24 Out 2023 | 124.5 MB | Servidor Local",
-                Icon = MaterialIconKind.FileDocumentOutline,
-                EhNaNuvem = false,
-            },
-            new()
-            {
-                NomeArquivo = "daily_automatic_cloud_sync.bak",
-                DetalheLabel = "Hoje, 04:00 | 128.2 MB | Google Drive",
-                Icon = MaterialIconKind.CloudCheck,
-                EhNaNuvem = true,
-            },
-        };
+                Id=perfil.Id, Perfil=perfil.Perfil, Bloqueado=perfil.Bloqueado, VerAlunos=perfil.VerAlunos,
+                EditarAlunos=perfil.EditarAlunos, Financeiro=perfil.Financeiro, Relatorios=perfil.Relatorios, Configuracoes=perfil.Configuracoes
+            });
+            MostrarSucesso($"Permissões de {perfil.Perfil} guardadas.");
+        }
+        catch(Exception ex){ErroConfiguracoes=ex.Message;}
+    }
+
+    [RelayCommand] private void FecharUtilizador() => ModalUtilizadorVisivel=false;
+
+    [RelayCommand] private void CopiarMachineId() { }
+    [RelayCommand] private void GerarPedidoAtivacao() => MostrarSucesso("O pedido de ativação será disponibilizado com o módulo WeberTech Licensing.");
+    [RelayCommand] private async Task ImportarLicenca()
+    {
+        var caminho=await _filePicker.SelecionarArquivoAsync("Importar licença", "wta");
+        if(!string.IsNullOrWhiteSpace(caminho)) MostrarSucesso("Ficheiro de licença selecionado. A integração do provider WeberTech ainda não está ligada.");
+    }
+
+    private void MostrarSucesso(string msg){ SucessoConfiguracoes=msg; ErroConfiguracoes=string.Empty; }
+    private static string Iniciais(string nome)
+    {
+        var p=nome.Split(' ',StringSplitOptions.RemoveEmptyEntries);
+        return p.Length==0 ? "?" : string.Concat(p.Take(2).Select(x=>char.ToUpperInvariant(x[0])));
+    }
+    private static string FormatBytes(long bytes)
+    {
+        string[] units={"B","KB","MB","GB","TB"}; double n=bytes; int i=0;
+        while(n>=1024&&i<units.Length-1){n/=1024;i++;}
+        return $"{n:N1} {units[i]}";
     }
 }
