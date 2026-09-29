@@ -23,6 +23,7 @@ public partial class FinanceiroViewModel : ViewModelBase
     [ObservableProperty] private string _erroFinanceiro = string.Empty;
     public bool TemErroFinanceiro => !string.IsNullOrWhiteSpace(ErroFinanceiro);
     partial void OnErroFinanceiroChanged(string value) => OnPropertyChanged(nameof(TemErroFinanceiro));
+    [RelayCommand] private void FecharErroFinanceiro() => ErroFinanceiro = string.Empty;
 
     private static string Kz(decimal value) => value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("pt-PT")) + " Kz";
     private static bool TryValor(string value, out decimal result)
