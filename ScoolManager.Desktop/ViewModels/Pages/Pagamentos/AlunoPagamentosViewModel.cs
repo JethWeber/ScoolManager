@@ -88,6 +88,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         [ObservableProperty] private string _codigoMatricula = string.Empty;
         private readonly IFinanceiroService? _financeiroService;
         private readonly int _alunoId;
+        private readonly IReciboPagamentoService? _reciboService;
         [ObservableProperty] private string? _erroConfirmacao;
         [ObservableProperty] private bool _isSucessoAberto;
         [ObservableProperty] private string _sucessoMensagem = "Pagamento realizado com sucesso!";
@@ -281,10 +282,14 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
             };
         }
 
-        public AlunoPagamentosViewModel(IFinanceiroService? financeiroService, int alunoId)
+        public AlunoPagamentosViewModel(
+            IFinanceiroService? financeiroService,
+            int alunoId,
+            IReciboPagamentoService? reciboService = null)
         {
             _financeiroService = financeiroService;
             _alunoId = alunoId;
+            _reciboService = reciboService;
         }
 
         public AlunoPagamentosViewModel() { }
@@ -512,9 +517,33 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
                     pagamento.DataPagamento ?? DateTime.Now,
                     quantidadeReferencias));
 
+                string detalheRecibo;
+                try
+                {
+                    if (_reciboService is not null)
+                    {
+                        var recibo = await _reciboService.GuardarEImprimirAsync(
+                            pagamento,
+                            NomeEstudante,
+                            descricao);
+
+                        detalheRecibo = recibo.ImpressaoEnviada
+                            ? $"Recibo {pagamento.NumeroRecibo} salvo e enviado para impressão · {FormatKz(pagamento.Valor)}"
+                            : $"Recibo {pagamento.NumeroRecibo} salvo · impressora térmica não disponível · {FormatKz(pagamento.Valor)}";
+                    }
+                    else
+                    {
+                        detalheRecibo = $"{pagamento.NumeroRecibo} · {FormatKz(pagamento.Valor)}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    detalheRecibo = $"Recibo {pagamento.NumeroRecibo} registado, mas não foi possível imprimir: {ex.Message}";
+                }
+
                 await MostrarSucessoAsync(
                     "Pagamento realizado com sucesso!",
-                    $"{pagamento.NumeroRecibo} · {FormatKz(pagamento.Valor)}");
+                    detalheRecibo);
 
                 Fechar();
             }
