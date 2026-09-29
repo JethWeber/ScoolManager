@@ -11,17 +11,20 @@ public class DashboardService : IDashboardService
     private readonly IPagamentoRepository _pagamentos;
     private readonly IMovimentoCaixaRepository _movimentos;
     private readonly ISessaoCaixaRepository _sessoesCaixa;
+    private readonly IDividaService _dividas;
 
     public DashboardService(
         IAlunoRepository alunos,
         IPagamentoRepository pagamentos,
         IMovimentoCaixaRepository movimentos,
-        ISessaoCaixaRepository sessoesCaixa)
+        ISessaoCaixaRepository sessoesCaixa,
+        IDividaService dividas)
     {
         _alunos = alunos;
         _pagamentos = pagamentos;
         _movimentos = movimentos;
         _sessoesCaixa = sessoesCaixa;
+        _dividas = dividas;
     }
 
     public async Task<ResumoDashboardDto> ObterResumoAsync(DateTime dia, CancellationToken ct = default)
@@ -30,18 +33,24 @@ public class DashboardService : IDashboardService
         var totalAlunos = alunos.Count(a => a.Ativo);
         var matriculasDoAno = alunos.Count(a => a.DataMatricula?.Year == dia.Year);
 
-        var inicioAno = new DateTime(dia.Year, 1, 1);
-        var fimAno = new DateTime(dia.Year, 12, 31);
+        var inicioAnoLectivo = new DateTime(dia.Month >= 9 ? dia.Year : dia.Year - 1, 9, 1);
+        var fimAnoLectivo = inicioAnoLectivo.AddYears(1).AddTicks(-1);
 
-        // CORREÇÃO: um pagamento Anulado não deve contar como receita nem
-        // como dívida — filtra-se uma única vez aqui, antes de qualquer
-        // soma, para todos os cálculos abaixo herdarem a exclusão.
-        var pagamentosDoAno = (await _pagamentos.ObterPorPeriodoAsync(inicioAno, fimAno, ct))
+        var pagamentos = (await _pagamentos.ObterPorPeriodoAsync(inicioAnoLectivo, fimAnoLectivo, ct))
             .Where(p => !p.Anulado)
             .ToList();
 
-        var propinasPagas = pagamentosDoAno.Where(p => p.Estado == EstadoPagamento.Pago).Sum(p => p.Valor);
-        var propinasEmAtraso = pagamentosDoAno.Where(p => p.Estado == EstadoPagamento.EmAtraso).Sum(p => p.Valor);
+        var inicioMes = new DateTime(dia.Year, dia.Month, 1);
+        var fimMes = inicioMes.AddMonths(1).AddTicks(-1);
+
+        var propinasPagas = pagamentos
+            .Where(p => p.Tipo == TipoCobranca.Propina &&
+                        p.Estado == EstadoPagamento.Pago &&
+                        p.DataPagamento >= inicioMes &&
+                        p.DataPagamento <= fimMes)
+            .Sum(p => p.Valor);
+
+        var dividas = await _dividas.ObterResumoAsync(dia, 5, ct);
 
         var inicioDia = dia.Date;
         var fimDia = inicioDia.AddDays(1).AddTicks(-1);
@@ -52,7 +61,7 @@ public class DashboardService : IDashboardService
         var sessaoAtual = await _sessoesCaixa.ObterSessaoAbertaAsync(ct);
         var saldoCaixa = sessaoAtual is null ? 0m : sessaoAtual.SaldoInicial + entradas - saidas;
 
-        var ultimosPagamentos = pagamentosDoAno
+        var ultimosPagamentos = pagamentos
             .Where(p => p.DataPagamento is not null)
             .OrderByDescending(p => p.DataPagamento)
             .Take(5)
@@ -64,31 +73,20 @@ public class DashboardService : IDashboardService
             })
             .ToList();
 
-        // CORREÇÃO (gap 1): Top 5 Devedores — soma o valor em atraso por
-        // aluno e ordena do maior para o menor. Usa os pagamentos em atraso
-        // já filtrados do ano corrente (pagamentosDoAno); um devedor de anos
-        // anteriores que já não tenha registos "em atraso" no ano atual não
-        // aparece aqui — é uma limitação aceitável para o Dashboard (visão
-        // do ano corrente), não para os Relatórios (que cobrem qualquer período).
-        var topDevedores = pagamentosDoAno
-            .Where(p => p.Estado == EstadoPagamento.EmAtraso)
-            .GroupBy(p => p.AlunoId)
-            .Select(g => new
+        var meses = Enumerable.Range(0, 10)
+            .Select(i => inicioAnoLectivo.AddMonths(i))
+            .ToList();
+
+        var receitaPorMes = meses
+            .Select(mes => new ReceitaMensalDto
             {
-                AlunoId = g.Key,
-                Total = g.Sum(p => p.Valor)
-            })
-            .OrderByDescending(g => g.Total)
-            .Take(5)
-            .Select(g =>
-            {
-                var aluno = alunos.FirstOrDefault(a => a.Id == g.AlunoId);
-                return new DevedorDto
-                {
-                    Nome = aluno?.Nome ?? string.Empty,
-                    Turma = aluno?.Turma?.Nome ?? string.Empty,
-                    ValorEmDivida = g.Total
-                };
+                Mes = mes,
+                Label = NomeMes(mes.Month),
+                Valor = pagamentos
+                    .Where(p => p.DataPagamento?.Year == mes.Year &&
+                                p.DataPagamento?.Month == mes.Month &&
+                                p.Estado == EstadoPagamento.Pago)
+                    .Sum(p => p.Valor)
             })
             .ToList();
 
@@ -97,12 +95,21 @@ public class DashboardService : IDashboardService
             TotalAlunos = totalAlunos,
             MatriculasDoAno = matriculasDoAno,
             PropinasPagas = propinasPagas,
-            PropinasEmAtraso = propinasEmAtraso,
+            PropinasEmAtraso = dividas.TotalEmDivida,
+            TotalEmDivida = dividas.TotalEmDivida,
             Entradas = entradas,
             Saidas = saidas,
             SaldoCaixa = saldoCaixa,
             UltimosPagamentos = ultimosPagamentos,
-            TopDevedores = topDevedores
+            TopDevedores = dividas.MaioresDevedores.ToList(),
+            ReceitaPorMes = receitaPorMes
         };
     }
+
+    private static string NomeMes(int mes) => mes switch
+    {
+        1 => "Jan", 2 => "Fev", 3 => "Mar", 4 => "Abr", 5 => "Mai", 6 => "Jun",
+        7 => "Jul", 8 => "Ago", 9 => "Set", 10 => "Out", 11 => "Nov", 12 => "Dez",
+        _ => string.Empty
+    };
 }
