@@ -83,6 +83,9 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         private readonly IFinanceiroService? _financeiroService;
         private readonly int _alunoId;
         [ObservableProperty] private string? _erroConfirmacao;
+        [ObservableProperty] private bool _isSucessoAberto;
+        [ObservableProperty] private string _sucessoMensagem = "Pagamento realizado com sucesso!";
+        [ObservableProperty] private string _sucessoDetalhe = string.Empty;
 
         public bool TemErroConfirmacao => !string.IsNullOrWhiteSpace(ErroConfirmacao);
 
@@ -382,6 +385,15 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         /// </summary>
         public event EventHandler<PagamentoRealizadoEventArgs>? PagamentoConfirmado;
 
+        private async Task MostrarSucessoAsync(string mensagem, string detalhe)
+        {
+            SucessoMensagem = mensagem;
+            SucessoDetalhe = detalhe;
+            IsSucessoAberto = true;
+            await Task.Delay(1800);
+            IsSucessoAberto = false;
+        }
+
         [RelayCommand(CanExecute = nameof(PodeConfirmar))]
         private async Task ConfirmarPagamento()
         {
@@ -426,6 +438,10 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
                     pagamento.Valor,
                     pagamento.DataPagamento ?? DateTime.Now,
                     quantidadeReferencias));
+
+                await MostrarSucessoAsync(
+                    "Pagamento realizado com sucesso!",
+                    $"{pagamento.NumeroRecibo} · {FormatKz(pagamento.Valor)}");
 
                 Fechar();
             }
