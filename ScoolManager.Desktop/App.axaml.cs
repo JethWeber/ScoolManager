@@ -81,7 +81,7 @@ public partial class App : Application
 
         // Abstração de UI (diálogo de arquivo) — implementação específica do Avalonia.
         services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
-        services.AddSingleton<IRelatorioPdfService, RelatorioPdfService>();
+        services.AddSingleton<IExportacaoArquivoService, ExportacaoArquivoService>();
         services.AddSingleton<IAtividadeSucessoService, AtividadeSucessoService>();
 
         RegistarViewModels(services);
