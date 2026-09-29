@@ -86,6 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEscolaService, Services.Escola.EscolaService>();
         services.AddScoped<IAlunoService, AlunoService>();
         services.AddScoped<IFinanceiroService, FinanceiroService>();
+        services.AddScoped<IDividaService, DividaService>();
         services.AddScoped<ICaixaService, CaixaService>();
         services.AddScoped<INotificacaoService, NotificacaoService>();
         services.AddScoped<IRelatorioService, RelatorioService>();
