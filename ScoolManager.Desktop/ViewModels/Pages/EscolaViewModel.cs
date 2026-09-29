@@ -10,6 +10,7 @@ using Material.Icons;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Escola;
 using ScoolManager.Desktop.Models;
+using ScoolManager.Desktop.Services;
 using CoreEnums = ScoolManager.Core.Enums;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
@@ -64,6 +65,7 @@ public class CategoriaServicoOpcao
 public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
 {
     private readonly IEscolaService? _escolaService;
+    private readonly IAtividadeSucessoService? _atividadeSucesso;
     private readonly List<TurmaModel> _turmasFonte = new();
 
     // =================================================================
@@ -99,11 +101,12 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         OnPropertyChanged(nameof(AbaServicosAtiva));
     }
 
-    public EscolaViewModel() : this(null) { }
+    public EscolaViewModel() : this(null, null) { }
 
-    public EscolaViewModel(IEscolaService? escolaService)
+    public EscolaViewModel(IEscolaService? escolaService, IAtividadeSucessoService? atividadeSucesso)
     {
         _escolaService = escolaService;
+        _atividadeSucesso = atividadeSucesso;
         _abaItemSelecionada = Abas[0]; // Turmas
 
         // Sem serviço, a ViewModel permanece vazia. Não existem dados Mock
@@ -435,6 +438,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
                     capacidade);
 
                 ModalTurmaVisivel = false;
+                _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.CadastroTurma, $"Turma {turma.Nome} cadastrada com sucesso");
                 await InitializeAsync();
                 return;
             }
@@ -455,6 +459,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             await _escolaService.AtualizarTurmaAsync(turmaAtualizada);
 
             ModalTurmaVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.EdicaoTurma, $"Turma {turmaAtualizada.Letra} atualizada com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -513,6 +518,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         {
             await _escolaService.RemoverTurmaAsync(_turmaParaEliminar.Id);
             ModalEliminarTurmaVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.ExclusaoTurma, $"Turma {_turmaParaEliminar.Nome} eliminada com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -652,6 +658,9 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             }
 
             ModalSalaVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(
+                _salaEmEdicao is null ? AtividadesSucesso.CadastroSala : AtividadesSucesso.EdicaoSala,
+                _salaEmEdicao is null ? $"Sala {nome} cadastrada com sucesso" : $"Sala {nome} atualizada com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -707,6 +716,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         {
             await _escolaService.RemoverSalaAsync(_salaParaEliminar.Id);
             ModalEliminarSalaVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.ExclusaoSala, $"Sala {_salaParaEliminar.Nome} eliminada com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -832,6 +842,9 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             }
 
             ModalCursoVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(
+                _cursoEmEdicao is null ? AtividadesSucesso.CadastroCurso : AtividadesSucesso.EdicaoCurso,
+                _cursoEmEdicao is null ? $"Curso {nome} cadastrado com sucesso" : $"Curso {nome} atualizado com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -887,6 +900,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         {
             await _escolaService.RemoverCursoAsync(_cursoParaEliminar.Id);
             ModalEliminarCursoVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.ExclusaoCurso, $"Curso {_cursoParaEliminar.Nome} eliminado com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -1026,6 +1040,9 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             }
 
             ModalAnoLectivoVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(
+                _anoLectivoEmEdicao is null ? AtividadesSucesso.CadastroAnoLectivo : AtividadesSucesso.EdicaoAnoLectivo,
+                _anoLectivoEmEdicao is null ? $"Ano lectivo {nome} cadastrado com sucesso" : $"Ano lectivo {nome} atualizado com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -1075,6 +1092,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         {
             await _escolaService.EncerrarAnoLectivoAsync(_anoLectivoParaEncerrar.Id);
             ModalEncerrarAnoLectivoVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.EncerramentoAnoLectivo, $"Ano lectivo {_anoLectivoParaEncerrar.Nome} encerrado com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -1277,6 +1295,9 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
             }
 
             ModalServicoVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(
+                _servicoEmEdicao is null ? AtividadesSucesso.CadastroServico : AtividadesSucesso.EdicaoServico,
+                _servicoEmEdicao is null ? $"Serviço {nome} cadastrado com sucesso" : $"Serviço {nome} atualizado com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
@@ -1306,6 +1327,9 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         try
         {
             await _escolaService.DefinirAtivoServicoAsync(servico.Id, ativo);
+            _atividadeSucesso?.AtividadeSucedida(
+                ativo ? AtividadesSucesso.ReativacaoServico : AtividadesSucesso.DesativacaoServico,
+                ativo ? $"Serviço {servico.Nome} reativado com sucesso" : $"Serviço {servico.Nome} desativado com sucesso");
             await InitializeAsync();
         }
         catch
@@ -1357,6 +1381,7 @@ public partial class EscolaViewModel : ViewModelBase, IAsyncInitializable
         {
             await _escolaService.RemoverServicoAsync(_servicoParaEliminar.Id);
             ModalEliminarServicoVisivel = false;
+            _atividadeSucesso?.AtividadeSucedida(AtividadesSucesso.ExclusaoServico, $"Serviço {_servicoParaEliminar.Nome} eliminado com sucesso");
             await InitializeAsync();
         }
         catch (Exception ex)
