@@ -406,6 +406,7 @@
                                             <DataTemplate x:DataType="vm:MesSelecionavelItem">
                                                 <ToggleButton Classes="chip-mes" Content="{Binding Nome}"
                                                               IsChecked="{Binding Selecionado, Mode=OneWay}"
+                                                              IsEnabled="{Binding Disponivel}"
                                                               Command="{Binding $parent[ItemsControl].((vm:AlunoPagamentosViewModel)DataContext).AlternarMesCommand}"
                                                               CommandParameter="{Binding}"/>
                                             </DataTemplate>
