@@ -5,6 +5,7 @@ using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Desktop.Models;
+using ScoolManager.Desktop.Services;
 using ScoolManager.Desktop.ViewModels.Pages;
 
 namespace ScoolManager.Desktop.ViewModels;
@@ -21,6 +22,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<NavigationItemViewModel> NavigationItems { get; }
 
+    public IAtividadeSucessoService AtividadeSucesso { get; }
+
     // Dados do utilizador autenticado - placeholder por agora,
     // depois ligamos à sessão/serviço de autenticação real.
     // TODO: LoginViewModel já recebe o Utilizador de AutenticarAsync — falta
@@ -28,8 +31,9 @@ public partial class MainWindowViewModel : ViewModelBase
     public string UserName { get; } = "Secretaria";
     public string UserRole { get; } = "Administrador";
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(IAtividadeSucessoService atividadeSucesso)
     {
+        AtividadeSucesso = atividadeSucesso;
         // 6 views principais, conforme SM_Flow.md. As páginas passam a ser
         // resolvidas pelo container de DI (App.Services) em vez de `new`,
         // porque agora recebem Services do Core no construtor.
