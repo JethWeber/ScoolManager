@@ -311,7 +311,11 @@ public partial class ConfiguracoesViewModel : ViewModelBase
     private async Task CopiarMachineId()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            await desktop.MainWindow?.Clipboard?.SetTextAsync(LicencaMachineId)!;
+        {
+            var clipboard = desktop.MainWindow?.Clipboard;
+            if (clipboard is not null)
+                await clipboard.SetTextAsync(LicencaMachineId);
+        }
         MostrarSucesso("Machine ID copiado.");
     }
     [RelayCommand] private void GerarPedidoAtivacao() => MostrarSucesso("O pedido de ativação será disponibilizado com o módulo WeberTech Licensing.");
