@@ -334,12 +334,32 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
                 pai.Contacto = ContactoPai.Trim();
                 pai.Profissao = ProfissaoPai.Trim();
             }
+            else if (!string.IsNullOrWhiteSpace(NomePai))
+            {
+                aluno.Encarregados.Add(new ScoolManager.Core.Entities.Alunos.Encarregado
+                {
+                    Tipo = ScoolManager.Core.Enums.TipoEncarregado.Pai,
+                    Nome = NomePai.Trim(),
+                    Contacto = ContactoPai.Trim(),
+                    Profissao = ProfissaoPai.Trim()
+                });
+            }
 
             if (mae is not null)
             {
                 mae.Nome = NomeMae.Trim();
                 mae.Contacto = ContactoMae.Trim();
                 mae.Profissao = ProfissaoMae.Trim();
+            }
+            else if (!string.IsNullOrWhiteSpace(NomeMae))
+            {
+                aluno.Encarregados.Add(new ScoolManager.Core.Entities.Alunos.Encarregado
+                {
+                    Tipo = ScoolManager.Core.Enums.TipoEncarregado.Mae,
+                    Nome = NomeMae.Trim(),
+                    Contacto = ContactoMae.Trim(),
+                    Profissao = ProfissaoMae.Trim()
+                });
             }
 
             await _alunoService.AtualizarAsync(aluno);
