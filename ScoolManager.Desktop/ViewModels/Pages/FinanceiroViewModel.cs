@@ -502,7 +502,17 @@ public partial class FinanceiroViewModel : ViewModelBase
         SaldoAtualLabel = Kz(sessao.SaldoInicial + entradas + pagamentos - saidas);
 
         HistoricoCaixa.Clear();
-        HistoricoCaixa.Add(new SessaoCaixaItem(sessao.DataAbertura.ToString("dd/MM/yyyy HH:mm"), null, Kz(sessao.SaldoInicial), null, "Aberto", sessao.Id));
+        var historico = await _caixa.ObterHistoricoAsync(DateTime.Now.AddYears(-2), DateTime.Now);
+        foreach (var s in historico.OrderByDescending(x => x.DataAbertura))
+        {
+            HistoricoCaixa.Add(new SessaoCaixaItem(
+                s.DataAbertura.ToString("dd/MM/yyyy HH:mm"),
+                s.DataFechamento?.ToString("dd/MM/yyyy HH:mm"),
+                Kz(s.SaldoInicial),
+                s.SaldoFinal.HasValue ? Kz(s.SaldoFinal.Value) : null,
+                s.Estado == EstadoCaixa.Aberta ? "Aberto" : "Fechado",
+                s.Id));
+        }
     }
 
     [RelayCommand]
@@ -587,6 +597,6 @@ public sealed class MovimentoItem
 }
 
 /// <summary>Sessão de caixa exibida no histórico da aba "Caixa".</summary>
-public sealed record SessaoCaixaItem(string DataAbertura, string? DataFecho, string SaldoInicial, string? SaldoFinal, string Estado);
+public sealed record SessaoCaixaItem(string DataAbertura, string? DataFecho, string SaldoInicial, string? SaldoFinal, string Estado, int Id = 0);
 
 } // fim namespace ScoolManager.Desktop.ViewModels.Pages
