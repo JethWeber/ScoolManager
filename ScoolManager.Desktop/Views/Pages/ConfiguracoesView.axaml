@@ -197,6 +197,7 @@
     <!-- ================================================================
          CONTEÚDO PRINCIPAL
          ================================================================ -->
+    <Panel>
     <ScrollViewer Background="{StaticResource BackgroundBrush}">
         <StackPanel Margin="32" Spacing="24" MaxWidth="1400">
 
@@ -795,5 +796,33 @@
 
         </StackPanel>
     </ScrollViewer>
+
+    <!-- Modal real de utilizador -->
+    <Border Background="#D90B1326" IsVisible="{Binding ModalUtilizadorVisivel}">
+        <Border Classes="neo-card" Width="520" MaxHeight="620" Padding="28"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+                <TextBlock Text="{Binding EditandoUtilizador, StringFormat='Editar Utilizador'}"
+                           IsVisible="False"/>
+                <TextBlock Text="Utilizador" FontSize="20" FontWeight="SemiBold"
+                           Foreground="{StaticResource OnSurfaceBrush}"/>
+                <TextBox Text="{Binding NomeUtilizador}" Watermark="Nome completo"/>
+                <TextBox Text="{Binding CargoUtilizador}" Watermark="Cargo"/>
+                <TextBox Text="{Binding TelefoneUtilizador}" Watermark="Telefone"/>
+                <TextBox Text="{Binding PasswordUtilizador}" Watermark="Password (obrigatória ao criar)"
+                         PasswordChar="•"/>
+                <TextBox Text="{Binding PerfilUtilizadorId}" Watermark="ID do perfil de permissões (opcional)"/>
+                <TextBlock Text="{Binding ErroConfiguracoes}" Foreground="{StaticResource ErrorBrush}"
+                           TextWrapping="Wrap" IsVisible="{Binding ErroConfiguracoes, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,8,0,0">
+                    <Button Grid.Column="0" Classes="secundario" Content="Cancelar"
+                            Command="{Binding FecharUtilizadorCommand}"/>
+                    <Button Grid.Column="1" Classes="primario" Content="Guardar"
+                            Command="{Binding GuardarUtilizadorCommand}"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Border>
+</Panel>
 
 </UserControl>
