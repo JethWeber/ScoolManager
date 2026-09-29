@@ -910,6 +910,8 @@
                         <TextBlock Text="Serão exportados os alunos visíveis com os filtros atuais."
                                    FontSize="13" Opacity="0.7" TextWrapping="Wrap"
                                    Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="{Binding ErroMatricula}" FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource ErrorBrush}"/>
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <Button Grid.Column="1" Classes="link" Content="Cancelar"
                                     Command="{Binding FecharModalCommand}"/>
@@ -925,6 +927,8 @@
                         <TextBlock Text="Serão exportados os alunos visíveis com os filtros atuais."
                                    FontSize="13" Opacity="0.7" TextWrapping="Wrap"
                                    Foreground="{StaticResource OnSurfaceVariantBrush}"/>
+                        <TextBlock Text="{Binding ErroMatricula}" FontSize="12" TextWrapping="Wrap"
+                                   Foreground="{StaticResource ErrorBrush}"/>
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <Button Grid.Column="1" Classes="link" Content="Cancelar"
                                     Command="{Binding FecharModalCommand}"/>
