@@ -427,37 +427,23 @@ public partial class FinanceiroViewModel : ViewModelBase
         var hoje = DateTime.Now;
         var mesAnterior = hoje.AddMonths(-1);
 
-        var recebimentosValidos = _todosPagamentos.Where(p => !p.Anulado).Select(p => (p.Data, p.Valor));
+        // Os KPIs usam os valores/timestamps originais vindos da BD.
+        // Não reconstruímos números a partir das strings formatadas da tabela.
+        RecebimentosMesAtualLabel = FormatarKz(_todosPagamentos
+            .Where(p => !p.Anulado && p.DataReal.Year == hoje.Year && p.DataReal.Month == hoje.Month)
+            .Sum(p => p.ValorReal));
 
-        RecebimentosMesAtualLabel = FormatarKz(SomaValoresDoMes(recebimentosValidos, hoje.Year, hoje.Month));
-        RecebimentosMesAnteriorLabel = FormatarKz(SomaValoresDoMes(recebimentosValidos, mesAnterior.Year, mesAnterior.Month));
-        TotalEntradasMesLabel = FormatarKz(SomaValoresDoMes(Entradas.Select(e => (e.Data, e.Valor)), hoje.Year, hoje.Month));
-        TotalSaidasMesLabel = FormatarKz(SomaValoresDoMes(Saidas.Select(s => (s.Data, s.Valor)), hoje.Year, hoje.Month));
-    }
+        RecebimentosMesAnteriorLabel = FormatarKz(_todosPagamentos
+            .Where(p => !p.Anulado && p.DataReal.Year == mesAnterior.Year && p.DataReal.Month == mesAnterior.Month)
+            .Sum(p => p.ValorReal));
 
-    private static decimal SomaValoresDoMes(IEnumerable<(string Data, string Valor)> itens, int ano, int mes)
-    {
-        decimal total = 0m;
-        foreach (var (dataTexto, valorTexto) in itens)
-        {
-            if (DateTime.TryParseExact(dataTexto, "dd/MM/yyyy", null,
-                    System.Globalization.DateTimeStyles.None, out var data) &&
-                data.Year == ano && data.Month == mes)
-            {
-                total += ParseValorKz(valorTexto);
-            }
-        }
-        return total;
-    }
+        TotalEntradasMesLabel = FormatarKz(Entradas
+            .Where(e => e.DataReal.Year == hoje.Year && e.DataReal.Month == hoje.Month)
+            .Sum(e => e.ValorReal));
 
-    private static decimal ParseValorKz(string valor)
-    {
-        if (string.IsNullOrWhiteSpace(valor)) return 0m;
-        var limpo = valor.Replace("Kz", string.Empty).Trim()
-            .Replace(".", string.Empty)   // remove separador de milhar
-            .Replace(",", ".");           // vírgula decimal -> ponto
-        return decimal.TryParse(limpo, System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0m;
+        TotalSaidasMesLabel = FormatarKz(Saidas
+            .Where(s => s.DataReal.Year == hoje.Year && s.DataReal.Month == hoje.Month)
+            .Sum(s => s.ValorReal));
     }
 
     private static string FormatarKz(decimal valor) =>
@@ -494,7 +480,8 @@ public partial class FinanceiroViewModel : ViewModelBase
                     p.Aluno?.Nome ?? "Aluno #" + p.AlunoId, p.NumeroRecibo, Kz(p.Valor),
                     (p.DataPagamento ?? p.DataVencimento).ToString("dd/MM/yyyy"),
                     p.MetodoPagamento ?? "Não informado", p.NumeroRecibo, p.Tipo.ToString(),
-                    p.Anulado ? "Anulado" : "Confirmado", p.Id));
+                    p.Anulado ? "Anulado" : "Confirmado", p.Id,
+                    p.Valor, p.DataPagamento ?? p.DataVencimento));
             AplicarFiltroPagamentos();
 
             Entradas.Clear();
@@ -502,7 +489,7 @@ public partial class FinanceiroViewModel : ViewModelBase
             var movimentos = await _financeiro.ObterMovimentosAsync(inicio, agora);
             foreach (var m in movimentos.OrderByDescending(x => x.Data))
             {
-                var item = new MovimentoItem(m.Descricao, m.Categoria, Kz(m.Valor), m.Data.ToString("dd/MM/yyyy"), m.Id);
+                var item = new MovimentoItem(m.Descricao, m.Categoria, Kz(m.Valor), m.Data.ToString("dd/MM/yyyy"), m.Id, m.Valor, m.Data);
                 if (m.Tipo == TipoMovimentoCaixa.Entrada) Entradas.Add(item);
                 else Saidas.Add(item);
             }
@@ -618,7 +605,9 @@ public sealed record PagamentoItem(
     string NumeroRecibo,
     string TipoCobranca,
     string Estado = "Confirmado",
-    int Id = 0)
+    int Id = 0,
+    decimal ValorReal = 0,
+    DateTime DataReal = default)
 {
     public bool Anulado => Estado == "Anulado";
 }
@@ -631,14 +620,18 @@ public sealed class MovimentoItem
     public string Valor { get; }
     public string Data { get; }
     public int Id { get; }
+    public decimal ValorReal { get; }
+    public DateTime DataReal { get; }
 
-    public MovimentoItem(string descricao, string categoria, string valor, string data, int id = 0)
+    public MovimentoItem(string descricao, string categoria, string valor, string data, int id = 0, decimal valorReal = 0, DateTime dataReal = default)
     {
         Descricao = descricao;
         Categoria = categoria;
         Valor = valor;
         Data = data;
         Id = id;
+        ValorReal = valorReal;
+        DataReal = dataReal;
     }
 }
 
