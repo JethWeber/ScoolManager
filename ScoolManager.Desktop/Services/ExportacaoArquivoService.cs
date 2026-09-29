@@ -1,3 +1,4 @@
+using System.IO;
 using ScoolManager.Core.Abstractions;
 
 namespace ScoolManager.Desktop.Services;
@@ -46,7 +47,7 @@ public sealed class ExportacaoArquivoService : IExportacaoArquivoService
         await using var stream = await file.OpenWriteAsync();
         await stream.WriteAsync(bytes);
 
-        return file.TryGetLocalPath() ?? file.Name;
+        return file.Path.IsFile ? file.Path.LocalPath : file.Name;
     }
 
     public async Task<string?> ExportarExcelAsync(
