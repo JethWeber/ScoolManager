@@ -179,6 +179,8 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         /// <summary>Opções do combobox "Classe", carregadas do Core (ver CarregarOpcoesAsync).</summary>
         public ObservableCollection<string> ClassesDisponiveis { get; } = new();
 
+        private readonly HashSet<(int Ano, int Mes)> _mesesPropinaPagos = new();
+
         [ObservableProperty] private string _anoLectivoPropina = string.Empty;
         [ObservableProperty] private string? _classePropina;
 
@@ -208,6 +210,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 
             mes.Selecionado = !mes.Selecionado;
             ErroConfirmacao = null;
+            AtualizarDisponibilidadeMeses();
             OnPropertyChanged(nameof(MesesSelecionadosLabel));
             RecalcularSubtotal();
         }
@@ -310,10 +313,9 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
             try
             {
                 var pagamentos = await _financeiroService.ObterHistoricoPagamentosAsync(_alunoId);
-                var pagos = pagamentos
-                    .Where(p => p.Tipo == TipoCobranca.Propina && p.Estado == EstadoPagamento.Pago && !p.Anulado)
-                    .Select(p => (p.MesReferencia.Year, p.MesReferencia.Month))
-                    .ToHashSet();
+                _mesesPropinaPagos.Clear();
+                foreach (var p in pagamentos.Where(p => p.Tipo == TipoCobranca.Propina && p.Estado == EstadoPagamento.Pago && !p.Anulado))
+                    _mesesPropinaPagos.Add((p.MesReferencia.Year, p.MesReferencia.Month));
 
                 // Ano lectivo corrente: Setembro -> Junho.
                 var inicioAno = DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1;
@@ -321,19 +323,32 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
                     .Select(i => new DateOnly(inicioAno + (9 + i > 12 ? 1 : 0), ((9 + i - 1) % 12) + 1, 1))
                     .FirstOrDefault(m => !pagos.Contains((m.Year, m.Month)));
 
-                foreach (var mes in MesesDisponiveis)
-                {
-                    var ano = mes.NumeroMes >= 9 ? inicioAno : inicioAno + 1;
-                    mes.Disponivel = primeiroMesEmDivida == default || mes.NumeroMes == primeiroMesEmDivida.Month;
-                    if (!mes.Disponivel)
-                        mes.Selecionado = false;
-                }
+                AtualizarDisponibilidadeMeses(inicioAno);
 
                 OnPropertyChanged(nameof(MesesSelecionadosLabel));
             }
             catch
             {
                 // A validação definitiva continua a ser feita no fluxo de confirmação.
+            }
+        }
+
+        private void AtualizarDisponibilidadeMeses(int? anoLectivo = null)
+        {
+            var inicioAno = anoLectivo ?? (DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1);
+            var podeEscolher = true;
+
+            foreach (var mes in MesesDisponiveis)
+            {
+                var ano = mes.NumeroMes >= 9 ? inicioAno : inicioAno + 1;
+                var jaPago = _mesesPropinaPagos.Contains((ano, mes.NumeroMes));
+
+                mes.Disponivel = jaPago || podeEscolher;
+                if (!jaPago && !podeEscolher)
+                    mes.Selecionado = false;
+
+                if (!jaPago && !mes.Selecionado)
+                    podeEscolher = false;
             }
         }
 
