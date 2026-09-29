@@ -191,17 +191,20 @@ public partial class FinanceiroViewModel : ViewModelBase
     // TODO: exigir autorização (perfil/permissão) real antes de confirmar,
     // e propagar a anulação para o módulo Alunos quando existir o serviço.
     [RelayCommand]
-    private void ConfirmarAnularPagamento()
+    private async Task ConfirmarAnularPagamento()
     {
-        if (PagamentoSelecionado is not null)
+        if (PagamentoSelecionado is null || PagamentoSelecionado.Id <= 0 || string.IsNullOrWhiteSpace(MotivoAnulacao))
         {
-            var indice = _todosPagamentos.IndexOf(PagamentoSelecionado);
-            if (indice >= 0)
-                _todosPagamentos[indice] = PagamentoSelecionado with { Estado = "Anulado" };
-            AplicarFiltroPagamentos();
-            AtualizarIndicadoresDashboard();
+            ErroFinanceiro = "Informe o motivo da anulação.";
+            return;
         }
-        FecharModal();
+        try
+        {
+            await _financeiro.AnularPagamentoAsync(PagamentoSelecionado.Id, MotivoAnulacao.Trim());
+            FecharModal();
+            await CarregarFinanceiroAsync();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
     }
 
     // ---- Exportação de listagens ----
@@ -282,43 +285,52 @@ public partial class FinanceiroViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ConfirmarNovoMovimento()
+    private async Task ConfirmarNovoMovimento()
     {
-        if (!string.IsNullOrWhiteSpace(NovoMovimentoDescricao))
+        if (string.IsNullOrWhiteSpace(NovoMovimentoDescricao) ||
+            !TryValor(NovoMovimentoValor, out var valor) || valor <= 0)
         {
-            var novo = new MovimentoItem(
-                NovoMovimentoDescricao,
-                string.IsNullOrWhiteSpace(NovoMovimentoCategoria) ? "Outro" : NovoMovimentoCategoria,
-                string.IsNullOrWhiteSpace(NovoMovimentoValor) ? "0 Kz" : NovoMovimentoValor,
-                DateTime.Now.ToString("dd/MM/yyyy"));
-
-            var destino = MovimentoTipoModal == "Entrada" ? Entradas : Saidas;
-            destino.Insert(0, novo);
-            AtualizarIndicadoresDashboard();
+            ErroFinanceiro = "Informe descrição e um valor válido.";
+            return;
         }
-
-        FecharModal();
+        try
+        {
+            var movimento = new MovimentoCaixa
+            {
+                Descricao = NovoMovimentoDescricao.Trim(),
+                Categoria = string.IsNullOrWhiteSpace(NovoMovimentoCategoria) ? "Outro" : NovoMovimentoCategoria.Trim(),
+                Valor = valor,
+                Data = DateTime.Now,
+                Tipo = MovimentoTipoModal == "Entrada" ? TipoMovimentoCaixa.Entrada : TipoMovimentoCaixa.Saida
+            };
+            await _financeiro.RegistarMovimentoAsync(movimento);
+            FecharModal();
+            await CarregarFinanceiroAsync();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
     }
 
     [RelayCommand]
-    private void ConfirmarEditarMovimento()
+    private async Task ConfirmarEditarMovimento()
     {
-        if (MovimentoSelecionado is not null && !string.IsNullOrWhiteSpace(NovoMovimentoDescricao))
+        if (MovimentoSelecionado is null || MovimentoSelecionado.Id <= 0 ||
+            string.IsNullOrWhiteSpace(NovoMovimentoDescricao) ||
+            !TryValor(NovoMovimentoValor, out var valor) || valor <= 0)
         {
-            var colecao = MovimentoTipoModal == "Entrada" ? Entradas : Saidas;
-            var indice = colecao.IndexOf(MovimentoSelecionado);
-            if (indice >= 0)
-            {
-                colecao[indice] = new MovimentoItem(
-                    NovoMovimentoDescricao,
-                    string.IsNullOrWhiteSpace(NovoMovimentoCategoria) ? "Outro" : NovoMovimentoCategoria,
-                    string.IsNullOrWhiteSpace(NovoMovimentoValor) ? "0 Kz" : NovoMovimentoValor,
-                    MovimentoSelecionado.Data);
-            }
-            AtualizarIndicadoresDashboard();
+            ErroFinanceiro = "Informe descrição e um valor válido.";
+            return;
         }
-
-        FecharModal();
+        try
+        {
+            var movimento = await _financeiro.ObterMovimentoPorIdAsync(MovimentoSelecionado.Id);
+            movimento.Descricao = NovoMovimentoDescricao.Trim();
+            movimento.Categoria = string.IsNullOrWhiteSpace(NovoMovimentoCategoria) ? "Outro" : NovoMovimentoCategoria.Trim();
+            movimento.Valor = valor;
+            await _financeiro.AtualizarMovimentoAsync(movimento);
+            FecharModal();
+            await CarregarFinanceiroAsync();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
     }
 
     // ================================================================
@@ -463,7 +475,7 @@ public partial class FinanceiroViewModel : ViewModelBase
                     p.Aluno?.Nome ?? "Aluno #" + p.AlunoId, p.NumeroRecibo, Kz(p.Valor),
                     (p.DataPagamento ?? p.DataVencimento).ToString("dd/MM/yyyy"),
                     p.MetodoPagamento ?? "Não informado", p.NumeroRecibo, p.Tipo.ToString(),
-                    p.Anulado ? "Anulado" : "Confirmado"));
+                    p.Anulado ? "Anulado" : "Confirmado", p.Id));
             AplicarFiltroPagamentos();
 
             Entradas.Clear();
@@ -573,7 +585,8 @@ public sealed record PagamentoItem(
     string Metodo,
     string NumeroRecibo,
     string TipoCobranca,
-    string Estado = "Confirmado")
+    string Estado = "Confirmado",
+    int Id = 0)
 {
     public bool Anulado => Estado == "Anulado";
 }
