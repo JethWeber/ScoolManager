@@ -7,6 +7,9 @@ namespace ScoolManager.Desktop.Models;
 /// </summary>
 public class BackupItemModel
 {
+    public int Id { get; set; }
+    public string Localizacao { get; set; } = string.Empty;
+
     public string NomeArquivo { get; set; } = string.Empty;
 
     /// <summary>Ex.: "24 Out 2023 | 124.5 MB | Servidor Local".</summary>
