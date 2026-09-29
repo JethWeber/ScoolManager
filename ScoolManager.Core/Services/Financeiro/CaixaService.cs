@@ -44,7 +44,15 @@ public class CaixaService : ICaixaService
             UtilizadorAberturaId = utilizadorId
         };
 
-        return await _sessoesCaixa.AdicionarAsync(sessao, ct);
+        try
+        {
+            return await _sessoesCaixa.AdicionarAsync(sessao, ct);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        {
+            // O índice único na BD é a última barreira contra duas aberturas concorrentes.
+            throw new InvalidOperationException("O caixa foi aberto por outra operação. Atualize o Financeiro.");
+        }
     }
 
     public async Task<SessaoCaixa> FecharCaixaAsync(int utilizadorId, CancellationToken ct = default)
