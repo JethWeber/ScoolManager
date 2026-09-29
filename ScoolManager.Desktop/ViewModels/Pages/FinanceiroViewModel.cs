@@ -17,6 +17,19 @@ namespace ScoolManager.Desktop.ViewModels.Pages
 /// </summary>
 public partial class FinanceiroViewModel : ViewModelBase
 {
+    private readonly IFinanceiroService _financeiro;
+    private readonly ICaixaService _caixa;
+    private readonly IUtilizadorService _utilizadores;
+    [ObservableProperty] private string _erroFinanceiro = string.Empty;
+    public bool TemErroFinanceiro => !string.IsNullOrWhiteSpace(ErroFinanceiro);
+    partial void OnErroFinanceiroChanged(string value) => OnPropertyChanged(nameof(TemErroFinanceiro));
+
+    private static string Kz(decimal value) => value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("pt-PT")) + " Kz";
+    private static bool TryValor(string value, out decimal result)
+    {
+        var raw = (value ?? string.Empty).Replace("Kz", "").Trim().Replace(".", "").Replace(",", ".");
+        return decimal.TryParse(raw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out result);
+    }
     public enum Aba
     {
         Recebimentos,
@@ -453,32 +466,125 @@ public partial class FinanceiroViewModel : ViewModelBase
     // ================================================================
     // Dados mock
     // ================================================================
-    public FinanceiroViewModel()
+    public FinanceiroViewModel(IFinanceiroService financeiro, ICaixaService caixa, IUtilizadorService utilizadores)
     {
-        _todosPagamentos = new List<PagamentoItem>
+        _financeiro = financeiro;
+        _caixa = caixa;
+        _utilizadores = utilizadores;
+        _todosPagamentos = new List<PagamentoItem>();
+        _ = CarregarFinanceiroAsync();
+    }
+
+    private async Task<int> UtilizadorAtualIdAsync()
+    {
+        var utilizadores = await _utilizadores.ObterTodosAsync();
+        return utilizadores.FirstOrDefault(u => u.Ativo)?.Id
+            ?? throw new InvalidOperationException("Não existe um utilizador ativo para operar o caixa.");
+    }
+
+    private async Task CarregarFinanceiroAsync()
+    {
+        try
         {
-            new("João Pedro da Silva",  "PAG-2026-0451", "25.000 Kz", "02/04/2026", "Dinheiro",              GerarNumeroRecibo(), "Propina"),
-            new("Maria Luísa Alberto",  "PAG-2026-0452", "25.000 Kz", "05/03/2026", "Transferência Bancária", GerarNumeroRecibo(), "Propina"),
-            new("Ana Paula Domingos",   "PAG-2026-0453", "25.000 Kz", "01/02/2026", "TPA / Multicaixa",       GerarNumeroRecibo(), "Matrícula"),
-            new("Carlos Manuel",        "PAG-2026-0454", "25.000 Kz", "28/01/2026", "Dinheiro",               GerarNumeroRecibo(), "Uniforme"),
-        };
-        AplicarFiltroPagamentos();
+            ErroFinanceiro = string.Empty;
+            var agora = DateTime.Now;
+            var inicio = agora.AddYears(-1);
 
-        Entradas.Add(new MovimentoItem("Subsídio do Ministério da Educação", "Subsídio", "500.000 Kz", "05/07/2026"));
-        Entradas.Add(new MovimentoItem("Doação - Associação de Pais", "Doação", "80.000 Kz", "18/06/2026"));
+            _todosPagamentos.Clear();
+            var pagamentos = await _financeiro.ObterPagamentosAsync(inicio, agora);
+            foreach (var p in pagamentos.OrderByDescending(x => x.DataPagamento ?? x.DataVencimento))
+                _todosPagamentos.Add(new PagamentoItem(
+                    p.Aluno?.Nome ?? "Aluno #" + p.AlunoId, p.NumeroRecibo, Kz(p.Valor),
+                    (p.DataPagamento ?? p.DataVencimento).ToString("dd/MM/yyyy"),
+                    p.MetodoPagamento ?? "Não informado", p.NumeroRecibo, p.Tipo.ToString(),
+                    p.Anulado ? "Anulado" : "Confirmado"));
+            AplicarFiltroPagamentos();
 
-        Saidas.Add(new MovimentoItem("Salários - Corpo Docente", "Salários", "800.000 Kz", "30/06/2026"));
-        Saidas.Add(new MovimentoItem("Manutenção do gerador", "Manutenção", "45.000 Kz", "22/06/2026"));
-        Saidas.Add(new MovimentoItem("Material de limpeza", "Consumíveis", "12.500 Kz", "15/06/2026"));
+            Entradas.Clear();
+            Saidas.Clear();
+            var movimentos = await _financeiro.ObterMovimentosAsync(inicio, agora);
+            foreach (var m in movimentos.OrderByDescending(x => x.Data))
+            {
+                var item = new MovimentoItem(m.Descricao, m.Categoria, Kz(m.Valor), m.Data.ToString("dd/MM/yyyy"), m.Id);
+                if (m.Tipo == TipoMovimentoCaixa.Entrada) Entradas.Add(item);
+                else Saidas.Add(item);
+            }
 
-        CaixaAberto = true;
-        SaldoInicialLabel = "50.000 Kz";
-        SaldoAtualLabel = "312.500 Kz";
-        HistoricoCaixa.Add(new SessaoCaixaItem("20/07/2026 07:32", null, "50.000 Kz", null, "Aberto"));
-        HistoricoCaixa.Add(new SessaoCaixaItem("17/07/2026 07:28", "17/07/2026 17:05", "40.000 Kz", "298.400 Kz", "Fechado"));
-        HistoricoCaixa.Add(new SessaoCaixaItem("16/07/2026 07:30", "16/07/2026 17:10", "35.000 Kz", "271.200 Kz", "Fechado"));
+            await AtualizarEstadoCaixaAsync();
+            AtualizarIndicadoresDashboard();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
+    }
 
-        AtualizarIndicadoresDashboard();
+    private async Task AtualizarEstadoCaixaAsync()
+    {
+        var sessao = await _caixa.ObterSessaoAtualAsync();
+        CaixaAberto = sessao is not null;
+        if (sessao is null)
+        {
+            SaldoInicialLabel = "0,00 Kz";
+            SaldoAtualLabel = "0,00 Kz";
+            HistoricoCaixa.Clear();
+            return;
+        }
+
+        SaldoInicialLabel = Kz(sessao.SaldoInicial);
+        var movimentos = await _financeiro.ObterMovimentosAsync(sessao.DataAbertura, DateTime.Now);
+        var entradas = movimentos.Where(m => m.SessaoCaixaId == sessao.Id && m.Tipo == TipoMovimentoCaixa.Entrada).Sum(m => m.Valor);
+        var saidas = movimentos.Where(m => m.SessaoCaixaId == sessao.Id && m.Tipo == TipoMovimentoCaixa.Saida).Sum(m => m.Valor);
+        var pagamentos = (await _financeiro.ObterPagamentosAsync(sessao.DataAbertura, DateTime.Now))
+            .Where(p => p.SessaoCaixaId == sessao.Id && !p.Anulado).Sum(p => p.Valor);
+        SaldoAtualLabel = Kz(sessao.SaldoInicial + entradas + pagamentos - saidas);
+
+        HistoricoCaixa.Clear();
+        HistoricoCaixa.Add(new SessaoCaixaItem(sessao.DataAbertura.ToString("dd/MM/yyyy HH:mm"), null, Kz(sessao.SaldoInicial), null, "Aberto", sessao.Id));
+    }
+
+    [RelayCommand]
+    private async Task ConfirmarAbrirCaixa()
+    {
+        if (!TryValor(NovoSaldoInicialCaixa, out var saldo) || saldo < 0)
+        {
+            ErroFinanceiro = "Informe um saldo inicial válido.";
+            return;
+        }
+        try
+        {
+            ErroFinanceiro = string.Empty;
+            var sessao = await _caixa.AbrirCaixaAsync(await UtilizadorAtualIdAsync(), saldo);
+            CaixaAberto = true;
+            SaldoInicialLabel = Kz(sessao.SaldoInicial);
+            SaldoAtualLabel = Kz(sessao.SaldoInicial);
+            FecharModal();
+            await CarregarFinanceiroAsync();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
+    }
+
+    [RelayCommand]
+    private async Task ConfirmarFecharCaixa()
+    {
+        try
+        {
+            ErroFinanceiro = string.Empty;
+            await _caixa.FecharCaixaAsync(await UtilizadorAtualIdAsync());
+            FecharModal();
+            await CarregarFinanceiroAsync();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
+    }
+
+    [RelayCommand]
+    private async Task ConfirmarReabrirCaixa()
+    {
+        try
+        {
+            ErroFinanceiro = string.Empty;
+            await _caixa.ReabrirCaixaAsync(await UtilizadorAtualIdAsync());
+            FecharModal();
+            await CarregarFinanceiroAsync();
+        }
+        catch (Exception ex) { ErroFinanceiro = ex.Message; }
     }
 }
 
