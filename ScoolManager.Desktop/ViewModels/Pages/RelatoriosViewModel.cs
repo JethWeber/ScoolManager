@@ -163,6 +163,29 @@ public partial class RelatoriosViewModel : ViewModelBase
                     break;
             }
 
+            // Cada relatório gerado deve perguntar imediatamente onde o PDF será guardado.
+            var nome = $"ScoolManager_{RelatorioSelecionado.Titulo.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+            var caminho = await _filePicker.SelecionarDestinoAsync(
+                "Guardar relatório PDF",
+                nome,
+                "pdf");
+
+            if (!string.IsNullOrWhiteSpace(caminho))
+            {
+                var (headers, rows) = ConstruirLinhasPdf();
+                var inicio = FiltroAtual.DataInicio?.Date.ToString("dd/MM/yyyy") ?? "início";
+                var fim = FiltroAtual.DataFim?.Date.ToString("dd/MM/yyyy") ?? "hoje";
+
+                await _pdf.GerarAsync(
+                    RelatorioSelecionado.Titulo,
+                    $"Período: {inicio} — {fim}",
+                    headers,
+                    rows,
+                    caminho);
+
+                MensagemExportacao = $"PDF gerado com sucesso em:\n{caminho}";
+            }
+
             ModalConfigurarVisivel = false;
             ModalPreVisualizarVisivel = true;
         }
