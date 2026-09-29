@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
@@ -7,6 +9,8 @@ using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Desktop.Models;
 using ScoolManager.Desktop.Services;
 using ScoolManager.Desktop.ViewModels.Pages;
+using ScoolManager.Core.Services.Auth;
+using ScoolManager.Desktop.Views.Pages;
 
 namespace ScoolManager.Desktop.ViewModels;
 
@@ -31,11 +35,14 @@ public partial class MainWindowViewModel : ViewModelBase
     public string UserName { get; } = "Secretaria";
     public string UserRole { get; } = "Administrador";
 
-    public MainWindowViewModel() : this(new AtividadeSucessoService()) { }
+    private readonly ISessaoAtualService _sessaoAtual;
 
-    public MainWindowViewModel(IAtividadeSucessoService atividadeSucesso)
+    public MainWindowViewModel() : this(new AtividadeSucessoService(), new SessaoAtualService()) { }
+
+    public MainWindowViewModel(IAtividadeSucessoService atividadeSucesso, ISessaoAtualService sessaoAtual)
     {
         AtividadeSucesso = atividadeSucesso;
+        _sessaoAtual = sessaoAtual;
         // 6 views principais, conforme SM_Flow.md. As páginas passam a ser
         // resolvidas pelo container de DI (App.Services) em vez de `new`,
         // porque agora recebem Services do Core no construtor.
@@ -100,6 +107,19 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void Logout()
     {
-        // TODO: encerrar sessão / voltar ao ecrã de login
+        _sessaoAtual.EncerrarSessao();
+
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            return;
+
+        var janelaAtual = desktop.MainWindow;
+        var loginWindow = new LoginWindow
+        {
+            DataContext = App.Services.GetRequiredService<LoginViewModel>()
+        };
+
+        desktop.MainWindow = loginWindow;
+        loginWindow.Show();
+        janelaAtual?.Close();
     }
 }
