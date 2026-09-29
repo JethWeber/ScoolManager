@@ -19,7 +19,7 @@ public partial class FinanceiroViewModel : ViewModelBase
 {
     private readonly IFinanceiroService _financeiro;
     private readonly ICaixaService _caixa;
-    private readonly IUtilizadorService _utilizadores;
+    private readonly ISessaoAtualService _sessaoAtual;
     [ObservableProperty] private string _erroFinanceiro = string.Empty;
     public bool TemErroFinanceiro => !string.IsNullOrWhiteSpace(ErroFinanceiro);
     partial void OnErroFinanceiroChanged(string value) => OnPropertyChanged(nameof(TemErroFinanceiro));
@@ -444,21 +444,18 @@ public partial class FinanceiroViewModel : ViewModelBase
     // ================================================================
     // Dados mock
     // ================================================================
-    public FinanceiroViewModel(IFinanceiroService financeiro, ICaixaService caixa, IUtilizadorService utilizadores)
+    public FinanceiroViewModel(IFinanceiroService financeiro, ICaixaService caixa, ISessaoAtualService sessaoAtual)
     {
         _financeiro = financeiro;
         _caixa = caixa;
-        _utilizadores = utilizadores;
+        _sessaoAtual = sessaoAtual;
         _todosPagamentos = new List<PagamentoItem>();
         _ = CarregarFinanceiroAsync();
     }
 
-    private async Task<int> UtilizadorAtualIdAsync()
-    {
-        var utilizadores = await _utilizadores.ObterTodosAsync();
-        return utilizadores.FirstOrDefault(u => u.Ativo)?.Id
-            ?? throw new InvalidOperationException("Não existe um utilizador ativo para operar o caixa.");
-    }
+    private int UtilizadorAtualId()
+        => _sessaoAtual.UtilizadorAtual?.Id
+            ?? throw new InvalidOperationException("Não existe uma sessão de utilizador autenticada.");
 
     private async Task CarregarFinanceiroAsync()
     {
@@ -539,7 +536,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         try
         {
             ErroFinanceiro = string.Empty;
-            var sessao = await _caixa.AbrirCaixaAsync(await UtilizadorAtualIdAsync(), saldo);
+            var sessao = await _caixa.AbrirCaixaAsync(UtilizadorAtualId(), saldo);
             CaixaAberto = true;
             SaldoInicialLabel = Kz(sessao.SaldoInicial);
             SaldoAtualLabel = Kz(sessao.SaldoInicial);
