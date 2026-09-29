@@ -47,7 +47,7 @@ public sealed class ExportacaoArquivoService : IExportacaoArquivoService
         await using var stream = await file.OpenWriteAsync();
         await stream.WriteAsync(bytes);
 
-        return file.Path.IsFile ? file.Path.LocalPath : file.Name;
+        return file.Name;
     }
 
     public async Task<string?> ExportarExcelAsync(
@@ -66,7 +66,7 @@ public sealed class ExportacaoArquivoService : IExportacaoArquivoService
         await using var stream = await file.OpenWriteAsync();
         await stream.WriteAsync(bytes);
 
-        return file.TryGetLocalPath() ?? file.Name;
+        return file.Name;
     }
 
     private static string EnsureExtension(string nome, string extensao)
