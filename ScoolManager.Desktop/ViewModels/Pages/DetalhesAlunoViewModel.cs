@@ -72,10 +72,6 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     [RelayCommand]
     private void FecharFoto() => IsFotoAberta = false;
 
-    public bool TemFotografia => FotografiaPreview is not null;
-
-    partial void OnFotografiaCaminhoChanged(string? value) => OnPropertyChanged(nameof(TemFotografia));
-
     public string SituacaoTexto => Ativo ? "Ativo" : "Inativo";
     public IBrush SituacaoTextoBrush => new SolidColorBrush(Color.Parse(Ativo ? "#34D399" : "#FFB4AB"));
     public IBrush SituacaoFundoBrush => new SolidColorBrush(Color.Parse(Ativo ? "#1A34D399" : "#1AFFB4AB"));
