@@ -49,13 +49,18 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
     public partial class MesSelecionavelItem : ObservableObject
     {
         public string Nome { get; }
+        public int NumeroMes { get; }
         [ObservableProperty] private bool _selecionado;
+        [ObservableProperty] private bool _disponivel = true;
 
-        public MesSelecionavelItem(string nome, bool selecionado = false)
+        public MesSelecionavelItem(string nome, int numeroMes, bool selecionado = false)
         {
             Nome = nome;
+            NumeroMes = numeroMes;
             Selecionado = selecionado;
         }
+
+
     }
 
     /// <summary>
@@ -162,8 +167,11 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         private const decimal ValorMensalidade = 15000m;
 
         public ObservableCollection<MesSelecionavelItem> MesesDisponiveis { get; } = new(
-            new[] { "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho" }
-                .Select(m => new MesSelecionavelItem(m)));
+            new[]
+            {
+                ("Setembro", 9), ("Outubro", 10), ("Novembro", 11), ("Dezembro", 12),
+                ("Janeiro", 1), ("Fevereiro", 2), ("Março", 3), ("Abril", 4), ("Maio", 5), ("Junho", 6)
+            }.Select(m => new MesSelecionavelItem(m.Item1, m.Item2)));
 
         /// <summary>Opções do combobox "Ano Lectivo", carregadas do Core (ver CarregarOpcoesAsync).</summary>
         public ObservableCollection<string> AnosLectivosDisponiveis { get; } = new();
@@ -192,7 +200,14 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         private void AlternarMes(MesSelecionavelItem? mes)
         {
             if (mes is null) return;
+            if (!mes.Disponivel)
+            {
+                ErroConfirmacao = $"Não é possível pagar {mes.Nome} porque existem meses anteriores de propina por regularizar.";
+                return;
+            }
+
             mes.Selecionado = !mes.Selecionado;
+            ErroConfirmacao = null;
             OnPropertyChanged(nameof(MesesSelecionadosLabel));
             RecalcularSubtotal();
         }
@@ -287,6 +302,41 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         /// Chamado pelo "pai" (DetalhesAlunoViewModel.InitializeAsync) - esta ViewModel não
         /// guarda referência ao IEscolaService, só usa a instância recebida aqui.
         /// </summary>
+        private async Task AtualizarMesesPropinaAsync()
+        {
+            if (_financeiroService is null || _alunoId <= 0)
+                return;
+
+            try
+            {
+                var pagamentos = await _financeiroService.ObterHistoricoPagamentosAsync(_alunoId);
+                var pagos = pagamentos
+                    .Where(p => p.Tipo == TipoCobranca.Propina && p.Estado == EstadoPagamento.Pago && !p.Anulado)
+                    .Select(p => (p.MesReferencia.Year, p.MesReferencia.Month))
+                    .ToHashSet();
+
+                // Ano lectivo corrente: Setembro -> Junho.
+                var inicioAno = DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1;
+                var primeiroMesEmDivida = Enumerable.Range(0, 10)
+                    .Select(i => new DateOnly(inicioAno + (9 + i > 12 ? 1 : 0), ((9 + i - 1) % 12) + 1, 1))
+                    .FirstOrDefault(m => !pagos.Contains((m.Year, m.Month)));
+
+                foreach (var mes in MesesDisponiveis)
+                {
+                    var ano = mes.NumeroMes >= 9 ? inicioAno : inicioAno + 1;
+                    mes.Disponivel = primeiroMesEmDivida == default || mes.NumeroMes == primeiroMesEmDivida.Month;
+                    if (!mes.Disponivel)
+                        mes.Selecionado = false;
+                }
+
+                OnPropertyChanged(nameof(MesesSelecionadosLabel));
+            }
+            catch
+            {
+                // A validação definitiva continua a ser feita no fluxo de confirmação.
+            }
+        }
+
         public async Task CarregarOpcoesAsync(IEscolaService escolaService)
         {
             try
@@ -312,6 +362,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
         {
             CategoriaSelecionada = null;
             IsAberto = true;
+            _ = AtualizarMesesPropinaAsync();
         }
 
         [RelayCommand]
@@ -401,6 +452,16 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
                 return;
 
             ErroConfirmacao = null;
+
+            if (CategoriaSelecionada == CategoriaPagamento.Propina)
+            {
+                await AtualizarMesesPropinaAsync();
+                if (MesesDisponiveis.Any(m => m.Selecionado && !m.Disponivel))
+                {
+                    ErroConfirmacao = "Não é possível pagar uma propina enquanto existir um mês anterior por regularizar.";
+                    return;
+                }
+            }
 
             var descricao = CategoriaSelecionada switch
             {
