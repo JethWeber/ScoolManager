@@ -14,7 +14,7 @@ public sealed class ExportService : IExportService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public byte[] ExportarParaPdf(string titulo, IReadOnlyList<string> colunas, IReadOnlyList<string[]> linhas)
+    public byte[] ExportarParaPdf(string titulo, IReadOnlyList<string> colunas, IReadOnlyList<IReadOnlyList<string>> linhas)
     {
         var documento = Document.Create(container =>
         {
@@ -69,7 +69,7 @@ public sealed class ExportService : IExportService
         return documento.GeneratePdf();
     }
 
-    public byte[] ExportarParaCsv(IReadOnlyList<string> colunas, IReadOnlyList<string[]> linhas)
+    public byte[] ExportarParaCsv(IReadOnlyList<string> colunas, IReadOnlyList<IReadOnlyList<string>> linhas)
     {
         var sb = new StringBuilder();
         sb.AppendLine(string.Join(';', colunas.Select(EscaparCampo)));
@@ -84,7 +84,7 @@ public sealed class ExportService : IExportService
 
     public byte[] ExportarParaExcel(
         IReadOnlyList<string> colunas,
-        IReadOnlyList<string[]> linhas,
+        IReadOnlyList<IReadOnlyList<string>> linhas,
         string nomeFolha = "Dados")
     {
         using var workbook = new XLWorkbook();
