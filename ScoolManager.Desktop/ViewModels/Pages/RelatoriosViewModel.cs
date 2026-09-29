@@ -1,65 +1,43 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Dtos.Relatorios;
+using ScoolManager.Desktop.Services;
 using ScoolManager.Desktop.ViewModels;
 
 namespace ScoolManager.Desktop.ViewModels.Pages;
 
-/// <summary>
-/// View 6 do SM_Flow.md, fluxo completo:
-///   Fase 0-1: galeria fixa dos 7 relatórios + estado dos modais.
-///   Fase 2:   View (RelatoriosView.axaml).
-///   Fase 3:   formulário de filtros (RelatorioFiltro, modal "Configurar Relatório") -
-///             cada tipo de relatório mostra só os campos relevantes (ver MostrarXxx).
-///   Fase 4:   GerarPreVisualizacao popula o ResultadoXxx do tipo selecionado.
-///   Fase 5-7: ExportarPdf / ExportarExcel / Imprimir - por agora placeholders
-///             (sem geração de ficheiro real; mensagem no modal de Exportação).
-///
-/// Tal como o Financeiro/Escola fazem hoje via Design.DataContext, os dados
-/// aqui são de exemplo; a Fase 8 do roadmap trata da ligação a serviços/
-/// repositórios reais de Alunos e Financeiro.
-/// </summary>
 public partial class RelatoriosViewModel : ViewModelBase
 {
-    // Galeria fixa dos 7 relatórios (SM_Flow.md > View 6 > Relatórios).
+    private readonly IRelatorioService _relatorios;
+    private readonly IRelatorioPdfService _pdf;
+    private readonly IFilePickerService _filePicker;
+
     public ObservableCollection<RelatorioTipoItem> RelatoriosDisponiveis { get; }
 
-    // Relatório escolhido na galeria - define o conteúdo dos modais.
-    [ObservableProperty]
-    private RelatorioTipoItem? _relatorioSelecionado;
-
-    // Filtros do modal "Configurar Relatório" (Fase 3), partilhados entre
-    // todos os tipos de relatório.
+    [ObservableProperty] private RelatorioTipoItem? _relatorioSelecionado;
     public RelatorioFiltro FiltroAtual { get; } = new();
 
-    // --- Estado dos modais (SM_Flow.md > View 6 > Modais) ---
     [ObservableProperty] private bool _modalConfigurarVisivel;
     [ObservableProperty] private bool _modalPreVisualizarVisivel;
     [ObservableProperty] private bool _modalExportacaoVisivel;
-
-    // Mensagem de feedback do modal de exportação/impressão (Fase 5-7).
     [ObservableProperty] private string _mensagemExportacao = string.Empty;
+    [ObservableProperty] private string _erroRelatorios = string.Empty;
+    [ObservableProperty] private bool _gerando;
 
-    /// <summary>Usado pelo overlay único dos modais, tal como AlgumModalAberto no Financeiro.</summary>
-    public bool AlgumModalAberto =>
-        ModalConfigurarVisivel || ModalPreVisualizarVisivel || ModalExportacaoVisivel;
+    public bool AlgumModalAberto => ModalConfigurarVisivel || ModalPreVisualizarVisivel || ModalExportacaoVisivel;
 
     partial void OnModalConfigurarVisivelChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
     partial void OnModalPreVisualizarVisivelChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
     partial void OnModalExportacaoVisivelChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
 
-    // --- Que campos de filtro / que tabela mostrar, consoante o tipo
-    //     selecionado. A View (Configurar + Pré-Visualizar) liga-se a estas. ---
     public bool MostrarMatriculas => RelatorioSelecionado?.Tipo == RelatorioTipo.Matriculas;
     public bool MostrarAlunos => RelatorioSelecionado?.Tipo == RelatorioTipo.ListaAlunos;
     public bool MostrarPropinas => RelatorioSelecionado?.Tipo is RelatorioTipo.PropinasPagas or RelatorioTipo.PropinasAtraso;
     public bool MostrarMovimentos => RelatorioSelecionado?.Tipo is RelatorioTipo.Entradas or RelatorioTipo.Saidas;
     public bool MostrarFluxoCaixa => RelatorioSelecionado?.Tipo == RelatorioTipo.FluxoCaixa;
-
-    // Campos de filtro partilhados por vários tipos.
     public bool MostrarFiltroPeriodo => RelatorioSelecionado?.Tipo != RelatorioTipo.ListaAlunos;
     public bool MostrarFiltroTurmaClasse => MostrarMatriculas || MostrarAlunos;
     public bool MostrarFiltroAnoLectivo => MostrarMatriculas;
@@ -78,40 +56,36 @@ public partial class RelatoriosViewModel : ViewModelBase
         OnPropertyChanged(nameof(MostrarFiltroMetodoPagamento));
     }
 
-    // --- Resultados da pré-visualização (populados na Fase 4) ---
     public ObservableCollection<MatriculaRelatorioItem> ResultadoMatriculas { get; } = new();
     public ObservableCollection<AlunoRelatorioItem> ResultadoAlunos { get; } = new();
     public ObservableCollection<PropinaRelatorioItem> ResultadoPropinas { get; } = new();
     public ObservableCollection<RelatorioMovimentoItem> ResultadoMovimentos { get; } = new();
     public ObservableCollection<FluxoCaixaRelatorioItem> ResultadoFluxoCaixa { get; } = new();
 
-    public RelatoriosViewModel()
+    public RelatoriosViewModel(IRelatorioService relatorios, IRelatorioPdfService pdf, IFilePickerService filePicker)
     {
+        _relatorios = relatorios;
+        _pdf = pdf;
+        _filePicker = filePicker;
+
         RelatoriosDisponiveis = new ObservableCollection<RelatorioTipoItem>
         {
-            new(RelatorioTipo.Matriculas, "Matrículas",
-                "Novas matrículas efetuadas no período.", MaterialIconKind.AccountPlus),
-            new(RelatorioTipo.ListaAlunos, "Lista de Alunos",
-                "Listagem completa de alunos e a sua situação.", MaterialIconKind.AccountGroup),
-            new(RelatorioTipo.PropinasPagas, "Propinas Pagas",
-                "Pagamentos de propinas confirmados.", MaterialIconKind.CashCheck),
-            new(RelatorioTipo.PropinasAtraso, "Propinas em Atraso",
-                "Propinas por regularizar.", MaterialIconKind.CashRemove),
-            new(RelatorioTipo.Entradas, "Entradas",
-                "Entradas de caixa registadas.", MaterialIconKind.TrendingUp),
-            new(RelatorioTipo.Saidas, "Saídas",
-                "Saídas de caixa registadas.", MaterialIconKind.TrendingDown),
-            new(RelatorioTipo.FluxoCaixa, "Fluxo de Caixa",
-                "Evolução do saldo de caixa por período.", MaterialIconKind.ChartLine),
+            new(RelatorioTipo.Matriculas, "Matrículas", "Novas matrículas efetuadas no período.", MaterialIconKind.AccountPlus),
+            new(RelatorioTipo.ListaAlunos, "Lista de Alunos", "Listagem completa de alunos e a sua situação.", MaterialIconKind.AccountGroup),
+            new(RelatorioTipo.PropinasPagas, "Propinas Pagas", "Pagamentos de propinas confirmados.", MaterialIconKind.CashCheck),
+            new(RelatorioTipo.PropinasAtraso, "Propinas em Atraso", "Propinas por regularizar.", MaterialIconKind.CashRemove),
+            new(RelatorioTipo.Entradas, "Entradas", "Entradas de caixa registadas.", MaterialIconKind.TrendingUp),
+            new(RelatorioTipo.Saidas, "Saídas", "Saídas de caixa registadas.", MaterialIconKind.TrendingDown),
+            new(RelatorioTipo.FluxoCaixa, "Fluxo de Caixa", "Evolução do saldo de caixa por período.", MaterialIconKind.ChartLine),
         };
     }
 
-    /// <summary>Abre "Configurar Relatório" (Fase 3) para o cartão clicado na galeria.</summary>
     [RelayCommand]
     private void AbrirConfigurarRelatorio(RelatorioTipoItem item)
     {
         RelatorioSelecionado = item;
         FiltroAtual.Limpar();
+        ErroRelatorios = string.Empty;
         ModalConfigurarVisivel = true;
     }
 
@@ -123,7 +97,6 @@ public partial class RelatoriosViewModel : ViewModelBase
         ModalExportacaoVisivel = false;
     }
 
-    /// <summary>Volta de "Pré-Visualizar" para "Configurar Relatório" para ajustar filtros.</summary>
     [RelayCommand]
     private void VoltarConfigurar()
     {
@@ -131,94 +104,98 @@ public partial class RelatoriosViewModel : ViewModelBase
         ModalConfigurarVisivel = true;
     }
 
-    /// <summary>
-    /// Fase 4: usa RelatorioSelecionado.Tipo + FiltroAtual para popular o
-    /// ResultadoXxx correspondente. Dados de exemplo (mock), no mesmo espírito
-    /// do Design.DataContext do Financeiro/Escola - a Fase 8 substitui isto
-    /// por dados reais dos repositórios de Alunos e Financeiro.
-    /// </summary>
     [RelayCommand]
-    private void GerarPreVisualizacao()
+    private async Task GerarPreVisualizacao()
     {
-        if (RelatorioSelecionado is null)
-            return;
+        if (RelatorioSelecionado is null) return;
 
-        // Limpa todos os resultados - só um tipo fica populado de cada vez.
-        ResultadoMatriculas.Clear();
-        ResultadoAlunos.Clear();
-        ResultadoPropinas.Clear();
-        ResultadoMovimentos.Clear();
-        ResultadoFluxoCaixa.Clear();
-
-        var inicio = FiltroAtual.DataInicio?.Date ?? DateTime.Today.AddMonths(-1);
-        var fim = FiltroAtual.DataFim?.Date ?? DateTime.Today;
-
-        switch (RelatorioSelecionado.Tipo)
+        try
         {
-            case RelatorioTipo.Matriculas:
-                foreach (var item in GerarMatriculasExemplo(inicio, fim))
-                    ResultadoMatriculas.Add(item);
-                break;
+            Gerando = true;
+            ErroRelatorios = string.Empty;
+            LimparResultados();
 
-            case RelatorioTipo.ListaAlunos:
-                foreach (var item in GerarAlunosExemplo())
-                    ResultadoAlunos.Add(item);
-                break;
+            var filtro = new FiltroRelatorioDto
+            {
+                Periodo = FiltroAtual.Periodo,
+                DataInicio = FiltroAtual.DataInicio?.Date,
+                DataFim = FiltroAtual.DataFim?.Date.AddDays(1).AddTicks(-1),
+                AnoLectivo = FiltroAtual.AnoLectivo,
+                Turma = FiltroAtual.Turma,
+                Classe = FiltroAtual.Classe,
+                MetodoPagamento = FiltroAtual.MetodoPagamento
+            };
 
-            case RelatorioTipo.PropinasPagas:
-                foreach (var item in GerarPropinasExemplo(inicio, fim, pago: true))
-                    ResultadoPropinas.Add(item);
-                break;
+            switch (RelatorioSelecionado.Tipo)
+            {
+                case RelatorioTipo.Matriculas:
+                    foreach (var x in await _relatorios.GerarMatriculasAsync(filtro)) ResultadoMatriculas.Add(new()
+                    {
+                        Aluno=x.Aluno, NumeroMatricula=x.NumeroMatricula, Classe=x.Classe, Turma=x.Turma,
+                        DataMatricula=x.DataMatricula.ToString("dd/MM/yyyy"), Estado=x.Estado
+                    });
+                    break;
+                case RelatorioTipo.ListaAlunos:
+                    foreach (var x in await _relatorios.GerarListaAlunosAsync(filtro)) ResultadoAlunos.Add(new()
+                    {
+                        Nome=x.Nome, NumeroMatricula=x.NumeroMatricula, Classe=x.Classe, Turma=x.Turma,
+                        Situacao=x.Situacao, Contacto=x.Contacto
+                    });
+                    break;
+                case RelatorioTipo.PropinasPagas:
+                    foreach (var x in await _relatorios.GerarPropinasPagasAsync(filtro)) ResultadoPropinas.Add(MapPropina(x));
+                    break;
+                case RelatorioTipo.PropinasAtraso:
+                    foreach (var x in await _relatorios.GerarPropinasAtrasoAsync(filtro)) ResultadoPropinas.Add(MapPropina(x));
+                    break;
+                case RelatorioTipo.Entradas:
+                    foreach (var x in await _relatorios.GerarEntradasAsync(filtro)) ResultadoMovimentos.Add(MapMovimento(x));
+                    break;
+                case RelatorioTipo.Saidas:
+                    foreach (var x in await _relatorios.GerarSaidasAsync(filtro)) ResultadoMovimentos.Add(MapMovimento(x));
+                    break;
+                case RelatorioTipo.FluxoCaixa:
+                    foreach (var x in await _relatorios.GerarFluxoCaixaAsync(filtro)) ResultadoFluxoCaixa.Add(new()
+                    {
+                        Periodo=x.Periodo, SaldoInicial=Kz(x.SaldoInicial), TotalEntradas=Kz(x.TotalEntradas),
+                        TotalSaidas=Kz(x.TotalSaidas), SaldoFinal=Kz(x.SaldoFinal)
+                    });
+                    break;
+            }
 
-            case RelatorioTipo.PropinasAtraso:
-                foreach (var item in GerarPropinasExemplo(inicio, fim, pago: false))
-                    ResultadoPropinas.Add(item);
-                break;
-
-            case RelatorioTipo.Entradas:
-                foreach (var item in GerarMovimentosExemplo(inicio, fim, entrada: true))
-                    ResultadoMovimentos.Add(item);
-                break;
-
-            case RelatorioTipo.Saidas:
-                foreach (var item in GerarMovimentosExemplo(inicio, fim, entrada: false))
-                    ResultadoMovimentos.Add(item);
-                break;
-
-            case RelatorioTipo.FluxoCaixa:
-                foreach (var item in GerarFluxoCaixaExemplo(inicio, fim))
-                    ResultadoFluxoCaixa.Add(item);
-                break;
+            ModalConfigurarVisivel = false;
+            ModalPreVisualizarVisivel = true;
         }
-
-        ModalConfigurarVisivel = false;
-        ModalPreVisualizarVisivel = true;
+        catch (Exception ex) { ErroRelatorios = ex.Message; }
+        finally { Gerando = false; }
     }
 
-    // Fase 5: exportação real de PDF fica para uma próxima atualização -
-    // por agora só confirma a ação no modal de Exportação.
     [RelayCommand]
-    private void ExportarPdf()
+    private async Task ExportarPdf()
     {
-        MostrarMensagemExportacao("A exportação para PDF ainda não está disponível nesta versão. " +
-                                   "Esta funcionalidade chega numa próxima atualização.");
+        if (RelatorioSelecionado is null) return;
+
+        try
+        {
+            var nome = $"ScoolManager_{RelatorioSelecionado.Titulo.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+            var caminho = await _filePicker.SelecionarDestinoAsync("Guardar relatório PDF", nome, "pdf");
+            if (string.IsNullOrWhiteSpace(caminho)) return;
+
+            var (headers, rows) = ConstruirLinhasPdf();
+            var inicio = FiltroAtual.DataInicio?.Date.ToString("dd/MM/yyyy") ?? "início";
+            var fim = FiltroAtual.DataFim?.Date.ToString("dd/MM/yyyy") ?? "hoje";
+            await _pdf.GerarAsync(RelatorioSelecionado.Titulo, $"Período: {inicio} — {fim}", headers, rows, caminho);
+
+            MostrarMensagemExportacao($"PDF gerado com sucesso em:\n{caminho}");
+        }
+        catch (Exception ex) { ErroRelatorios = ex.Message; }
     }
 
-    // Fase 6: idem, para Excel/CSV.
     [RelayCommand]
-    private void ExportarExcel()
-    {
-        MostrarMensagemExportacao("A exportação para Excel ainda não está disponível nesta versão. " +
-                                   "Esta funcionalidade chega numa próxima atualização.");
-    }
+    private void ExportarExcel() => MostrarMensagemExportacao("Exportação Excel ainda não está ligada ao serviço de exportação.");
 
-    // Fase 7: idem, para impressão.
     [RelayCommand]
-    private void Imprimir()
-    {
-        MostrarMensagemExportacao("A impressão ainda não está disponível nesta versão. " +
-                                   "Esta funcionalidade chega numa próxima atualização.");
-    }
+    private void Imprimir() => MostrarMensagemExportacao("O relatório PDF já está pronto para impressão.");
 
     private void MostrarMensagemExportacao(string mensagem)
     {
@@ -227,131 +204,37 @@ public partial class RelatoriosViewModel : ViewModelBase
         ModalExportacaoVisivel = true;
     }
 
-    // --- Geradores de dados de exemplo (só para a Fase 4; substituídos na Fase 8) ---
-    // Os campos do RelatoriosModels.cs são strings já formatadas para exibição
-    // direta na tabela (sem conversores na View), por isso a formatação
-    // (datas, "Kz") acontece aqui.
-
-    private static IEnumerable<MatriculaRelatorioItem> GerarMatriculasExemplo(DateTime inicio, DateTime fim)
+    private (IReadOnlyList<string>, IReadOnlyList<IReadOnlyList<string>>) ConstruirLinhasPdf()
     {
-        (string Aluno, string Classe, string Turma)[] alunos =
-        {
-            ("Beatriz Manuel", "10ª", "GRSI A"),
-            ("Domingos Sanjambo", "10ª", "GRSI B"),
-            ("Elsa Puna", "11ª", "GRSI A"),
-            ("Fábio Necongo", "10ª", "GRH A"),
-        };
-
-        for (var i = 0; i < alunos.Length; i++)
-        {
-            var (aluno, classe, turma) = alunos[i];
-            var data = inicio.AddDays((fim - inicio).TotalDays * i / Math.Max(alunos.Length - 1, 1));
-            yield return new MatriculaRelatorioItem
-            {
-                Aluno = aluno,
-                NumeroMatricula = $"MAT-{2600 + i}",
-                Classe = classe,
-                Turma = turma,
-                DataMatricula = data.ToString("dd/MM/yyyy"),
-                Estado = "Ativo",
-            };
-        }
+        if (RelatorioSelecionado?.Tipo == RelatorioTipo.Matriculas)
+            return (new[]{"Aluno","Matrícula","Classe","Turma","Data","Estado"}, ResultadoMatriculas.Select(x=>(IReadOnlyList<string>)new[]{x.Aluno,x.NumeroMatricula,x.Classe,x.Turma,x.DataMatricula,x.Estado}).ToList());
+        if (RelatorioSelecionado?.Tipo == RelatorioTipo.ListaAlunos)
+            return (new[]{"Aluno","Matrícula","Classe","Turma","Situação","Contacto"}, ResultadoAlunos.Select(x=>(IReadOnlyList<string>)new[]{x.Nome,x.NumeroMatricula,x.Classe,x.Turma,x.Situacao,x.Contacto}).ToList());
+        if (RelatorioSelecionado?.Tipo is RelatorioTipo.PropinasPagas or RelatorioTipo.PropinasAtraso)
+            return (new[]{"Aluno","Referência","Valor","Vencimento","Pagamento","Estado"}, ResultadoPropinas.Select(x=>(IReadOnlyList<string>)new[]{x.Aluno,x.Referencia,x.Valor,x.DataVencimento,x.DataPagamento,x.Estado}).ToList());
+        if (RelatorioSelecionado?.Tipo is RelatorioTipo.Entradas or RelatorioTipo.Saidas)
+            return (new[]{"Data","Descrição","Categoria","Valor","Tipo"}, ResultadoMovimentos.Select(x=>(IReadOnlyList<string>)new[]{x.Data,x.Descricao,x.Categoria,x.Valor,x.Tipo}).ToList());
+        return (new[]{"Período","Saldo inicial","Entradas","Saídas","Saldo final"}, ResultadoFluxoCaixa.Select(x=>(IReadOnlyList<string>)new[]{x.Periodo,x.SaldoInicial,x.TotalEntradas,x.TotalSaidas,x.SaldoFinal}).ToList());
     }
 
-    private static IEnumerable<AlunoRelatorioItem> GerarAlunosExemplo()
+    private void LimparResultados()
     {
-        (string Nome, string Classe, string Turma, string Situacao, string Contacto)[] alunos =
-        {
-            ("Beatriz Manuel", "10ª", "GRSI A", "Ativo", "923 111 222"),
-            ("Domingos Sanjambo", "10ª", "GRSI B", "Ativo", "923 222 333"),
-            ("Elsa Puna", "11ª", "GRSI A", "Ativo", "923 333 444"),
-            ("Fábio Necongo", "10ª", "GRH A", "Transferido", "923 444 555"),
-            ("Graça Ndozi", "13ª", "GE A", "Ativo", "923 555 666"),
-        };
-
-        for (var i = 0; i < alunos.Length; i++)
-        {
-            var (nome, classe, turma, situacao, contacto) = alunos[i];
-            yield return new AlunoRelatorioItem
-            {
-                Nome = nome,
-                NumeroMatricula = $"MAT-{2500 + i}",
-                Classe = classe,
-                Turma = turma,
-                Situacao = situacao,
-                Contacto = contacto,
-            };
-        }
+        ResultadoMatriculas.Clear(); ResultadoAlunos.Clear(); ResultadoPropinas.Clear();
+        ResultadoMovimentos.Clear(); ResultadoFluxoCaixa.Clear();
     }
 
-    private static IEnumerable<PropinaRelatorioItem> GerarPropinasExemplo(DateTime inicio, DateTime fim, bool pago)
+    private static PropinaRelatorioItem MapPropina(PropinaRelatorioDto x) => new()
     {
-        (string Aluno, decimal Valor)[] propinas =
-        {
-            ("Beatriz Manuel", 25000m),
-            ("Domingos Sanjambo", 25000m),
-            ("Elsa Puna", 30000m),
-        };
+        Aluno=x.Aluno, Referencia=x.Referencia, Valor=Kz(x.Valor),
+        DataVencimento=x.DataVencimento.ToString("dd/MM/yyyy"),
+        DataPagamento=x.DataPagamento?.ToString("dd/MM/yyyy") ?? string.Empty, Estado=x.Estado
+    };
 
-        for (var i = 0; i < propinas.Length; i++)
-        {
-            var (aluno, valor) = propinas[i];
-            var vencimento = inicio.AddDays((fim - inicio).TotalDays * i / Math.Max(propinas.Length - 1, 1));
-            yield return new PropinaRelatorioItem
-            {
-                Aluno = aluno,
-                Referencia = $"REF-{4100 + i}",
-                Valor = $"{valor:N0} Kz",
-                DataVencimento = vencimento.ToString("dd/MM/yyyy"),
-                DataPagamento = pago ? vencimento.AddDays(1).ToString("dd/MM/yyyy") : string.Empty,
-                Estado = pago ? "Pago" : "Em Atraso",
-            };
-        }
-    }
-
-    private static IEnumerable<RelatorioMovimentoItem> GerarMovimentosExemplo(DateTime inicio, DateTime fim, bool entrada)
+    private static RelatorioMovimentoItem MapMovimento(RelatorioMovimentoDto x) => new()
     {
-        var descricoes = entrada
-            ? new[] { "Propinas do mês", "Venda de material escolar", "Taxa de matrícula" }
-            : new[] { "Salários", "Manutenção", "Material de escritório" };
-        var categoria = entrada ? "Receita" : "Despesa";
-        var tipo = entrada ? "Entrada" : "Saida";
+        Data=x.Data.ToString("dd/MM/yyyy"), Descricao=x.Descricao, Categoria=x.Categoria,
+        Valor=Kz(x.Valor), Tipo=x.Tipo
+    };
 
-        for (var i = 0; i < descricoes.Length; i++)
-        {
-            var data = inicio.AddDays((fim - inicio).TotalDays * i / Math.Max(descricoes.Length - 1, 1));
-            var valor = 15000m + i * 5000m;
-            yield return new RelatorioMovimentoItem
-            {
-                Data = data.ToString("dd/MM/yyyy"),
-                Descricao = descricoes[i],
-                Categoria = categoria,
-                Valor = $"{valor:N0} Kz",
-                Tipo = tipo,
-            };
-        }
-    }
-
-    private static IEnumerable<FluxoCaixaRelatorioItem> GerarFluxoCaixaExemplo(DateTime inicio, DateTime fim)
-    {
-        var meses = Math.Max(1, ((fim.Year - inicio.Year) * 12 + fim.Month - inicio.Month) + 1);
-        decimal saldo = 0;
-
-        for (var i = 0; i < meses; i++)
-        {
-            var mes = inicio.AddMonths(i);
-            var saldoInicial = saldo;
-            var entradas = 80000m + i * 4000m;
-            var saidas = 55000m + i * 2500m;
-            saldo += entradas - saidas;
-            yield return new FluxoCaixaRelatorioItem
-            {
-                Periodo = mes.ToString("MMMM yyyy"),
-                SaldoInicial = $"{saldoInicial:N0} Kz",
-                TotalEntradas = $"{entradas:N0} Kz",
-                TotalSaidas = $"{saidas:N0} Kz",
-                SaldoFinal = $"{saldo:N0} Kz",
-            };
-        }
-    }
+    private static string Kz(decimal value) => $"{value:N0} Kz";
 }
