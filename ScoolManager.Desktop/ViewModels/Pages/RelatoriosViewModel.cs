@@ -12,8 +12,7 @@ namespace ScoolManager.Desktop.ViewModels.Pages;
 public partial class RelatoriosViewModel : ViewModelBase
 {
     private readonly IRelatorioService _relatorios;
-    private readonly IRelatorioPdfService _pdf;
-    private readonly IFilePickerService _filePicker;
+    private readonly IExportacaoArquivoService _exportacao;
 
     public ObservableCollection<RelatorioTipoItem> RelatoriosDisponiveis { get; }
 
@@ -62,11 +61,10 @@ public partial class RelatoriosViewModel : ViewModelBase
     public ObservableCollection<RelatorioMovimentoItem> ResultadoMovimentos { get; } = new();
     public ObservableCollection<FluxoCaixaRelatorioItem> ResultadoFluxoCaixa { get; } = new();
 
-    public RelatoriosViewModel(IRelatorioService relatorios, IRelatorioPdfService pdf, IFilePickerService filePicker)
+    public RelatoriosViewModel(IRelatorioService relatorios, IExportacaoArquivoService exportacao)
     {
         _relatorios = relatorios;
-        _pdf = pdf;
-        _filePicker = filePicker;
+        _exportacao = exportacao;
 
         RelatoriosDisponiveis = new ObservableCollection<RelatorioTipoItem>
         {
@@ -163,29 +161,6 @@ public partial class RelatoriosViewModel : ViewModelBase
                     break;
             }
 
-            // Cada relatório gerado deve perguntar imediatamente onde o PDF será guardado.
-            var nome = $"ScoolManager_{RelatorioSelecionado.Titulo.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
-            var caminho = await _filePicker.SelecionarDestinoAsync(
-                "Guardar relatório PDF",
-                nome,
-                "pdf");
-
-            if (!string.IsNullOrWhiteSpace(caminho))
-            {
-                var (headers, rows) = ConstruirLinhasPdf();
-                var inicio = FiltroAtual.DataInicio?.Date.ToString("dd/MM/yyyy") ?? "início";
-                var fim = FiltroAtual.DataFim?.Date.ToString("dd/MM/yyyy") ?? "hoje";
-
-                await _pdf.GerarAsync(
-                    RelatorioSelecionado.Titulo,
-                    $"Período: {inicio} — {fim}",
-                    headers,
-                    rows,
-                    caminho);
-
-                MensagemExportacao = $"PDF gerado com sucesso em:\n{caminho}";
-            }
-
             ModalConfigurarVisivel = false;
             ModalPreVisualizarVisivel = true;
         }
@@ -200,22 +175,39 @@ public partial class RelatoriosViewModel : ViewModelBase
 
         try
         {
-            var nome = $"ScoolManager_{RelatorioSelecionado.Titulo.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
-            var caminho = await _filePicker.SelecionarDestinoAsync("Guardar relatório PDF", nome, "pdf");
-            if (string.IsNullOrWhiteSpace(caminho)) return;
-
             var (headers, rows) = ConstruirLinhasPdf();
-            var inicio = FiltroAtual.DataInicio?.Date.ToString("dd/MM/yyyy") ?? "início";
-            var fim = FiltroAtual.DataFim?.Date.ToString("dd/MM/yyyy") ?? "hoje";
-            await _pdf.GerarAsync(RelatorioSelecionado.Titulo, $"Período: {inicio} — {fim}", headers, rows, caminho);
+            var caminho = await _exportacao.ExportarPdfAsync(
+                RelatorioSelecionado.Titulo,
+                $"ScoolManager_{RelatorioSelecionado.Titulo.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmm}.pdf",
+                headers,
+                rows,
+                $"Período: {FiltroAtual.DataInicio?.Date:dd/MM/yyyy} — {FiltroAtual.DataFim?.Date:dd/MM/yyyy}");
 
-            MostrarMensagemExportacao($"PDF gerado com sucesso em:\n{caminho}");
+            if (caminho is not null)
+                MostrarMensagemExportacao($"PDF gerado com sucesso em:\n{caminho}");
         }
         catch (Exception ex) { ErroRelatorios = ex.Message; }
     }
 
     [RelayCommand]
-    private void ExportarExcel() => MostrarMensagemExportacao("Exportação Excel ainda não está ligada ao serviço de exportação.");
+    private async Task ExportarExcel()
+    {
+        if (RelatorioSelecionado is null) return;
+
+        try
+        {
+            var (headers, rows) = ConstruirLinhasPdf();
+            var caminho = await _exportacao.ExportarExcelAsync(
+                $"ScoolManager_{RelatorioSelecionado.Titulo.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx",
+                headers,
+                rows,
+                RelatorioSelecionado.Titulo.Length > 25 ? "Relatorio" : RelatorioSelecionado.Titulo);
+
+            if (caminho is not null)
+                MostrarMensagemExportacao($"Excel gerado com sucesso em:\n{caminho}");
+        }
+        catch (Exception ex) { ErroRelatorios = ex.Message; }
+    }
 
     [RelayCommand]
     private void Imprimir() => MostrarMensagemExportacao("O relatório PDF já está pronto para impressão.");
