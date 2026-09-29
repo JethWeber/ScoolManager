@@ -78,7 +78,8 @@ public partial class MainWindowViewModel : ViewModelBase
             App.Services.GetRequiredService<IAlunoService>(),
             App.Services.GetRequiredService<IEscolaService>(),
             App.Services.GetRequiredService<IFinanceiroService>(),
-            App.Services.GetRequiredService<IArmazenamentoArquivosService>());
+            App.Services.GetRequiredService<IArmazenamentoArquivosService>(),
+            App.Services.GetRequiredService<IReciboPagamentoService>());
 
         detalhes.VoltarParaAlunosSolicitado += (_, _) => CurrentPage = CriarPaginaAlunos();
         detalhes.ExclusaoConfirmada += (_, _) => CurrentPage = CriarPaginaAlunos();
