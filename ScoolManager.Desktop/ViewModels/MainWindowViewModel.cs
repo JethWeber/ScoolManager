@@ -31,6 +31,8 @@ public partial class MainWindowViewModel : ViewModelBase
     public string UserName { get; } = "Secretaria";
     public string UserRole { get; } = "Administrador";
 
+    public MainWindowViewModel() : this(new AtividadeSucessoService()) { }
+
     public MainWindowViewModel(IAtividadeSucessoService atividadeSucesso)
     {
         AtividadeSucesso = atividadeSucesso;
