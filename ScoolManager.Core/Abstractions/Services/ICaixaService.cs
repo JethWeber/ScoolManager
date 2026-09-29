@@ -20,4 +20,6 @@ public interface ICaixaService
     Task<SessaoCaixa> ReabrirCaixaAsync(int utilizadorId, CancellationToken ct = default);
 
     Task<SessaoCaixa?> ObterSessaoAtualAsync(CancellationToken ct = default);
+
+    Task<IReadOnlyList<SessaoCaixa>> ObterHistoricoAsync(DateTime inicio, DateTime fim, CancellationToken ct = default);
 }
