@@ -823,6 +823,10 @@ namespace ScoolManager.Core.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Estado")
+                        .IsUnique()
+                        .HasFilter("[Estado] = 'Aberta'");
+
                     b.HasIndex("UtilizadorAberturaId");
 
                     b.HasIndex("UtilizadorFechamentoId");
