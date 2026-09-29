@@ -13,6 +13,8 @@ public class EfAlunoRepository : IAlunoRepository
     private IQueryable<Aluno> ComNavegacoes() => _db.Alunos
         .Include(a => a.Turma).ThenInclude(t => t!.Classe)
         .Include(a => a.Turma).ThenInclude(t => t!.Curso)
+        .Include(a => a.Turma).ThenInclude(t => t!.AnoLectivo)
+        .Include(a => a.AnoLectivo)
         .Include(a => a.Encarregados)
         .Include(a => a.Documentos);
 
