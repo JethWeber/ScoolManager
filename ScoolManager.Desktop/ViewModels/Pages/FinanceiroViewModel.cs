@@ -26,6 +26,7 @@ public partial class FinanceiroViewModel : ViewModelBase
     private readonly ICaixaService _caixa;
     private readonly ISessaoAtualService _sessaoAtual;
     private readonly IExportacaoArquivoService _exportacao;
+    private readonly IReciboPagamentoService _reciboService;
     [ObservableProperty] private string _erroFinanceiro = string.Empty;
     [ObservableProperty] private bool _isSucessoAberto;
     [ObservableProperty] private string _sucessoMensagem = "Operação concluída com sucesso!";
@@ -200,27 +201,20 @@ public partial class FinanceiroViewModel : ViewModelBase
         try
         {
             var p = PagamentoSelecionado;
-            var caminho = await _exportacao.ExportarPdfAsync(
-                $"Recibo de Pagamento — {p.NumeroRecibo}",
-                $"Recibo_{p.NumeroRecibo}_{DateTime.Now:yyyyMMdd_HHmm}.pdf",
-                new[] { "Campo", "Valor" },
-                new[]
-                {
-                    new[] { "Aluno", p.Aluno },
-                    new[] { "Recibo", p.NumeroRecibo },
-                    new[] { "Referência", p.Referencia },
-                    new[] { "Tipo de cobrança", p.TipoCobranca },
-                    new[] { "Valor", p.Valor },
-                    new[] { "Data", p.Data },
-                    new[] { "Método", p.Metodo },
-                    new[] { "Estado", p.Estado }
-                });
+            var recibo = await _reciboService.GuardarEImprimirAsync(
+                p.Aluno,
+                p.NumeroRecibo,
+                p.ValorReal,
+                p.DataReal == default ? DateTime.Now : p.DataReal,
+                p.Metodo,
+                $"{p.TipoCobranca} · {p.Referencia}");
 
-            if (caminho is not null)
-            {
-                IsDetalhesPagamentoAberto = false;
-                await MostrarSucessoAsync("Recibo exportado com sucesso!", caminho);
-            }
+            IsDetalhesPagamentoAberto = false;
+            await MostrarSucessoAsync(
+                "Recibo processado com sucesso!",
+                recibo.ImpressaoEnviada
+                    ? $"Guardado automaticamente e enviado para impressão · {recibo.CaminhoPdf}"
+                    : $"Guardado automaticamente · impressora térmica não disponível · {recibo.CaminhoPdf}");
         }
         catch (Exception ex)
         {
@@ -535,12 +529,18 @@ public partial class FinanceiroViewModel : ViewModelBase
     // ================================================================
     // Dados mock
     // ================================================================
-    public FinanceiroViewModel(IFinanceiroService financeiro, ICaixaService caixa, ISessaoAtualService sessaoAtual, IExportacaoArquivoService exportacao)
+    public FinanceiroViewModel(
+        IFinanceiroService financeiro,
+        ICaixaService caixa,
+        ISessaoAtualService sessaoAtual,
+        IExportacaoArquivoService exportacao,
+        IReciboPagamentoService reciboService)
     {
         _financeiro = financeiro;
         _caixa = caixa;
         _sessaoAtual = sessaoAtual;
         _exportacao = exportacao;
+        _reciboService = reciboService;
         _todosPagamentos = new List<PagamentoItem>();
         _ = CarregarFinanceiroAsync();
     }
