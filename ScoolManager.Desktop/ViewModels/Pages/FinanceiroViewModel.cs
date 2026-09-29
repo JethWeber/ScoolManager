@@ -346,41 +346,6 @@ public partial class FinanceiroViewModel : ViewModelBase
     [RelayCommand] private void AbrirFecharCaixaModal() => IsFecharCaixaAberto = true;
     [RelayCommand] private void AbrirReabrirCaixaModal() => IsReabrirCaixaAberto = true;
 
-    [RelayCommand]
-    private void ConfirmarAbrirCaixa()
-    {
-        CaixaAberto = true;
-        SaldoInicialLabel = string.IsNullOrWhiteSpace(NovoSaldoInicialCaixa) ? "0,00 Kz" : $"{NovoSaldoInicialCaixa} Kz";
-        SaldoAtualLabel = SaldoInicialLabel;
-        HistoricoCaixa.Insert(0, new SessaoCaixaItem(
-            DateTime.Now.ToString("dd/MM/yyyy HH:mm"), null, SaldoInicialLabel, null, "Aberto"));
-        FecharModal();
-    }
-
-    [RelayCommand]
-    private void ConfirmarFecharCaixa()
-    {
-        CaixaAberto = false;
-        if (HistoricoCaixa.Count > 0)
-        {
-            var atual = HistoricoCaixa[0];
-            HistoricoCaixa[0] = atual with { DataFecho = DateTime.Now.ToString("dd/MM/yyyy HH:mm"), SaldoFinal = SaldoAtualLabel, Estado = "Fechado" };
-        }
-        FecharModal();
-    }
-
-    [RelayCommand]
-    private void ConfirmarReabrirCaixa()
-    {
-        CaixaAberto = true;
-        if (HistoricoCaixa.Count > 0)
-        {
-            var atual = HistoricoCaixa[0];
-            HistoricoCaixa[0] = atual with { Estado = "Reaberto" };
-        }
-        FecharModal();
-    }
-
     // ================================================================
     // Fecho unificado de todos os modais desta view
     // ================================================================
