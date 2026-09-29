@@ -98,4 +98,10 @@ public class CaixaService : ICaixaService
         GarantirAcesso();
         return _sessoesCaixa.ObterSessaoAbertaAsync(ct);
     }
+
+    public Task<IReadOnlyList<SessaoCaixa>> ObterHistoricoAsync(DateTime inicio, DateTime fim, CancellationToken ct = default)
+    {
+        GarantirAcesso();
+        return _sessoesCaixa.ObterHistoricoAsync(inicio, fim, ct);
+    }
 }
