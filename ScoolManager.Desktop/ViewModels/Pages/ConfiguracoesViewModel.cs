@@ -81,7 +81,7 @@ public partial class ConfiguracoesViewModel : ViewModelBase
     [ObservableProperty] private string _cargoUtilizador = string.Empty;
     [ObservableProperty] private string _telefoneUtilizador = string.Empty;
     [ObservableProperty] private string _passwordUtilizador = string.Empty;
-    [ObservableProperty] private int? _perfilUtilizadorId;
+    [ObservableProperty] private string _perfilUtilizadorIdTexto = string.Empty;
     public bool EditandoUtilizador => UtilizadorEditandoId > 0;
     partial void OnUtilizadorEditandoIdChanged(int value) => OnPropertyChanged(nameof(EditandoUtilizador));
 
@@ -216,7 +216,7 @@ public partial class ConfiguracoesViewModel : ViewModelBase
     [RelayCommand]
     private void NovoUtilizador()
     {
-        UtilizadorEditandoId=0; NomeUtilizador=""; CargoUtilizador=""; TelefoneUtilizador=""; PasswordUtilizador=""; PerfilUtilizadorId=null;
+        UtilizadorEditandoId=0; NomeUtilizador=""; CargoUtilizador=""; TelefoneUtilizador=""; PasswordUtilizador=""; PerfilUtilizadorIdTexto="";
         ModalUtilizadorVisivel=true;
     }
 
@@ -225,7 +225,7 @@ public partial class ConfiguracoesViewModel : ViewModelBase
     {
         if(!_utilizadores.TryGetValue(utilizador.Id,out var u)) return;
         UtilizadorEditandoId=u.Id; NomeUtilizador=u.Nome; CargoUtilizador=u.Cargo; TelefoneUtilizador=u.Telefone;
-        PasswordUtilizador=""; PerfilUtilizadorId=u.PerfilPermissaoId; ModalUtilizadorVisivel=true;
+        PasswordUtilizador=""; PerfilUtilizadorIdTexto=u.PerfilPermissaoId?.ToString() ?? ""; ModalUtilizadorVisivel=true;
     }
 
     [RelayCommand]
@@ -239,13 +239,13 @@ public partial class ConfiguracoesViewModel : ViewModelBase
             if(UtilizadorEditandoId==0)
             {
                 if(string.IsNullOrWhiteSpace(PasswordUtilizador)) throw new InvalidOperationException("A password é obrigatória para um novo utilizador.");
-                var u=await _utilizadorService.CriarAsync(NomeUtilizador.Trim(),CargoUtilizador.Trim(),TelefoneUtilizador.Trim(),PasswordUtilizador,PerfilUtilizadorId);
+                var u=await _utilizadorService.CriarAsync(NomeUtilizador.Trim(),CargoUtilizador.Trim(),TelefoneUtilizador.Trim(),PasswordUtilizador,ParsePerfilId());
                 _utilizadores[u.Id]=u;
             }
             else
             {
                 var u=_utilizadores[UtilizadorEditandoId];
-                u.Nome=NomeUtilizador.Trim(); u.Cargo=CargoUtilizador.Trim(); u.Telefone=TelefoneUtilizador.Trim(); u.PerfilPermissaoId=PerfilUtilizadorId;
+                u.Nome=NomeUtilizador.Trim(); u.Cargo=CargoUtilizador.Trim(); u.Telefone=TelefoneUtilizador.Trim(); u.PerfilPermissaoId=ParsePerfilId();
                 await _utilizadorService.AtualizarAsync(u);
             }
             ModalUtilizadorVisivel=false; await InicializarAsync(); MostrarSucesso("Utilizador guardado com sucesso.");
@@ -312,6 +312,8 @@ public partial class ConfiguracoesViewModel : ViewModelBase
         var caminho=await _filePicker.SelecionarArquivoAsync("Importar licença", "wta");
         if(!string.IsNullOrWhiteSpace(caminho)) MostrarSucesso("Ficheiro de licença selecionado. A integração do provider WeberTech ainda não está ligada.");
     }
+
+    private int? ParsePerfilId() => int.TryParse(PerfilUtilizadorIdTexto, out var id) && id > 0 ? id : null;
 
     private void MostrarSucesso(string msg){ SucessoConfiguracoes=msg; ErroConfiguracoes=string.Empty; }
     private static string Iniciais(string nome)
