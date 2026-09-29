@@ -33,6 +33,8 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
 {
     private readonly IAlunoService _alunoService;
     private readonly IEscolaService _escolaService;
+    private readonly IFinanceiroService? _financeiroService;
+    private readonly IArmazenamentoArquivosService? _armazenamento;
     private readonly int? _alunoId;
     public enum Aba
     {
@@ -42,7 +44,7 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     }
 
     // ===== Fluxo "Efetuar Pagamento" (separado, ver AlunoPagamentosViewModel) =====
-    public AlunoPagamentosViewModel PagamentosViewModel { get; } = new();
+    public AlunoPagamentosViewModel PagamentosViewModel { get; }
 
     // ===== Cabeçalho =====
     [ObservableProperty] private string _nomeCompleto = string.Empty;
@@ -51,8 +53,26 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     [ObservableProperty] private string _turma = string.Empty;
     [ObservableProperty] private bool _ativo = true;
     [ObservableProperty] private string? _fotografiaCaminho;
+    [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _fotografiaPreview;
+    [ObservableProperty] private bool _isFotoAberta;
 
-    public bool TemFotografia => !string.IsNullOrEmpty(FotografiaCaminho);
+    public bool TemFotografia => FotografiaPreview is not null;
+
+    partial void OnFotografiaCaminhoChanged(string? value)
+    {
+        FotografiaPreview?.Dispose();
+        FotografiaPreview = null;
+        if (string.IsNullOrWhiteSpace(value) || !System.IO.File.Exists(value)) return;
+        try { FotografiaPreview = new Avalonia.Media.Imaging.Bitmap(value); } catch { }
+    }
+
+    [RelayCommand]
+    private void AbrirFoto() => IsFotoAberta = FotografiaPreview is not null;
+
+    [RelayCommand]
+    private void FecharFoto() => IsFotoAberta = false;
+
+    public bool TemFotografia => FotografiaPreview is not null;
 
     partial void OnFotografiaCaminhoChanged(string? value) => OnPropertyChanged(nameof(TemFotografia));
 
@@ -381,11 +401,14 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     // ================================================================
     // Construtores
     // ================================================================
-    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService, IEscolaService escolaService)
+    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService, IEscolaService escolaService, IFinanceiroService financeiroService, IArmazenamentoArquivosService? armazenamento = null)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
+        _financeiroService = financeiroService;
+        _armazenamento = armazenamento;
         _alunoId = aluno.Id;
+        PagamentosViewModel = new AlunoPagamentosViewModel(financeiroService, aluno.Id);
 
         PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
 
@@ -402,17 +425,21 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         // NÃO chamar PreencherDadosMock()
     }
 
-    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService)
+    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService, IFinanceiroService financeiroService, IArmazenamentoArquivosService? armazenamento = null)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
+        _financeiroService = financeiroService;
+        _armazenamento = armazenamento;
         _alunoId = alunoId;
+        PagamentosViewModel = new AlunoPagamentosViewModel(financeiroService, alunoId);
 
         PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
     }
 
     public DetalhesAlunoViewModel() : this(
         new AlunoListItemModel(0, "2026/0000", "Aluno Exemplo", "", "", "", "", "", true),
+        null!,
         null!,
         null!)
     {
@@ -464,6 +491,27 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
             NomeMae     = mae?.Nome ?? string.Empty;
             ContactoMae = mae?.Contacto ?? string.Empty;
             ProfissaoMae = mae?.Profissao ?? string.Empty;
+
+            if (_financeiroService is not null)
+            {
+                try
+                {
+                    var pagamentos = await _financeiroService.ObterHistoricoPagamentosAsync(_alunoId.Value);
+                    HistoricoPagamentos.Clear();
+                    foreach (var pagamento in pagamentos.OrderByDescending(p => p.DataPagamento ?? p.DataVencimento))
+                    {
+                        HistoricoPagamentos.Add(new PagamentoHistoricoItem(
+                            pagamento.MesReferencia.ToString("MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("pt-PT")),
+                            pagamento.NumeroRecibo,
+                            pagamento.Valor.ToString("N2") + " Kz",
+                            (pagamento.DataPagamento ?? pagamento.DataVencimento).ToString("dd/MM/yyyy"),
+                            pagamento.Estado == ScoolManager.Core.Enums.EstadoPagamento.Pago && !pagamento.Anulado));
+                    }
+                    SaldoDevedorLabel = (await _financeiroService.ObterSaldoDevedorAsync(_alunoId.Value)).ToString("N2") + " Kz";
+                    PropinasPagas = pagamentos.Count(p => p.Tipo == ScoolManager.Core.Enums.TipoCobranca.Propina && p.Estado == ScoolManager.Core.Enums.EstadoPagamento.Pago && !p.Anulado);
+                }
+                catch { }
+            }
 
             Documentos.Clear();
             foreach (var doc in aluno.Documentos)
