@@ -542,8 +542,8 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
                 d.Tipo == ScoolManager.Core.Enums.TipoDocumentoAluno.FotoTipoPasse &&
                 !string.IsNullOrWhiteSpace(d.NomeArquivo));
 
-            FotografiaCaminho = foto is not null && _armazenamento is not null && aluno.AnoLectivo is not null
-                ? _armazenamento.ObterCaminhoDocumentoAluno(aluno.AnoLectivo.Nome, aluno.Codigo, foto.NomeArquivo!)
+            FotografiaCaminho = foto is not null && _armazenamento is not null && (aluno.AnoLectivo?.Nome ?? aluno.Turma?.AnoLectivo?.Nome) is string anoLectivo
+                ? _armazenamento.ObterCaminhoDocumentoAluno(anoLectivo, aluno.Codigo, foto.NomeArquivo!)
                 : null;
         }
         catch
