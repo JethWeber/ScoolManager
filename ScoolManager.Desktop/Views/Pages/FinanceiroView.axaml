@@ -812,9 +812,6 @@
             </Border>
         </Border>
 
-    </Panel>
-
-
         <!-- FEEDBACK DE SUCESSO -->
         <Border Background="#E60B1326"
                 IsVisible="{Binding IsSucessoAberto}"
@@ -828,21 +825,21 @@
                             HorizontalAlignment="Center" VerticalAlignment="Center"
                             CornerRadius="63"
                             BorderBrush="#4034D399" BorderThickness="1"
-                            RenderTransformOrigin="50%,50%">
+                            RenderTransformOrigin="50%,50%" RenderTransform="scale(1)">
                         <Border Classes="sucesso-pulse"
                                 Width="108" Height="108"
                                 HorizontalAlignment="Center" VerticalAlignment="Center"
                                 CornerRadius="54"
                                 Background="#2034D399"
                                 BorderBrush="#A034D399" BorderThickness="2"
-                                RenderTransformOrigin="50%,50%">
+                                RenderTransformOrigin="50%,50%" RenderTransform="scale(1)">
                             <materialIcons:MaterialIcon Classes="sucesso-check"
                                                          Kind="CheckBold"
                                                          Width="58" Height="58"
                                                          HorizontalAlignment="Center"
                                                          VerticalAlignment="Center"
                                                          Foreground="#34D399"
-                                                         RenderTransformOrigin="50%,50%"/>
+                                                         RenderTransformOrigin="50%,50%" RenderTransform="scale(1)"/>
                         </Border>
                     </Border>
                 </Grid>
@@ -857,4 +854,4 @@
             </StackPanel>
         </Border>
 
-</UserControl>
+    </Panel>
