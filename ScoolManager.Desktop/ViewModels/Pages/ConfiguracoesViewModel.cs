@@ -29,6 +29,7 @@ public partial class ConfiguracoesViewModel : ViewModelBase
     private readonly IPermissaoService _permissaoService;
     private readonly IBackupService _backupService;
     private readonly IFilePickerService _filePicker;
+    private readonly IAtividadeSucessoService _atividadeSucesso;
     private readonly Dictionary<int, Utilizador> _utilizadores = new();
 
     public ObservableCollection<AbaConfiguracoesItem> Abas { get; } = new()
@@ -105,8 +106,10 @@ public partial class ConfiguracoesViewModel : ViewModelBase
         IUtilizadorService utilizadorService,
         IPermissaoService permissaoService,
         IBackupService backupService,
-        IFilePickerService filePicker)
+        IFilePickerService filePicker,
+        IAtividadeSucessoService atividadeSucesso)
     {
+        _atividadeSucesso = atividadeSucesso;
         _institucional = institucional; _utilizadorService = utilizadorService; _permissaoService = permissaoService;
         _backupService = backupService; _filePicker = filePicker;
         _abaItemSelecionada = Abas[0];
@@ -205,8 +208,14 @@ public partial class ConfiguracoesViewModel : ViewModelBase
                 });
 
             MostrarSucesso("Configurações guardadas com sucesso.");
+            _atividadeSucesso.AtividadeSucedida(
+                Guid.NewGuid(),
+                "Configurações guardadas com sucesso.");
         }
-        catch(Exception ex) { ErroConfiguracoes=ex.Message; }
+        catch(Exception ex)
+        {
+            ErroConfiguracoes=ex.Message;
+        }
     }
 
     [RelayCommand]
