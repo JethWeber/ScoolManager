@@ -60,6 +60,9 @@ public class FinanceiroService : IFinanceiroService
     public async Task<Pagamento> RegistarPagamentoAsync(int alunoId, TipoCobranca tipo, decimal valor, string? metodoPagamento, CancellationToken ct = default)
     {
         GarantirAcesso();
+        if (valor <= 0)
+            throw new ArgumentOutOfRangeException(nameof(valor), "O valor do pagamento deve ser maior que zero.");
+
         var sessao = await GarantirCaixaAbertaAsync(ct);
 
         var pagamento = new Pagamento
