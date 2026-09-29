@@ -389,14 +389,14 @@ public partial class FinanceiroViewModel : ViewModelBase
         IsNovoMovimentoAberto || IsEditarMovimentoAberto || IsDetalhesMovimentoAberto ||
         IsAbrirCaixaAberto || IsFecharCaixaAberto || IsReabrirCaixaAberto;
 
-    partial void OnIsDetalhesPagamentoAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsAnularPagamentoAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsNovoMovimentoAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsEditarMovimentoAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsDetalhesMovimentoAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsAbrirCaixaAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsFecharCaixaAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
-    partial void OnIsReabrirCaixaAbertoChanged(bool v) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsDetalhesPagamentoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsAnularPagamentoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsNovoMovimentoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsEditarMovimentoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsDetalhesMovimentoAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsAbrirCaixaAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsFecharCaixaAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
+    partial void OnIsReabrirCaixaAbertoChanged(bool value) => OnPropertyChanged(nameof(AlgumModalAberto));
 
     [RelayCommand]
     private void FecharModal()
