@@ -245,7 +245,6 @@
                             </StackPanel>
                         </Button>
                         <TextBlock Text="{Binding ErroConfiguracoes}"
-                                   IsVisible="{Binding ErroConfiguracoes, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                    Foreground="{StaticResource ErrorBrush}"
                                    FontSize="11"
                                    TextWrapping="Wrap"
