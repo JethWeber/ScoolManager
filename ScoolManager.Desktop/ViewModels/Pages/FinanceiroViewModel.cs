@@ -500,6 +500,16 @@ public partial class FinanceiroViewModel : ViewModelBase
             SaldoInicialLabel = "0,00 Kz";
             SaldoAtualLabel = "0,00 Kz";
             HistoricoCaixa.Clear();
+            var historicoFechado = await _caixa.ObterHistoricoAsync(DateTime.Now.AddYears(-2), DateTime.Now);
+            foreach (var s in historicoFechado.OrderByDescending(x => x.DataAbertura))
+            {
+                HistoricoCaixa.Add(new SessaoCaixaItem(
+                    s.DataAbertura.ToString("dd/MM/yyyy HH:mm"),
+                    s.DataFechamento?.ToString("dd/MM/yyyy HH:mm"),
+                    Kz(s.SaldoInicial),
+                    s.SaldoFinal.HasValue ? Kz(s.SaldoFinal.Value) : null,
+                    s.Estado == EstadoCaixa.Aberta ? "Aberto" : "Fechado", s.Id));
+            }
             return;
         }
 
