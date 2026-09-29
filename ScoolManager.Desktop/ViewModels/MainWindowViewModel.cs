@@ -70,7 +70,9 @@ public partial class MainWindowViewModel : ViewModelBase
         var detalhes = new DetalhesAlunoViewModel(
             aluno,
             App.Services.GetRequiredService<IAlunoService>(),
-            App.Services.GetRequiredService<IEscolaService>());
+            App.Services.GetRequiredService<IEscolaService>(),
+            App.Services.GetRequiredService<IFinanceiroService>(),
+            App.Services.GetRequiredService<IArmazenamentoArquivosService>());
 
         detalhes.VoltarParaAlunosSolicitado += (_, _) => CurrentPage = CriarPaginaAlunos();
         detalhes.ExclusaoConfirmada += (_, _) => CurrentPage = CriarPaginaAlunos();
