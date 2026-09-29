@@ -1,5 +1,5 @@
 using ScoolManager.Core.Abstractions;
-using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Abstractions.Repositories;
 using ScoolManager.Core.Entities.Financeiro;
 
 namespace ScoolManager.Desktop.Services;
@@ -7,16 +7,16 @@ namespace ScoolManager.Desktop.Services;
 public sealed class ReciboPagamentoService : IReciboPagamentoService
 {
     private readonly IExportService _export;
-    private readonly IConfiguracaoInstitucionalService _institucional;
+    private readonly IDadosInstituicaoRepository _dadosInstituicao;
     private readonly IImpressoraTermicaService _impressora;
 
     public ReciboPagamentoService(
         IExportService export,
-        IConfiguracaoInstitucionalService institucional,
+        IDadosInstituicaoRepository dadosInstituicao,
         IImpressoraTermicaService impressora)
     {
         _export = export;
-        _institucional = institucional;
+        _dadosInstituicao = dadosInstituicao;
         _impressora = impressora;
     }
 
@@ -26,7 +26,7 @@ public sealed class ReciboPagamentoService : IReciboPagamentoService
         string descricao,
         CancellationToken ct = default)
     {
-        var escola = await _institucional.ObterAsync(ct);
+        var escola = await _dadosInstituicao.ObterAsync(ct);
         var pasta = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "ScoolManager",
