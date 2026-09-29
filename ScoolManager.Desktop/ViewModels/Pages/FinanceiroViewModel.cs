@@ -25,9 +25,22 @@ public partial class FinanceiroViewModel : ViewModelBase
     private readonly ICaixaService _caixa;
     private readonly ISessaoAtualService _sessaoAtual;
     [ObservableProperty] private string _erroFinanceiro = string.Empty;
+    [ObservableProperty] private bool _isSucessoAberto;
+    [ObservableProperty] private string _sucessoMensagem = "Operação concluída com sucesso!";
+    [ObservableProperty] private string _sucessoDetalhe = string.Empty;
+
     public bool TemErroFinanceiro => !string.IsNullOrWhiteSpace(ErroFinanceiro);
     partial void OnErroFinanceiroChanged(string value) => OnPropertyChanged(nameof(TemErroFinanceiro));
     [RelayCommand] private void FecharErroFinanceiro() => ErroFinanceiro = string.Empty;
+
+    private async Task MostrarSucessoAsync(string mensagem, string detalhe)
+    {
+        SucessoMensagem = mensagem;
+        SucessoDetalhe = detalhe;
+        IsSucessoAberto = true;
+        await Task.Delay(1800);
+        IsSucessoAberto = false;
+    }
 
     private static string Kz(decimal value) => value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("pt-PT")) + " Kz";
     private static bool TryValor(string value, out decimal result)
@@ -205,6 +218,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         try
         {
             await _financeiro.AnularPagamentoAsync(PagamentoSelecionado.Id, MotivoAnulacao.Trim());
+            await MostrarSucessoAsync("Pagamento anulado com sucesso!", PagamentoSelecionado.Referencia);
             FecharModal();
             await CarregarFinanceiroAsync();
         }
@@ -308,6 +322,9 @@ public partial class FinanceiroViewModel : ViewModelBase
                 Tipo = MovimentoTipoModal == "Entrada" ? TipoMovimentoCaixa.Entrada : TipoMovimentoCaixa.Saida
             };
             await _financeiro.RegistarMovimentoAsync(movimento);
+            await MostrarSucessoAsync(
+                $"{MovimentoTipoModal} registada com sucesso!",
+                $"{Kz(valor)} · {NovoMovimentoDescricao.Trim()}");
             FecharModal();
             await CarregarFinanceiroAsync();
         }
@@ -331,6 +348,7 @@ public partial class FinanceiroViewModel : ViewModelBase
             movimento.Categoria = string.IsNullOrWhiteSpace(NovoMovimentoCategoria) ? "Outro" : NovoMovimentoCategoria.Trim();
             movimento.Valor = valor;
             await _financeiro.AtualizarMovimentoAsync(movimento);
+            await MostrarSucessoAsync("Movimento atualizado com sucesso!", $"{Kz(valor)} · {movimento.Descricao}");
             FecharModal();
             await CarregarFinanceiroAsync();
         }
@@ -551,6 +569,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         {
             ErroFinanceiro = string.Empty;
             var sessao = await _caixa.AbrirCaixaAsync(UtilizadorAtualId(), saldo);
+            await MostrarSucessoAsync("Caixa aberto com sucesso!", $"Saldo inicial: {Kz(saldo)}");
             CaixaAberto = true;
             SaldoInicialLabel = Kz(sessao.SaldoInicial);
             SaldoAtualLabel = Kz(sessao.SaldoInicial);
@@ -567,6 +586,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         {
             ErroFinanceiro = string.Empty;
             await _caixa.FecharCaixaAsync(UtilizadorAtualId());
+            await MostrarSucessoAsync("Caixa fechado com sucesso!", $"Saldo final: {SaldoAtualLabel}");
             FecharModal();
             await CarregarFinanceiroAsync();
         }
@@ -580,6 +600,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         {
             ErroFinanceiro = string.Empty;
             await _caixa.ReabrirCaixaAsync(UtilizadorAtualId());
+            await MostrarSucessoAsync("Caixa reaberto com sucesso!", "A sessão está novamente disponível.");
             FecharModal();
             await CarregarFinanceiroAsync();
         }
