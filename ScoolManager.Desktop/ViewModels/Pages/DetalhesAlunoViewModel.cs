@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Desktop.Models;
+using ScoolManager.Desktop.Services;
 using ScoolManager.Desktop.ViewModels.Pages.Pagamentos;
 
 namespace ScoolManager.Desktop.ViewModels.Pages
@@ -417,14 +418,14 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
     // ================================================================
     // Construtores
     // ================================================================
-    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService, IEscolaService escolaService, IFinanceiroService financeiroService, IArmazenamentoArquivosService? armazenamento = null)
+    public DetalhesAlunoViewModel(AlunoListItemModel aluno, IAlunoService alunoService, IEscolaService escolaService, IFinanceiroService financeiroService, IArmazenamentoArquivosService? armazenamento = null, IReciboPagamentoService? reciboService = null)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
         _financeiroService = financeiroService;
         _armazenamento = armazenamento;
         _alunoId = aluno.Id;
-        PagamentosViewModel = new AlunoPagamentosViewModel(financeiroService, aluno.Id);
+        PagamentosViewModel = new AlunoPagamentosViewModel(financeiroService, aluno.Id, reciboService);
 
         PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
 
@@ -441,14 +442,14 @@ public partial class DetalhesAlunoViewModel : ViewModelBase, IAsyncInitializable
         // NÃO chamar PreencherDadosMock()
     }
 
-    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService, IFinanceiroService financeiroService, IArmazenamentoArquivosService? armazenamento = null)
+    public DetalhesAlunoViewModel(int alunoId, IAlunoService alunoService, IEscolaService escolaService, IFinanceiroService financeiroService, IArmazenamentoArquivosService? armazenamento = null, IReciboPagamentoService? reciboService = null)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
         _financeiroService = financeiroService;
         _armazenamento = armazenamento;
         _alunoId = alunoId;
-        PagamentosViewModel = new AlunoPagamentosViewModel(financeiroService, alunoId);
+        PagamentosViewModel = new AlunoPagamentosViewModel(financeiroService, alunoId, reciboService);
 
         PagamentosViewModel.PagamentoConfirmado += OnPagamentoConfirmado;
     }
