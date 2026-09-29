@@ -126,7 +126,7 @@ public sealed class ExportService : IExportService
     private static string EscaparCampo(string valor)
     {
         if (valor.Contains(';') || valor.Contains('"') || valor.Contains('\n'))
-            return $""{valor.Replace(""", """")}"";
+            return $"\"{valor.Replace("\"", "\"\"")}\"";
 
         return valor;
     }
