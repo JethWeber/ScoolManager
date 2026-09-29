@@ -333,6 +333,14 @@
 
                             <!-- Coluna esquerda: Detalhes da Transação (varia por categoria) -->
                             <StackPanel Grid.Column="0" Spacing="14">
+                    <Border Background="#26FFB4AB" BorderBrush="{StaticResource ErrorBrush}" BorderThickness="1"
+                            CornerRadius="10" Padding="10"
+                            IsVisible="{Binding TemErroConfirmacao}">
+                        <TextBlock Text="{Binding ErroConfirmacao}" FontSize="12"
+                                   Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"/>
+                    </Border>
+
+
                                 <TextBlock Text="DETALHES DA TRANSAÇÃO" Classes="secao-titulo"/>
 
                                 <StackPanel Spacing="4">
@@ -444,14 +452,7 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <Border Background="#26FFB4AB" BorderBrush="{StaticResource ErrorBrush}" BorderThickness="1"
-                            CornerRadius="10" Padding="10"
-                            IsVisible="{Binding TemErroConfirmacao}">
-                        <TextBlock Text="{Binding ErroConfirmacao}" FontSize="12"
-                                   Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"/>
-                    </Border>
-
-                    <!-- Coluna direita: Método + Resumo -->
+                            <!-- Coluna direita: Método + Resumo -->
                             <StackPanel Grid.Column="1" Spacing="16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="MÉTODO" Classes="secao-titulo"/>
