@@ -10,6 +10,7 @@ using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Alunos;
 using ScoolManager.Core.Enums;
 using ScoolManager.Core.Services.Alunos;
+using ScoolManager.Desktop.Services;
 
 namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 {
