@@ -11,6 +11,11 @@ public class SessaoCaixaConfiguration : IEntityTypeConfiguration<SessaoCaixa>
         builder.ToTable("SessoesCaixa");
         builder.HasKey(s => s.Id);
 
+        // SQLite: só pode existir uma sessão aberta simultaneamente.
+        builder.HasIndex(s => s.Estado)
+            .HasFilter("[Estado] = 'Aberta'")
+            .IsUnique();
+
         builder.Property(s => s.Estado).HasConversion<string>();
         builder.Property(s => s.SaldoInicial).HasColumnType("decimal(18,2)");
         builder.Property(s => s.SaldoFinal).HasColumnType("decimal(18,2)");
