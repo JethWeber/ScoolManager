@@ -564,8 +564,7 @@
                 IsVisible="{Binding IsSucessoAberto}"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                CornerRadius="16"
-                Panel.ZIndex="100">
+                CornerRadius="16">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
                 <Grid Width="132" Height="132">
                     <Border Width="126" Height="126"
