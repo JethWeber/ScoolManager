@@ -4,6 +4,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ScoolManager.Core.Abstractions;
+using ScoolManager.Core.Abstractions.Services;
+using ScoolManager.Core.Entities.Financeiro;
+using ScoolManager.Core.Enums;
 
 namespace ScoolManager.Desktop.ViewModels.Pages
 {
@@ -562,7 +566,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         try
         {
             ErroFinanceiro = string.Empty;
-            await _caixa.FecharCaixaAsync(await UtilizadorAtualIdAsync());
+            await _caixa.FecharCaixaAsync(UtilizadorAtualId());
             FecharModal();
             await CarregarFinanceiroAsync();
         }
@@ -575,7 +579,7 @@ public partial class FinanceiroViewModel : ViewModelBase
         try
         {
             ErroFinanceiro = string.Empty;
-            await _caixa.ReabrirCaixaAsync(await UtilizadorAtualIdAsync());
+            await _caixa.ReabrirCaixaAsync(UtilizadorAtualId());
             FecharModal();
             await CarregarFinanceiroAsync();
         }
