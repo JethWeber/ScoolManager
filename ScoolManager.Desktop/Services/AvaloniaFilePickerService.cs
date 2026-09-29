@@ -32,4 +32,36 @@ public class AvaloniaFilePickerService : IFilePickerService
         // Fedora (~/...) quanto em Windows (C:\Users\...).
         return resultado.FirstOrDefault()?.TryGetLocalPath();
     }
+
+    public async Task<string?> SelecionarDestinoAsync(
+        string titulo,
+        string nomeSugerido,
+        params string[] extensoesPermitidas)
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
+            || desktop.MainWindow is null)
+            return null;
+
+        var filtros = new List<FilePickerFileType>();
+        if (extensoesPermitidas.Length > 0)
+        {
+            filtros.Add(new FilePickerFileType("Arquivos suportados")
+            {
+                Patterns = extensoesPermitidas
+                    .Select(e => $"*.{e.TrimStart('.')}")
+                    .ToArray()
+            });
+        }
+
+        var extensaoPadrao = extensoesPermitidas.FirstOrDefault()?.TrimStart('.');
+        var resultado = await desktop.MainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = titulo,
+            SuggestedFileName = nomeSugerido,
+            DefaultExtension = extensaoPadrao,
+            FileTypeChoices = filtros.Count > 0 ? filtros : null
+        });
+
+        return resultado?.TryGetLocalPath();
+    }
 }
