@@ -46,7 +46,7 @@ public partial class DashboardView : UserControl
 
         if (valores.Count > 0)
         {
-            var bars = ReceitaPlot.Plot.Add.Bars(valores.Select(v => v).ToArray());
+            var bars = ReceitaPlot.Plot.Add.Bars(valores.ToArray());
             ReceitaPlot.Plot.Axes.Margins(bottom: 0, top: 0.15);
 
             var ticks = new ScottPlot.Tick[labels.Count];
