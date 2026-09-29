@@ -574,13 +574,15 @@ public sealed class MovimentoItem
     public string Categoria { get; }
     public string Valor { get; }
     public string Data { get; }
+    public int Id { get; }
 
-    public MovimentoItem(string descricao, string categoria, string valor, string data)
+    public MovimentoItem(string descricao, string categoria, string valor, string data, int id = 0)
     {
         Descricao = descricao;
         Categoria = categoria;
         Valor = valor;
         Data = data;
+        Id = id;
     }
 }
 
