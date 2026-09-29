@@ -103,7 +103,7 @@ public sealed class ExportService : IExportService
         for (var linha = 0; linha < linhas.Count; linha++)
         {
             var valores = linhas[linha];
-            for (var coluna = 0; coluna < valores.Length; coluna++)
+            for (var coluna = 0; coluna < valores.Count; coluna++)
                 worksheet.Cell(linha + 2, coluna + 1).Value = valores[coluna] ?? string.Empty;
         }
 
@@ -126,7 +126,7 @@ public sealed class ExportService : IExportService
     private static string EscaparCampo(string valor)
     {
         if (valor.Contains(';') || valor.Contains('"') || valor.Contains('\n'))
-            return $"\"{valor.Replace("\"", "\"\"")}\"";
+            return $""{valor.Replace(""", """")}"";
 
         return valor;
     }
