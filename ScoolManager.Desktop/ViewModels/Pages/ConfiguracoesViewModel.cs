@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Material.Icons;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Configuracoes;
@@ -305,7 +307,13 @@ public partial class ConfiguracoesViewModel : ViewModelBase
 
     [RelayCommand] private void FecharUtilizador() => ModalUtilizadorVisivel=false;
 
-    [RelayCommand] private void CopiarMachineId() { }
+    [RelayCommand]
+    private async Task CopiarMachineId()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            await desktop.MainWindow?.Clipboard?.SetTextAsync(LicencaMachineId)!;
+        MostrarSucesso("Machine ID copiado.");
+    }
     [RelayCommand] private void GerarPedidoAtivacao() => MostrarSucesso("O pedido de ativação será disponibilizado com o módulo WeberTech Licensing.");
     [RelayCommand] private async Task ImportarLicenca()
     {
