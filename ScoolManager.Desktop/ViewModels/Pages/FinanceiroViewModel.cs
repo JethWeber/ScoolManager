@@ -8,6 +8,7 @@ using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Entities.Financeiro;
 using ScoolManager.Core.Enums;
+using ScoolManager.Desktop.Services;
 
 namespace ScoolManager.Desktop.ViewModels.Pages
 {
@@ -24,6 +25,7 @@ public partial class FinanceiroViewModel : ViewModelBase
     private readonly IFinanceiroService _financeiro;
     private readonly ICaixaService _caixa;
     private readonly ISessaoAtualService _sessaoAtual;
+    private readonly IExportacaoArquivoService _exportacao;
     [ObservableProperty] private string _erroFinanceiro = string.Empty;
     [ObservableProperty] private bool _isSucessoAberto;
     [ObservableProperty] private string _sucessoMensagem = "Operação concluída com sucesso!";
@@ -189,8 +191,42 @@ public partial class FinanceiroViewModel : ViewModelBase
     [RelayCommand] private void AbrirVerRecibo() => MostrandoRecibo = true;
     [RelayCommand] private void VoltarDetalhesPagamento() => MostrandoRecibo = false;
 
-    // TODO: gerar PDF/impressão real do recibo quando existir o serviço.
-    [RelayCommand] private void ImprimirRecibo() { }
+    [RelayCommand]
+    private async Task ImprimirRecibo()
+    {
+        if (PagamentoSelecionado is null)
+            return;
+
+        try
+        {
+            var p = PagamentoSelecionado;
+            var caminho = await _exportacao.ExportarPdfAsync(
+                $"Recibo de Pagamento — {p.NumeroRecibo}",
+                $"Recibo_{p.NumeroRecibo}_{DateTime.Now:yyyyMMdd_HHmm}.pdf",
+                new[] { "Campo", "Valor" },
+                new[]
+                {
+                    new[] { "Aluno", p.Aluno },
+                    new[] { "Recibo", p.NumeroRecibo },
+                    new[] { "Referência", p.Referencia },
+                    new[] { "Tipo de cobrança", p.TipoCobranca },
+                    new[] { "Valor", p.Valor },
+                    new[] { "Data", p.Data },
+                    new[] { "Método", p.Metodo },
+                    new[] { "Estado", p.Estado }
+                });
+
+            if (caminho is not null)
+            {
+                IsDetalhesPagamentoAberto = false;
+                await MostrarSucessoAsync("Recibo exportado com sucesso!", caminho);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErroFinanceiro = $"Não foi possível gerar o recibo: {ex.Message}";
+        }
+    }
 
     // ---- Anular pagamento (mediante autorização) ----
     [ObservableProperty] private bool _isAnularPagamentoAberto;
@@ -225,10 +261,57 @@ public partial class FinanceiroViewModel : ViewModelBase
         catch (Exception ex) { ErroFinanceiro = ex.Message; }
     }
 
-    // ---- Exportação de listagens ----
-    // TODO: gerar ficheiro real (PDF/Excel) quando existir o serviço de exportação.
-    [RelayCommand] private void ExportarPdf() { }
-    [RelayCommand] private void ExportarExcel() { }
+    // ---- Exportação da listagem de recebimentos ----
+    [RelayCommand]
+    private async Task ExportarPdf()
+    {
+        try
+        {
+            var linhas = Pagamentos.Select(p => new[]
+            {
+                p.Aluno, p.Referencia, p.Valor, p.Data, p.Metodo, p.TipoCobranca, p.Estado
+            }).ToList();
+
+            var caminho = await _exportacao.ExportarPdfAsync(
+                "Recebimentos",
+                $"ScoolManager_Recebimentos_{DateTime.Now:yyyyMMdd_HHmm}.pdf",
+                new[] { "Aluno", "Referência", "Valor", "Data", "Método", "Tipo", "Estado" },
+                linhas,
+                $"Pagamentos filtrados · {linhas.Count} registo(s)");
+
+            if (caminho is not null)
+                await MostrarSucessoAsync("PDF exportado com sucesso!", caminho);
+        }
+        catch (Exception ex)
+        {
+            ErroFinanceiro = $"Não foi possível exportar o PDF: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportarExcel()
+    {
+        try
+        {
+            var linhas = Pagamentos.Select(p => new[]
+            {
+                p.Aluno, p.Referencia, p.Valor, p.Data, p.Metodo, p.TipoCobranca, p.Estado
+            }).ToList();
+
+            var caminho = await _exportacao.ExportarExcelAsync(
+                $"ScoolManager_Recebimentos_{DateTime.Now:yyyyMMdd_HHmm}.xlsx",
+                new[] { "Aluno", "Referência", "Valor", "Data", "Método", "Tipo", "Estado" },
+                linhas,
+                "Recebimentos");
+
+            if (caminho is not null)
+                await MostrarSucessoAsync("Excel exportado com sucesso!", caminho);
+        }
+        catch (Exception ex)
+        {
+            ErroFinanceiro = $"Não foi possível exportar o Excel: {ex.Message}";
+        }
+    }
 
     // ---- Numeração sequencial de recibos (REC-AAAA-NNNNNN) ----
     private int _proximoNumeroRecibo = 1;
@@ -452,11 +535,12 @@ public partial class FinanceiroViewModel : ViewModelBase
     // ================================================================
     // Dados mock
     // ================================================================
-    public FinanceiroViewModel(IFinanceiroService financeiro, ICaixaService caixa, ISessaoAtualService sessaoAtual)
+    public FinanceiroViewModel(IFinanceiroService financeiro, ICaixaService caixa, ISessaoAtualService sessaoAtual, IExportacaoArquivoService exportacao)
     {
         _financeiro = financeiro;
         _caixa = caixa;
         _sessaoAtual = sessaoAtual;
+        _exportacao = exportacao;
         _todosPagamentos = new List<PagamentoItem>();
         _ = CarregarFinanceiroAsync();
     }
