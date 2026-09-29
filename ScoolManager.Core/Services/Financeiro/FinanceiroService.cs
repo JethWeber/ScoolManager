@@ -128,8 +128,8 @@ public class FinanceiroService : IFinanceiroService
     public Task AtualizarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)
     {
         GarantirAcesso();
-        // Não reabre a validação de "caixa aberta" aqui de propósito: editar
         return AtualizarMovimentoInternoAsync(movimento, ct);
+    }
 
     private async Task AtualizarMovimentoInternoAsync(MovimentoCaixa movimento, CancellationToken ct)
     {
@@ -141,7 +141,6 @@ public class FinanceiroService : IFinanceiroService
             throw new ArgumentOutOfRangeException(nameof(movimento), "O valor do movimento deve ser maior que zero.");
 
         await _movimentos.AtualizarAsync(movimento, ct);
-    }
     }
 
     public async Task<MovimentoCaixa> RegistarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)
