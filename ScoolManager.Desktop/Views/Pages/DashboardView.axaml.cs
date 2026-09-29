@@ -46,8 +46,13 @@ public partial class DashboardView : UserControl
 
         if (valores.Count > 0)
         {
-            var bars = ReceitaPlot.Plot.Add.Bars(valores.ToArray());
-            ReceitaPlot.Plot.Axes.Margins(bottom: 0, top: 0.15);
+            // Dashboard: linha de tendência limpa em vez de barras de relatório.
+            var xs = Enumerable.Range(0, valores.Count).Select(i => (double)i).ToArray();
+            var linha = ReceitaPlot.Plot.Add.Scatter(xs, valores.ToArray());
+
+            linha.LineWidth = 3;
+            linha.MarkerSize = 7;
+            linha.MarkerShape = ScottPlot.MarkerShape.FilledCircle;
 
             var ticks = new ScottPlot.Tick[labels.Count];
             for (var i = 0; i < labels.Count; i++)
@@ -57,8 +62,14 @@ public partial class DashboardView : UserControl
                 new ScottPlot.TickGenerators.NumericManual(ticks);
 
             ReceitaPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
-            ReceitaPlot.Plot.Axes.Margins(bottom: 0);
+            ReceitaPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
+            ReceitaPlot.Plot.Axes.Margins(bottom: 0.05, top: 0.12);
             ReceitaPlot.Plot.YLabel("Kz");
+            ReceitaPlot.Plot.Axes.AutoScale();
+
+            // Mantém o gráfico visualmente leve: sem legenda, título ou moldura extra.
+            ReceitaPlot.Plot.Axes.Right.IsVisible = false;
+            ReceitaPlot.Plot.Axes.Top.IsVisible = false;
         }
 
         ReceitaPlot.Refresh();
