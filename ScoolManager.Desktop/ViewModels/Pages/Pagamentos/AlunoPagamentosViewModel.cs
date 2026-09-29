@@ -1,3 +1,4 @@
+using Avalonia.Input.Platform;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -319,10 +320,6 @@ namespace ScoolManager.Desktop.ViewModels.Pages.Pagamentos
 
                 // Ano lectivo corrente: Setembro -> Junho.
                 var inicioAno = DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1;
-                var primeiroMesEmDivida = Enumerable.Range(0, 10)
-                    .Select(i => new DateOnly(inicioAno + (9 + i > 12 ? 1 : 0), ((9 + i - 1) % 12) + 1, 1))
-                    .FirstOrDefault(m => !pagos.Contains((m.Year, m.Month)));
-
                 AtualizarDisponibilidadeMeses(inicioAno);
 
                 OnPropertyChanged(nameof(MesesSelecionadosLabel));
