@@ -1,7 +1,7 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-
+using PdfColors = QuestPDF.Helpers.Colors;
 namespace ScoolManager.Desktop.Services;
 
 public interface IRelatorioPdfService
@@ -29,7 +29,7 @@ public sealed class RelatorioPdfService : IRelatorioPdfService
                 page.Header().Column(column =>
                 {
                     column.Item().Text(titulo).FontSize(20).Bold();
-                    column.Item().Text(subtitulo).FontSize(9).FontColor(Colors.Grey.Darken1);
+                    column.Item().Text(subtitulo).FontSize(9).FontColor(PdfColors.Grey.Darken1);
                     column.Item().PaddingTop(8).LineHorizontal(1);
                 });
 
@@ -52,19 +52,19 @@ public sealed class RelatorioPdfService : IRelatorioPdfService
                         table.Header(header =>
                         {
                             foreach (var h in cabecalhos)
-                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text(h).FontColor(Colors.White).Bold();
+                                header.Cell().Background(PdfColors.Blue.Darken2).Padding(5).Text(h).FontColor(PdfColors.White).Bold();
                         });
 
                         foreach (var linha in linhas)
                         {
                             foreach (var valor in linha)
-                                table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(5).Text(valor ?? string.Empty);
+                                table.Cell().BorderBottom(0.5f).BorderColor(PdfColors.Grey.Lighten2).Padding(5).Text(valor ?? string.Empty);
                         }
                     });
 
                     column.Item().PaddingTop(12)
                         .Text($"Gerado em {DateTime.Now:dd/MM/yyyy HH:mm} · {linhas.Count} registo(s)")
-                        .FontSize(8).FontColor(Colors.Grey.Darken1);
+                        .FontSize(8).FontColor(PdfColors.Grey.Darken1);
                 });
             });
         }).GeneratePdf(caminho);
