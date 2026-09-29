@@ -237,13 +237,21 @@
                         </ListBox>
                     </Border>
 
-                    <Button Grid.Column="1" Classes="primario" Command="{Binding GuardarAlteracoesCommand}"
-                            VerticalAlignment="Top">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <materialIcons:MaterialIcon Kind="ContentSave" Width="16" Height="16"/>
-                            <TextBlock Text="Guardar Alterações"/>
-                        </StackPanel>
-                    </Button>
+                    <StackPanel Grid.Column="1" Spacing="6" HorizontalAlignment="Right">
+                        <Button Classes="primario" Command="{Binding GuardarAlteracoesCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <materialIcons:MaterialIcon Kind="ContentSave" Width="16" Height="16"/>
+                                <TextBlock Text="Guardar Alterações"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="{Binding ErroConfiguracoes}"
+                                   IsVisible="{Binding ErroConfiguracoes, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   Foreground="{StaticResource ErrorBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="280"
+                                   HorizontalAlignment="Right"/>
+                    </StackPanel>
 
                 </Grid>
 
