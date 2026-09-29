@@ -8,13 +8,13 @@ public interface IExportacaoArquivoService
         string titulo,
         string nomeSugerido,
         IReadOnlyList<string> colunas,
-        IReadOnlyList<string[]> linhas,
+        IReadOnlyList<IReadOnlyList<string>> linhas,
         string? subtitulo = null);
 
     Task<string?> ExportarExcelAsync(
         string nomeSugerido,
         IReadOnlyList<string> colunas,
-        IReadOnlyList<string[]> linhas,
+        IReadOnlyList<IReadOnlyList<string>> linhas,
         string nomeFolha = "Dados");
 }
 
@@ -33,7 +33,7 @@ public sealed class ExportacaoArquivoService : IExportacaoArquivoService
         string titulo,
         string nomeSugerido,
         IReadOnlyList<string> colunas,
-        IReadOnlyList<string[]> linhas,
+        IReadOnlyList<IReadOnlyList<string>> linhas,
         string? subtitulo = null)
     {
         var file = await _filePicker.SelecionarDestinoArquivoAsync(
@@ -52,7 +52,7 @@ public sealed class ExportacaoArquivoService : IExportacaoArquivoService
     public async Task<string?> ExportarExcelAsync(
         string nomeSugerido,
         IReadOnlyList<string> colunas,
-        IReadOnlyList<string[]> linhas,
+        IReadOnlyList<IReadOnlyList<string>> linhas,
         string nomeFolha = "Dados")
     {
         var file = await _filePicker.SelecionarDestinoArquivoAsync(
