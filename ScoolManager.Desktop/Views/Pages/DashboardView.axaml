@@ -275,24 +275,24 @@
                                 <lvc:XamlLineSeries Values="{Binding ChartValues}"
                                                     LineSmoothness="0.7"
                                                     GeometrySize="9"
-                                                    Stroke="{lvc:SolidColorPaint Color='#3B82F6', StrokeThickness=3}"
+                                                    Stroke="{lvc:SolidColorPaint Color='#3B82F6', StrokeWidth=3}"
                                                     Fill="{lvc:SolidColorPaint Color='#263B82F6'}"
                                                     GeometryFill="{lvc:SolidColorPaint Color='#3B82F6'}"
-                                                    GeometryStroke="{lvc:SolidColorPaint Color='#0B1326', StrokeThickness=2}"/>
+                                                    GeometryStroke="{lvc:SolidColorPaint Color='#0B1326', StrokeWidth=2}"/>
                             </lvc:CartesianChart.Series>
                             <lvc:CartesianChart.XAxes>
                                 <lvc:XamlAxis Labels="{Binding ChartLabels}"
                                               MinStep="1"
                                               TextSize="11"
                                               LabelsPaint="{lvc:SolidColorPaint Color='#9AA4BC'}"
-                                              SeparatorsPaint="{lvc:SolidColorPaint Color='#18243A', StrokeThickness=1}"
+                                              SeparatorsPaint="{lvc:SolidColorPaint Color='#18243A', StrokeWidth=1}"
                                               ShowSeparatorLines="True"/>
                             </lvc:CartesianChart.XAxes>
                             <lvc:CartesianChart.YAxes>
                                 <lvc:XamlAxis Name="Kz"
                                               TextSize="10"
                                               LabelsPaint="{lvc:SolidColorPaint Color='#7F8AA3'}"
-                                              SeparatorsPaint="{lvc:SolidColorPaint Color='#243149', StrokeThickness=1}"
+                                              SeparatorsPaint="{lvc:SolidColorPaint Color='#243149', StrokeWidth=1}"
                                               ShowSeparatorLines="True"/>
                             </lvc:CartesianChart.YAxes>
                         </lvc:CartesianChart>
