@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Services;
 using ScoolManager.Core.Dtos.Alunos;
 using ScoolManager.Core.Entities.Alunos;
@@ -22,6 +23,7 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     private readonly IEscolaService _escolaService;
     private readonly IArmazenamentoArquivosService _armazenamento;
     private readonly IFilePickerService _filePicker;
+    private readonly IExportacaoArquivoService _exportacao;
 
     /// <summary>Fonte completa (sem filtro de UI) para reaplicar pesquisa/filtros localmente.</summary>
     private readonly List<AlunoListItemModel> _todosAlunos = new();
@@ -262,12 +264,14 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
         IAlunoService alunoService,
         IEscolaService escolaService,
         IArmazenamentoArquivosService armazenamento,
-        IFilePickerService filePicker)
+        IFilePickerService filePicker,
+        IExportacaoArquivoService exportacao)
     {
         _alunoService = alunoService;
         _escolaService = escolaService;
         _armazenamento = armazenamento;
         _filePicker = filePicker;
+        _exportacao = exportacao;
 
         // Valores iniciais dos filtros (serão reescritos no InitializeAsync)
         Classes.Add("Todas as Classes");
@@ -832,8 +836,58 @@ public partial class AlunosViewModel : ViewModelBase, IAsyncInitializable
     }
 
     [RelayCommand] private void ConfirmarImportarAlunos() => FecharModal();
-    [RelayCommand] private void ConfirmarExportarPdf() => FecharModal();
-    [RelayCommand] private void ConfirmarExportarExcel() => FecharModal();
+
+    [RelayCommand]
+    private async Task ConfirmarExportarPdf()
+    {
+        try
+        {
+            var linhas = Alunos.Select(a => new[]
+            {
+                a.Codigo, a.Nome, a.Classe, a.Curso, a.Sala, a.Encarregado, a.Telefone, a.EstadoTexto
+            }).ToList();
+
+            var caminho = await _exportacao.ExportarPdfAsync(
+                "Lista de Alunos",
+                $"ScoolManager_Alunos_{DateTime.Now:yyyyMMdd_HHmm}.pdf",
+                new[] { "Código", "Nome", "Classe", "Curso", "Sala", "Encarregado", "Telefone", "Estado" },
+                linhas,
+                $"Alunos visíveis com os filtros atuais · {linhas.Count} registo(s)");
+
+            if (caminho is not null)
+                FecharModal();
+        }
+        catch (Exception ex)
+        {
+            ErroMatricula = $"Não foi possível exportar o PDF: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ConfirmarExportarExcel()
+    {
+        try
+        {
+            var linhas = Alunos.Select(a => new[]
+            {
+                a.Codigo, a.Nome, a.Classe, a.Curso, a.Sala, a.Encarregado, a.Telefone, a.EstadoTexto
+            }).ToList();
+
+            var caminho = await _exportacao.ExportarExcelAsync(
+                $"ScoolManager_Alunos_{DateTime.Now:yyyyMMdd_HHmm}.xlsx",
+                new[] { "Código", "Nome", "Classe", "Curso", "Sala", "Encarregado", "Telefone", "Estado" },
+                linhas,
+                "Alunos");
+
+            if (caminho is not null)
+                FecharModal();
+        }
+        catch (Exception ex)
+        {
+            ErroMatricula = $"Não foi possível exportar o Excel: {ex.Message}";
+        }
+    }
+
     [RelayCommand] private void ConfirmarFiltrosAvancados() => FecharModal();
 }
 
