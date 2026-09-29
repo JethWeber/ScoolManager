@@ -86,8 +86,12 @@ public class FinanceiroService : IFinanceiroService
         var pagamento = await _pagamentos.ObterPorIdAsync(pagamentoId, ct)
             ?? throw new EntidadeNaoEncontradaException(nameof(Pagamento), pagamentoId);
 
+        var sessao = await GarantirCaixaAbertaAsync(ct);
+        if (pagamento.SessaoCaixaId != sessao.Id)
+            throw new InvalidOperationException("O pagamento pertence a outra sessão de caixa. Reabra essa sessão antes de o anular.");
+
         pagamento.Anulado = true;
-        pagamento.MotivoAnulacao = motivo;
+        pagamento.MotivoAnulacao = motivo.Trim();
         await _pagamentos.AtualizarAsync(pagamento, ct);
     }
 
@@ -125,12 +129,19 @@ public class FinanceiroService : IFinanceiroService
     {
         GarantirAcesso();
         // Não reabre a validação de "caixa aberta" aqui de propósito: editar
-        // um lançamento de uma sessão já FECHADA continua a ser uma correção
-        // legítima (ex.: descrição errada), desde que não se altere o Valor/
-        // Tipo de forma a desequilibrar um fecho de caixa já conferido — essa
-        // validação mais fina fica para quando houver um caso de uso real
-        // que a exija (não especificado ainda no SM_Flow.md).
-        return _movimentos.AtualizarAsync(movimento, ct);
+        return AtualizarMovimentoInternoAsync(movimento, ct);
+
+    private async Task AtualizarMovimentoInternoAsync(MovimentoCaixa movimento, CancellationToken ct)
+    {
+        var sessao = await GarantirCaixaAbertaAsync(ct);
+        if (movimento.SessaoCaixaId != sessao.Id)
+            throw new InvalidOperationException("Só pode editar movimentos da sessão de caixa atualmente aberta.");
+
+        if (movimento.Valor <= 0)
+            throw new ArgumentOutOfRangeException(nameof(movimento), "O valor do movimento deve ser maior que zero.");
+
+        await _movimentos.AtualizarAsync(movimento, ct);
+    }
     }
 
     public async Task<MovimentoCaixa> RegistarMovimentoAsync(MovimentoCaixa movimento, CancellationToken ct = default)
