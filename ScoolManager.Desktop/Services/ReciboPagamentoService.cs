@@ -1,3 +1,4 @@
+using System.Threading;
 using ScoolManager.Core.Abstractions;
 using ScoolManager.Core.Abstractions.Repositories;
 using ScoolManager.Core.Entities.Financeiro;
