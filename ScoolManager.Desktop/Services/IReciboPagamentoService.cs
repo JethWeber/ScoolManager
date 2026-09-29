@@ -1,3 +1,6 @@
+using System.Threading;
+using ScoolManager.Core.Entities.Financeiro;
+
 namespace ScoolManager.Desktop.Services;
 
 public sealed record ResultadoReciboPagamento(
