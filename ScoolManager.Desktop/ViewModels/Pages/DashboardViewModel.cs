@@ -57,7 +57,12 @@ public partial class DashboardViewModel : ViewModelBase, IAsyncInitializable
     public IReadOnlyList<double> ChartValues { get; private set; } = Array.Empty<double>();
     public IReadOnlyList<string> ChartLabels { get; private set; } = Array.Empty<string>();
 
-    public event Action? ChartAtualizado;
+    // Mantemos os dados do gráfico como coleções simples para o binding do LiveCharts.
+    // As séries e os eixos ficam declarados no XAML para manter o ViewModel independente da UI.
+    public IReadOnlyList<object> ChartSeries { get; } = Array.Empty<object>();
+    public IReadOnlyList<object> ChartXAxes { get; } = Array.Empty<object>();
+    public IReadOnlyList<object> ChartYAxes { get; } = Array.Empty<object>();
+
 
     partial void OnAnoLetivoSelecionadoChanged(string value) => CarregarGrafico();
     partial void OnTrimestreSelecionadoChanged(TrimestreOption value) => CarregarGrafico();
@@ -169,7 +174,6 @@ public partial class DashboardViewModel : ViewModelBase, IAsyncInitializable
         ChartLabels = labels;
         OnPropertyChanged(nameof(ChartValues));
         OnPropertyChanged(nameof(ChartLabels));
-        ChartAtualizado?.Invoke();
     }
 
     private static int ObterAnoInicial(string? anoLetivo)
